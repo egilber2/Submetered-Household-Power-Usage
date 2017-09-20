@@ -418,7 +418,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 fit <- tslm(housePWR_mnth2TS ~ trend + season)
-x <- forecast(fit, h=12)
+x <- forecast(fit, h=12, level = c(80, 95))
 autoplot(x, PI=TRUE, colour=TRUE)
 summary(fit)
 
@@ -471,14 +471,14 @@ plot(dofW_decomp$trend)
 plot(dofW_decomp$random)
 summary(dofW_decomp)
 
-dofW_decompSTL <- stl(housePWR_dofWk2TS[,1], s.window = 'periodic', robust=TRUE)
-plot(dofW_decompSTL, col='red')
+dofW_decompSTL_1 <- stl(housePWR_dofWk2TS[,1], s.window = 'periodic', robust=TRUE)
+plot(dofW_decompSTL_1, col='red')
 
-dofW_decompSTL <- stl(housePWR_dofWk2TS[,2], s.window = 'periodic', robust=TRUE)
-plot(dofW_decompSTL, col='green3')
+dofW_decompSTL_2 <- stl(housePWR_dofWk2TS[,2], s.window = 'periodic', robust=TRUE)
+plot(dofW_decompSTL_2, col='green3')
 
-dofW_decompSTL <- stl(housePWR_dofWk2TS[,3], s.window = 'periodic', robust=TRUE)
-plot(dofW_decompSTL, col='blue')
+dofW_decompSTL_3 <- stl(housePWR_dofWk2TS[,3], s.window = 'periodic', robust=TRUE)
+plot(dofW_decompSTL_3, col='blue')
 summary(dofW_decompSTL)
 
 # Yearly TS
@@ -500,6 +500,14 @@ summary()
 yr2_decompSTL_3 <- stl(housePWR_yr2TS[,3], s.window = 'periodic', robust=TRUE)
 plot(yr2_decompSTL_3, col='blue')
 
-#
+
+# Holt-Winters ------------------------------------------------------------
+#housePWR_mnth2TS
+#housePWR_yr2TS
+
+
+
+
+
 
 
