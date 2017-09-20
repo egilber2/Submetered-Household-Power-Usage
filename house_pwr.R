@@ -316,6 +316,7 @@ housePWR_dofWk <- house_pwr %>%
 # Subset hour of day
 housePWR_hofDay <- house_pwr %>%
   filter(year(DateTime)==2007 | year(DateTime)==2008 | year(DateTime)==2009) %>%
+  filter(minute(DateTime)==00 | minute(DateTime)==15 | minute(DateTime)==30 | minute(DateTime)==45) %>%
   group_by(hour(DateTime), minute(DateTime)) %>%
   summarise(sum1=round(sum(Sub_metering_1/1000),3),
             sum2=round(sum(Sub_metering_2/1000),3),
@@ -360,8 +361,8 @@ b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
-# Hour of Day / Minute
-housePWR_hofDayTS <- ts(housePWR_hofDay[,3:5], frequency=59, start=0, end=23)
+# Hour of Day / 15_Minute
+housePWR_hofDayTS <- ts(housePWR_hofDay[,3:5], frequency=4, start=0, end=23)
 plot(housePWR_hofDayTS, plot.type='s',
      xaxp = c(0, 23, 23),
      col=c('red', 'green', 'blue'),
@@ -375,39 +376,48 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 # Forecasting -------------------------------------------------------------
 
-#use housePWR_yr2TS
-#use housePWR_mnth2TS for seasonal trend
-#use housePWR_hofDayTS for hourly trend in a day
-#use housePWR_dofWk2TS for trend observed in day of week subset by hour
-
-
-
-fit <- tslm(housePWR_mnth2TS ~ trend + season)
-x <- forecast(fit, h=12, level = c(80, 95))
+# Year/month
+fit1 <- tslm(housePWR_yrTS ~ trend + season)
+x <- forecast(fit1, h=12, level = c(80, 95))
 autoplot(x, PI=TRUE, colour=TRUE)
-summary(fit)
+summary(fit1)
 
-fit2 <- tslm(housePWR_hofDayTS ~ trend + season)
-y <- forecast(fit2, h=100)
+# Month/Day of Week
+fit2 <- tslm(housePWR_mnthTS ~ trend + season)
+y <- forecast(fit2, h=10)
 autoplot(y, PI=TRUE, colour=TRUE)
 summary(fit2)
 
-fit3 <- tslm(housePWR_dofWk2TS ~ trend + season)
+# Day of Week / Hour
+fit3 <- tslm(housePWR_dofWkTS ~ trend + season)
 z <- forecast(fit3, h=24)
 autoplot(z, PI=TRUE, colour=TRUE)
 summary(fit3)
 
-fit4 <- tslm(housePWR_yr2TS ~ trend + season)
-w <- forecast(fit4, h=10)
+# Hour of Day / Minute
+fit4 <- tslm(housePWR_hofDayTS ~ trend + season)
+w <- forecast(fit4, h=20)
 autoplot(w, PI=TRUE, colour=TRUE)
 summary(fit4)
 
-fit5 <- tslm(housePWR_yrTS ~ trend)
-zz <- forecast(fit5, h=5)
-autoplot(zz, PI=TRUE, colour=TRUE)
-summary(fit5)
+# Decompose & Plot Time Series for Sub-Meter_3---------------------------------------------------------------
 
-# Decompose & Plot Time Series---------------------------------------------------------------
+# Year/Month
+yr_decompSTL_3 <- stl(housePWR_yrTS[,3], s.window = 'periodic', robust=TRUE)
+plot(yr_decompSTL_3, col='blue')
+
+# Month / Day of Week
+month_decompSTL_3 <- stl(housePWR_mnthTS[,3], s.window = 'periodic', robust=TRUE)
+plot(month_decompSTL_3, col='blue')
+summary(month_decompSTL_3)
+
+# Day of Week / Hour
+dofW_decompSTL_3 <- stl(housePWR_dofWkTS[,3], s.window='periodic', robust=TRUE)
+plot(dofW_decompSTL_3, col='blue')
+
+# Hour of Day / 15_minute
+hofDay_decompSTL_3 <-  stl(housePWR_hofDayTS[,3], s.window='periodic', robust=TRUE)
+plot(hofDay_decompSTL_3, col='blue')
 
 # Monthly TS
 mnth2_decomp <- decompose(housePWR_mnth2TS)
@@ -480,11 +490,24 @@ plot(yr2_decompSTL_3, col='blue')
 
 # Holt-Winters Only for Sub-Meter-3 ------------------------------------------------------------
 
+##--Yearly--##
+
+#Remove Seasonal Component
+
+yr_seasonAdj_3 <- seasadj(yr_decompSTL_3)
+autoplot(yr_seasonAdj_3)
+
+yr_forecast_3 <- HoltWinters(yr_seasonAdj_3, beta=FALSE, gamma=FALSE)
+plot(yr_forecast_3)
+
+yr_forecast_3HW <- forecast(yr_forecast_3, h=7)
+plot(year_forecast_3HW)
+
 ##--Monthly--##
 
 # Remove seasonal component
 mnth_seasonAdj_3 <- seasadj(month_decompSTL_3)
-autoplot(mnth_seasonAdj_3)
+plot(mnth_seasonAdj_3, col='blue')
 
 
 mnth_forecast_3 <- HoltWinters(mnth_seasonAdj_3, beta=FALSE, gamma = FALSE, l.start=120.03637)
@@ -506,8 +529,6 @@ mnth_forecast_3HW
 dofW_seasonAdj_3 <- seasadj(dofW_decompSTL_3)
 autoplot(dofW_seasonAdj_3)
 
-
-
 dofW_forecast_3 <- HoltWinters(dofW_seasonAdj_3, beta=FALSE, gamma = FALSE)
 dofW_forecast_3$fitted
 plot(dofW_forecast_3, main='Fitted Holt-Winters Model for Sub-Meter-3 Using Exponential Smoothing',
@@ -517,15 +538,13 @@ dofW_forecast_3HW <- forecast(dofW_forecast_3, h=28)
 plot(dofW_forecast_3HW)
 dofW_forecast_3HW
 
-##--Yearly--##
+##--Hour of Day--##
+hofDay_seasonAdj_3 <- seasadj(hofDay_decompSTL_3)
+autoplot(hofDay_seasonAdj_3)
 
-#Remove Seasonal Component
+hofDay_forecast_3 <- HoltWinters(hofDay_seasonAdj_3, beta=FALSE, gamma = FALSE)
+plot(hofDay_forecast_3)
 
-yr2_seasonAdj_3 <- seasadj(yr2_decompSTL_3)
-autoplot(yr2_seasonAdj_3)
-
-year_forecast_3 <- HoltWinters(yr2_seasonAdj_3, beta=FALSE, gamma=FALSE)
-plot(year_forecast_3)
-
-year_forecast_3HW <- forecast(year_forecast_3, h=7)
-plot(year_forecast_3HW)
+hofDay_forecast_3HW <- forecast(hofDay_forecast_3)
+plot(hofDay_forecast_3HW)
+hofDay_forecast_3HW
