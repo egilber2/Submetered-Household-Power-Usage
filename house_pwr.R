@@ -508,6 +508,6 @@ plot(yr2_decompSTL_3, col='blue')
 
 mnth_seasonAdj_3 <- seasadj(month_decompSTL_3)
 autoplot(mnth_seasonAdj_3)
-plot(housePWR_mnth2TS[,3])
 
-
+mnth_forecast_3 <- HoltWinters(mnth_seasonAdj_3, beta=FALSE, gamma = FALSE, l.start=120.03637)
+mnth_forecast_3
