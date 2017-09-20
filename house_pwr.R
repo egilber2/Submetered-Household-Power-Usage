@@ -420,7 +420,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 fit <- tslm(housePWR_mnth2TS ~ trend + season)
 x <- forecast(fit, h=12)
 autoplot(x, PI=TRUE, colour=TRUE)
-xsummary(fit)
+summary(fit)
 
 fit2 <- tslm(housePWR_hofDayTS ~ trend + season)
 y <- forecast(fit2, h=100)
@@ -449,17 +449,19 @@ plot(mnth2_decomp$random, col=1:3)
 summary(mnth2_decomp)
 mnth2_decomp
 
-month_decompSTL <- stl(housePWR_mnth2TS[,1], s.window = 'periodic', robust=TRUE)
-plot(month_decompSTL, col='red')
+month_decompSTL_1 <- stl(housePWR_mnth2TS[,1], s.window = 'periodic', robust=TRUE)
+plot(month_decompSTL_1, col='red')
+summary(month_decompSTL_1)
 
-month_decompSTL <- stl(housePWR_mnth2TS[,2], s.window = 'periodic', robust=TRUE)
-plot(month_decompSTL, col='green3')
 
-month_decompSTL <- stl(housePWR_mnth2TS[,3], s.window = 'periodic', robust=TRUE)
-plot(month_decompSTL, col='blue')
+month_decompSTL_2 <- stl(housePWR_mnth2TS[,2], s.window = 'periodic', robust=TRUE)
+plot(month_decompSTL_2, col='green3')
+summary(month_decompSTL_2)
 
-month_decompSTL
-summary(month_decompSTL)
+month_decompSTL_3 <- stl(housePWR_mnth2TS[,3], s.window = 'periodic', robust=TRUE)
+plot(month_decompSTL_3, col='blue')
+summary(month_decompSTL_3)
+
 
 # Day of Week TS
 dofW_decomp <- decompose(housePWR_dofWk2TS)
@@ -487,13 +489,17 @@ plot(yr2_decomp$trend)
 autoplot(yr2_decomp$random)
 summary(yr2_decomp)
 
-yr2_decompSTL <- stl(housePWR_yr2TS[,1], s.window = 'periodic', robust=TRUE)
-plot(yr2_decompSTL, col='red')
+yr2_decompSTL_1 <- stl(housePWR_yr2TS[,1], s.window = 'periodic', robust=TRUE)
+plot(yr2_decompSTL_1, col='red')
+summary(yr2_decompSTL)
 
-yr2_decompSTL <- stl(housePWR_yr2TS[,2], s.window = 'periodic', robust=TRUE)
-plot(yr2_decompSTL, col='green3')
+yr2_decompSTL_2 <- stl(housePWR_yr2TS[,2], s.window = 'periodic', robust=TRUE)
+plot(yr2_decompSTL_2, col='green3')
+summary()
 
-yr2_decompSTL <- stl(housePWR_yr2TS[,3], s.window = 'periodic', robust=TRUE)
-plot(yr2_decompSTL, col='blue')
+yr2_decompSTL_3 <- stl(housePWR_yr2TS[,3], s.window = 'periodic', robust=TRUE)
+plot(yr2_decompSTL_3, col='blue')
+
+#
 
 
