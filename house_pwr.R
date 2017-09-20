@@ -510,4 +510,8 @@ mnth_seasonAdj_3 <- seasadj(month_decompSTL_3)
 autoplot(mnth_seasonAdj_3)
 
 mnth_forecast_3 <- HoltWinters(mnth_seasonAdj_3, beta=FALSE, gamma = FALSE, l.start=120.03637)
-mnth_forecast_3
+plot(mnth_forecast_3)
+
+mnth_forecast_3HW <- forecast(mnth_forecast_3, h=4)
+plot(mnth_forecast_3HW)
+
