@@ -504,10 +504,10 @@ plot(yr2_decompSTL_3, col='blue')
 # Holt-Winters ------------------------------------------------------------
 #housePWR_mnth2TS
 #housePWR_yr2TS
+#month_decompSTL_3
 
-
-
-
-
+mnth_seasonAdj_3 <- seasadj(month_decompSTL_3)
+autoplot(mnth_seasonAdj_3)
+plot(housePWR_mnth2TS[,3])
 
 
