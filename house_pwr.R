@@ -388,21 +388,32 @@ x
 # Month/Day of Week
 fit2 <- tslm(housePWR_mnthTS ~ trend + season)
 y <- forecast(fit2, h=10)
-autoplot(y, PI=TRUE, colour=TRUE)
+autoplot(y, PI=TRUE, colour=TRUE) +
+  xlab('Month') +
+  ylab('Total kWh') +
+  ggtitle('Forecast Energy Consumption')
 summary(fit2)
+y
 
 # Day of Week / Hour
 fit3 <- tslm(housePWR_dofWkTS ~ trend + season)
 z <- forecast(fit3, h=24)
-autoplot(z, PI=TRUE, colour=TRUE)
-summary(fit3)
+autoplot(z, PI=TRUE, colour=TRUE) +
+  xlab('Day of Week') +
+  ylab('Total kWh') +
+  ggtitle('Forecast Energy Consumption')
+summary(z)
+z
 
 # Hour of Day / Minute
 fit4 <- tslm(housePWR_hofDayTS ~ trend + season)
 w <- forecast(fit4, h=20)
-autoplot(w, PI=TRUE, colour=TRUE)
-summary(fit4)
-
+autoplot(w, PI=TRUE, colour=TRUE) +
+  xlab('Hour of Day') +
+  ylab('Total kWh') +
+  ggtitle('Forecast Energy Consumption')
+summary(w)
+w
 
 # HoltWinters -------------------------------------------------------------
 
@@ -415,7 +426,7 @@ plot(yr_decompSTL_3, col='blue')
 
 yr_decomp <- decompose(housePWR_yrTS)
 plot(yr_decomp)
-plot(yr_decomp$seasonal)
+autoplot(yr_decomp$seasonal)
 plot(yr_decomp$trend)
 plot(yr_decomp$random)
 summary(yr_decomp)
