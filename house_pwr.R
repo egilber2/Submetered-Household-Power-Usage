@@ -373,7 +373,6 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 
-
 # Forecasting -------------------------------------------------------------
 
 # Year/month
@@ -400,16 +399,95 @@ w <- forecast(fit4, h=20)
 autoplot(w, PI=TRUE, colour=TRUE)
 summary(fit4)
 
-# Decompose & Plot Time Series for Sub-Meter_3---------------------------------------------------------------
 
-# Year/Month
+# HoltWinters -------------------------------------------------------------
+
+##############
+# Year/Month #
+##############
+
 yr_decompSTL_3 <- stl(housePWR_yrTS[,3], s.window = 'periodic', robust=TRUE)
 plot(yr_decompSTL_3, col='blue')
 
-# Month / Day of Week
-month_decompSTL_3 <- stl(housePWR_mnthTS[,3], s.window = 'periodic', robust=TRUE)
-plot(month_decompSTL_3, col='blue')
-summary(month_decompSTL_3)
+yr_decomp <- decompose(housePWR_yrTS)
+plot(yr_decomp)
+plot(yr_decomp$seasonal)
+plot(yr_decomp$trend)
+plot(yr_decomp$random)
+summary(yr_decomp)
+yr_decomp
+
+# Remove seasonal component
+#sub-meter-1
+yr_seasonAdj <- housePWR_yrTS-yr_decomp$seasonal
+autoplot(yr_seasonAdj)
+
+yr_forecast1 <- HoltWinters(yr_seasonAdj[,1], beta=FALSE, gamma=FALSE)
+yr_forecast1$fitted
+plot(yr_forecast1)
+
+yr_forecast1HW <- forecast(yr_forecast1)
+autoplot(yr_forecast1HW)
+
+#sub-meter-2
+yr_forecast2 <- HoltWinters(yr_seasonAdj[,2], beta=FALSE, gamma=FALSE)
+yr_forecast1$fitted
+plot(yr_forecast2)
+
+yr_forecast2HW <- forecast(yr_forecast2)
+autoplot(yr_forecast2HW)
+
+#sub-meter-3
+yr_forecast3 <- HoltWinters(yr_seasonAdj[,3], beta=FALSE, gamma=FALSE)
+yr_forecast3$fitted
+plot(yr_forecast3)
+
+yr_forecast3HW <- forecast(yr_forecast3, h=5)
+autoplot(yr_forecast3HW)
+
+#######################
+# Month / Day of Week #
+#######################
+
+#month_decompSTL_3 <- stl(housePWR_mnthTS[,3], s.window = 'periodic', robust=TRUE)
+#plot(month_decompSTL_3, col='blue')
+#summary(month_decompSTL_3)
+
+mnth_decomp <- decompose(housePWR_mnthTS)
+plot(mnth_decomp)
+plot(mnth_decomp$seasonal)
+plot(mnth_decomp$trend)
+plot(mnth_decomp$random)
+summary(mnth_decomp)
+mnth_decomp
+
+# Remove seasonal component
+#sub-meter-1
+mnth_seasonAdj <- housePWR_mnthTS-mnth_decomp$seasonal
+autoplot(mnth_seasonAdj)
+
+mnth_forecast1 <- HoltWinters(mnth_seasonAdj[,1], beta=FALSE, gamma=FALSE)
+mnth_forecast1$fitted
+plot(mnth_forecast1)
+
+mnth_forecast1HW <- forecast(mnth_forecast1)
+autoplot(mnth_forecast1HW)
+
+#sub-meter-2
+mnth_forecast2 <- HoltWinters(mnth_seasonAdj[,2], beta=FALSE, gamma=FALSE)
+mnth_forecast2$fitted
+plot(mnth_forecast2)
+
+mnth_forecast2HW <- forecast(mnth_forecast2)
+autoplot(mnth_forecast2HW)
+
+#sub-meter-3
+mnth_forecast3 <- HoltWinters(mnth_seasonAdj[,3], beta=FALSE, gamma=FALSE)
+mnth_forecast3$fitted
+plot(mnth_forecast3)
+
+mnth_forecast3HW <- forecast(mnth_forecast3)
+autoplot(mnth_forecast3HW)
 
 # Day of Week / Hour
 dofW_decompSTL_3 <- stl(housePWR_dofWkTS[,3], s.window='periodic', robust=TRUE)
@@ -493,12 +571,19 @@ plot(yr2_decompSTL_3, col='blue')
 ##--Yearly--##
 
 #Remove Seasonal Component
-
+##-stl
 yr_seasonAdj_3 <- seasadj(yr_decompSTL_3)
 autoplot(yr_seasonAdj_3)
+##
+yr_seasonAdj <- housePWR_yrTS-yr_decomp$seasonal
+autoplot(yr_seasonAdj)
 
-yr_forecast_3 <- HoltWinters(yr_seasonAdj_3, beta=FALSE, gamma=FALSE)
-plot(yr_forecast_3)
+yr_forecast <- HoltWinters(yr_seasonAdj, beta=FALSE, gamma=FALSE)
+yr_forecast$fitted
+plot(yr_forecast)
+
+yr_forecastHW <- forecast(yr_forecast)
+plot(yr_forecastHW)
 
 yr_forecast_3HW <- forecast(yr_forecast_3, h=7)
 plot(year_forecast_3HW)
