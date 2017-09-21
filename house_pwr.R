@@ -648,6 +648,7 @@ mnth_forecast_3HW
 
 #Remove seasonal component
 
+
 dofW_seasonAdj_3 <- seasadj(dofW_decompSTL_3)
 autoplot(dofW_seasonAdj_3)
 
