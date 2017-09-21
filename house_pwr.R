@@ -466,6 +466,7 @@ mnth_decomp
 mnth_seasonAdj <- housePWR_mnthTS-mnth_decomp$seasonal
 autoplot(mnth_seasonAdj)
 
+#sub-meter-1
 mnth_forecast1 <- HoltWinters(mnth_seasonAdj[,1], beta=FALSE, gamma=FALSE)
 mnth_forecast1$fitted
 plot(mnth_forecast1)
@@ -489,59 +490,95 @@ plot(mnth_forecast3)
 mnth_forecast3HW <- forecast(mnth_forecast3)
 autoplot(mnth_forecast3HW)
 
-# Day of Week / Hour
-dofW_decompSTL_3 <- stl(housePWR_dofWkTS[,3], s.window='periodic', robust=TRUE)
-plot(dofW_decompSTL_3, col='blue')
+#####################
+# Day of Week / Hour#
+#####################
 
-# Hour of Day / 15_minute
-hofDay_decompSTL_3 <-  stl(housePWR_hofDayTS[,3], s.window='periodic', robust=TRUE)
-plot(hofDay_decompSTL_3, col='blue')
-
-# Monthly TS
-mnth2_decomp <- decompose(housePWR_mnth2TS)
-plot(mnth2_decomp)
-plot(mnth2_decomp$seasonal)
-plot(mnth2_decomp$trend)
-plot(mnth2_decomp$random, col=1:3)
-summary(mnth2_decomp)
-mnth2_decomp
-
-month_decompSTL_1 <- stl(housePWR_mnth2TS[,1], s.window = 'periodic', robust=TRUE)
-plot(month_decompSTL_1, col='red')
-summary(month_decompSTL_1)
+#dofW_decompSTL_3 <- stl(housePWR_dofWkTS[,3], s.window='periodic', robust=TRUE)
+#plot(dofW_decompSTL_3, col='blue')
 
 
-month_decompSTL_2 <- stl(housePWR_mnth2TS[,2], s.window = 'periodic', robust=TRUE)
-plot(month_decompSTL_2, col='green3')
-summary(month_decompSTL_2)
-
-month_decompSTL_3 <- stl(housePWR_mnth2TS[,3], s.window = 'periodic', robust=TRUE)
-plot(month_decompSTL_3, col='blue')
-summary(month_decompSTL_3)
-
-
-
-
-# Day of Week TS
-dofW_decomp <- decompose(housePWR_dofWk2TS)
+dofW_decomp <- decompose(housePWR_dofWkTS)
 plot(dofW_decomp)
 plot(dofW_decomp$seasonal)
 plot(dofW_decomp$trend)
 plot(dofW_decomp$random)
 summary(dofW_decomp)
 
-dofW_seasonAdj_3 <- housePWR_dofWk2TS-dofW_decomp$seasonal
-plot(dofW_seasonAdj_3)
+dofW_seasonAdj <- housePWR_dofWkTS-dofW_decomp$seasonal
+plot(dofW_seasonAdj)
 
-dofW_decompSTL_1 <- stl(housePWR_dofWk2TS[,1], s.window = 'periodic', robust=TRUE)
-plot(dofW_decompSTL_1, col='red')
+#sub-meter-1
+dofW_forecast1 <- HoltWinters(dofW_seasonAdj[,1], beta=FALSE, gamma=FALSE)
+dofW_forecast1$fitted
+plot(dofW_forecast1)
 
-dofW_decompSTL_2 <- stl(housePWR_dofWk2TS[,2], s.window = 'periodic', robust=TRUE)
-plot(dofW_decompSTL_2, col='green3')
+dofW_forecast1HW <- forecast(dofW_forecast1)
+autoplot(dofW_forecast1HW)
 
-dofW_decompSTL_3 <- stl(housePWR_dofWk2TS[,3], s.window = 'periodic', robust=TRUE)
-plot(dofW_decompSTL_3, col='blue')
-summary(dofW_decompSTL_3)
+#sub-meter-2
+dofW_forecast2 <- HoltWinters(dofW_seasonAdj[,2], beta=FALSE, gamma=FALSE)
+dofW_forecast2$fitted
+plot(dofW_forecast2)
+
+dofW_forecast2HW <- forecast(dofW_forecast2)
+autoplot(dofW_forecast2HW)
+
+#sub-meter-3
+dofW_forecast3 <- HoltWinters(dofW_seasonAdj[,3], beta=FALSE, gamma=FALSE)
+dofW_forecast3$fitted
+plot(dofW_forecast3)
+
+dofW_forecast3HW <- forecast(dofW_forecast3)
+autoplot(dofW_forecast3HW)
+
+##########################
+# Hour of Day / 15_minute#
+##########################
+
+#hofDay_decompSTL_3 <-  stl(housePWR_hofDayTS[,3], s.window='periodic', robust=TRUE)
+#plot(hofDay_decompSTL_3, col='blue')
+
+# Remove seasonal component
+
+hofDay_decomp <- decompose(housePWR_hofDayTS)
+plot(hofDay_decomp)
+plot(hofDay_decomp$seasonal)
+plot(hofDay_decomp$trend)
+plot(hofDay_decomp$random, col=1:3)
+summary(hofDay_decomp)
+hofDay_decomp
+
+
+hofDay_seasonAdj <- housePWR_hofDayTS-hofDay_decomp$seasonal
+plot(hofDay_seasonAdj)
+
+#sub-meter-1
+hofDay_forecast1 <- HoltWinters(hofDay_seasonAdj[,1], beta=FALSE, gamma=FALSE)
+hofDay_forecast1$fitted
+plot(hofDay_forecast1)
+
+hofDay_forecast1HW <- forecast(hofDay_forecast1)
+autoplot(hofDay_forecast1HW)
+
+#sub-meter-2
+hofDay_forecast2 <- HoltWinters(hofDay_seasonAdj[,2], beta=FALSE, gamma=FALSE)
+hofDay_forecast2$fitted
+plot(hofDay_forecast2)
+
+hofDay_forecast2HW <- forecast(hofDay_forecast2)
+autoplot(hofDay_forecast2HW)
+
+#sub-meter-3
+hofDay_forecast3 <- HoltWinters(hofDay_seasonAdj[,3], beta=FALSE, gamma=FALSE)
+hofDay_forecast3$fitted
+plot(hofDay_forecast3)
+
+hofDay_forecast3HW <- forecast(hofDay_forecast3)
+autoplot(hofDay_forecast3HW)
+
+# Day of Week TS
+
 
 # Yearly TS
 yr2_decomp <- decompose(housePWR_yr2TS)
@@ -572,8 +609,8 @@ plot(yr2_decompSTL_3, col='blue')
 
 #Remove Seasonal Component
 ##-stl
-yr_seasonAdj_3 <- seasadj(yr_decompSTL_3)
-autoplot(yr_seasonAdj_3)
+#yr_seasonAdj_3 <- seasadj(yr_decompSTL_3)
+#autoplot(yr_seasonAdj_3)
 ##
 yr_seasonAdj <- housePWR_yrTS-yr_decomp$seasonal
 autoplot(yr_seasonAdj)
