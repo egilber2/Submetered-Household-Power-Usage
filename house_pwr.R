@@ -287,9 +287,9 @@ ggpairs(house_pwr,
 housePWR_yr <- house_pwr %>%
   filter(year(DateTime)==2007 | year(DateTime)==2008 | year(DateTime)==2009) %>%
   group_by(year(DateTime), month(DateTime)) %>%
-  summarise(sum1=round(sum(Sub_metering_1/1000), 3),
-            sum2=round(sum(Sub_metering_2/1000), 3),
-            sum3=round(sum(Sub_metering_3/1000),3),
+  summarise(Sub_Meter_1=round(sum(Sub_metering_1/1000), 3),
+            Sub_Meter_2=round(sum(Sub_metering_2/1000), 3),
+            Sub_Meter_3=round(sum(Sub_metering_3/1000),3),
             first_DateTime = first(DateTime))
 
 
@@ -297,9 +297,9 @@ housePWR_yr <- house_pwr %>%
 housePWR_mnth <- house_pwr %>%
   filter(year(DateTime)==2007 | year(DateTime)==2008 | year(DateTime)==2009) %>%
   group_by(month(DateTime), wday(DateTime)) %>%
-  summarise(sum1=round(sum(Sub_metering_1/1000),3),
-            sum2=round(sum(Sub_metering_2/1000),3),
-            sum3=round(sum(Sub_metering_3/1000),3),
+  summarise(Sub_Meter_1=round(sum(Sub_metering_1/1000),3),
+            Sub_Meter_2=round(sum(Sub_metering_2/1000),3),
+            Sub_Meter_3=round(sum(Sub_metering_3/1000),3),
             first_DateTime = first(DateTime))
 
 
@@ -307,9 +307,9 @@ housePWR_mnth <- house_pwr %>%
 housePWR_dofWk <- house_pwr %>%
   filter(year(DateTime)==2007 | year(DateTime)==2008 | year(DateTime)==2009) %>%
   group_by(wday(DateTime), hour(DateTime)) %>%
-  summarise(sum1=round(sum(Sub_metering_1/1000),3),
-            sum2=round(sum(Sub_metering_2/1000),3),
-            sum3=round(sum(Sub_metering_3/1000),3),
+  summarise(Sub_Meter_1=round(sum(Sub_metering_1/1000),3),
+            Sub_Meter_2=round(sum(Sub_metering_2/1000),3),
+            Sub_Meter_3=round(sum(Sub_metering_3/1000),3),
             first_DateTime = first(DateTime))
 
 
@@ -318,9 +318,9 @@ housePWR_hofDay <- house_pwr %>%
   filter(year(DateTime)==2007 | year(DateTime)==2008 | year(DateTime)==2009) %>%
   filter(minute(DateTime)==00 | minute(DateTime)==15 | minute(DateTime)==30 | minute(DateTime)==45) %>%
   group_by(hour(DateTime), minute(DateTime)) %>%
-  summarise(sum1=round(sum(Sub_metering_1/1000),3),
-            sum2=round(sum(Sub_metering_2/1000),3),
-            sum3=round(sum(Sub_metering_3/1000),3),
+  summarise(Sub_Meter_1=round(sum(Sub_metering_1/1000),3),
+            Sub_Meter_2=round(sum(Sub_metering_2/1000),3),
+            Sub_Meter_3=round(sum(Sub_metering_3/1000),3),
             first_DateTime = first(DateTime))
 
 
@@ -378,8 +378,12 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 # Year/month
 fit1 <- tslm(housePWR_yrTS ~ trend + season)
 x <- forecast(fit1, h=12, level = c(80, 95))
-autoplot(x, PI=TRUE, colour=TRUE)
+autoplot(x, PI=TRUE, colour=TRUE,
+         xlab='Year', ylab='Total kWh',
+         main='Forecast Energy Consumption')
 summary(fit1)
+x
+
 
 # Month/Day of Week
 fit2 <- tslm(housePWR_mnthTS ~ trend + season)
