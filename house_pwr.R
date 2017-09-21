@@ -426,9 +426,18 @@ plot(yr_decompSTL_3, col='blue')
 
 yr_decomp <- decompose(housePWR_yrTS)
 plot(yr_decomp)
-autoplot(yr_decomp$seasonal)
-plot(yr_decomp$trend)
-plot(yr_decomp$random)
+
+autoplot(yr_decomp$seasonal) +
+  xlab('Year') +
+  ylab('kWh') +
+  ggtitle('Seasonal Component Yearly Time Series')
+
+plot(yr_decomp$trend, xlab='Year', ylab='kWh',
+     main='Trend Component for Yearly Time Series')
+
+plot(yr_decomp$random, xlab='Year',
+     main='Random Component of Yearly Time Series')
+
 summary(yr_decomp)
 yr_decomp
 
@@ -470,9 +479,16 @@ autoplot(yr_forecast3HW)
 
 mnth_decomp <- decompose(housePWR_mnthTS)
 plot(mnth_decomp)
-plot(mnth_decomp$seasonal)
-plot(mnth_decomp$trend)
-plot(mnth_decomp$random)
+
+plot(mnth_decomp$seasonal, xlab='Month', ylab='kWh',
+     main='Seasonal Component for Monthly Time Series')
+
+plot(mnth_decomp$trend, xlab='Month', ylab='kWh',
+     main='Trend Component for Monthly Time Series')
+
+plot(mnth_decomp$random, xlab='Month',
+     main='Random Component of Monthlhy Time Series')
+
 summary(mnth_decomp)
 mnth_decomp
 
@@ -515,9 +531,15 @@ autoplot(mnth_forecast3HW)
 
 dofW_decomp <- decompose(housePWR_dofWkTS)
 plot(dofW_decomp)
-plot(dofW_decomp$seasonal)
-plot(dofW_decomp$trend)
-plot(dofW_decomp$random)
+
+plot(dofW_decomp$seasonal, xlab='Day of Week', ylab='kWh',
+     main='Seasonal Component of Daily Time Series')
+
+plot(dofW_decomp$trend, xlab='Day of Week', ylab='kWh',
+     main='Trend Component of Daily Time Series')
+
+plot(dofW_decomp$random, xlab='Day of Week',
+     main='Random Component of Daily Time Series')
 summary(dofW_decomp)
 
 dofW_seasonAdj <- housePWR_dofWkTS-dofW_decomp$seasonal
