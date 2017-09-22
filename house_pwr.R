@@ -443,8 +443,15 @@ yr_decomp
 
 # Remove seasonal component
 #sub-meter-1
-yr_seasonAdj <- housePWR_yrTS-yr_decomp$seasonal
-autoplot(yr_seasonAdj)
+yr_seasonAdj <- housePWR_yrTS - yr_decomp$seasonal
+plot(yr_seasonAdj, plot.type='s',
+     xaxp = c(2007, 2010, 3),
+     col=c('red', 'green', 'blue'),
+     xlab='Year', ylab='kWh',
+     main='Seasonally-Adjusted Monthly Energy Consumption')
+minor.tick(nx=6)
+b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
+legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 yr_forecast1 <- HoltWinters(yr_seasonAdj[,1], beta=FALSE, gamma=FALSE)
 yr_forecast1$fitted
@@ -494,8 +501,14 @@ mnth_decomp
 
 # Remove seasonal component
 #sub-meter-1
-mnth_seasonAdj <- housePWR_mnthTS-mnth_decomp$seasonal
-autoplot(mnth_seasonAdj)
+mnth_seasonAdj <- housePWR_mnthTS - mnth_decomp$seasonal
+plot(mnth_seasonAdj, plot.type='s',
+     xaxp = c(1, 12, 11),
+     col=c('red', 'green', 'blue'),
+         xlab='Month', ylab='kWh',
+         main='Seasonally-Adjusted Monthly Energy Consumption')
+b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
+legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 #sub-meter-1
 mnth_forecast1 <- HoltWinters(mnth_seasonAdj[,1], beta=FALSE, gamma=FALSE)
@@ -540,6 +553,7 @@ plot(dofW_decomp$trend, xlab='Day of Week', ylab='kWh',
 
 plot(dofW_decomp$random, xlab='Day of Week',
      main='Random Component of Daily Time Series')
+
 summary(dofW_decomp)
 
 dofW_seasonAdj <- housePWR_dofWkTS-dofW_decomp$seasonal
@@ -580,9 +594,16 @@ autoplot(dofW_forecast3HW)
 
 hofDay_decomp <- decompose(housePWR_hofDayTS)
 plot(hofDay_decomp)
-plot(hofDay_decomp$seasonal)
-plot(hofDay_decomp$trend)
-plot(hofDay_decomp$random, col=1:3)
+
+plot(hofDay_decomp$seasonal,xlab='Hour of Day', ylab='kWh',
+     main='Seasonal Component of Hourly Time Series')
+
+plot(hofDay_decomp$trend, xlab='Hour of Day', ylab='kWh',
+     main='Trend Component of Hourly Time Series')
+
+plot(hofDay_decomp$random, xlab='Hour of Day', ylab='kWh',
+     main='Random Component of Hourly Time Series')
+
 summary(hofDay_decomp)
 hofDay_decomp
 
