@@ -294,7 +294,7 @@ housePWR_yr <- house_pwr %>%
 
 # Subset by Month and Day of Week
 housePWR_mnth <- house_pwr %>%
-  filter(year(DateTime)==2007 | year(DateTime)==2008 | year(DateTime)==2009) %>%
+  filter(year(DateTime)==2007 | year(DateTime)==2008 | year(DateTime)==2009 | year(DateTime)==2010) %>%
   group_by(month(DateTime), wday(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(Sub_metering_1/1000),3),
             Sub_Meter_2=round(sum(Sub_metering_2/1000),3),
@@ -376,12 +376,12 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 # Year/month
 fit1 <- tslm(housePWR_yrTS ~ trend)
-x <- forecast(fit1, h=12, level = c(80, 95))
+x <- forecast(fit1, h=6, level = c(80, 95))
 autoplot(x, PI=TRUE, colour = TRUE) +
   xlab('Year') +
   ylab('Total kWh') +
   ggtitle('Forecasted Yearly Trend for Energy Consumption')
-summary.lm(fit1)
+summary(fit1)
 fit1
 x
 
@@ -392,7 +392,7 @@ autoplot(y, PI=TRUE, colour=TRUE) +
   xlab('Month') +
   ylab('Total kWh') +
   ggtitle('Forecasted Monthly Trend of Energy Consumption')
-summary.lm(fit2)
+summary(fit2)
 y
 
 # Day of Week / Hour
