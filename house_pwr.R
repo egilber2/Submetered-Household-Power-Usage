@@ -39,8 +39,7 @@ library(scales)
 library(forecast)
 library(xts)
 library(stargazer)
-library(grid)
-library(graphics)
+
 # Parallel Processing -----------------------------------------------------
 
 cluster <- makeCluster(detectCores() - 1)
@@ -373,37 +372,38 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 
-# Forecasting -------------------------------------------------------------
+# Forecasting Trend-------------------------------------------------------------
 
 # Year/month
-fit1 <- tslm(housePWR_yrTS ~ trend + season)
-x <- forecast(fit1, h=12, level = 80)
-autoplot(x, PI=TRUE, colour=TRUE,
-         xlab='Year', ylab='Total kWh',
-         main='Forecast Energy Consumption')
-summary(fit1)
+fit1 <- tslm(housePWR_yrTS ~ trend)
+x <- forecast(fit1, h=12, level = c(80, 95))
+autoplot(x, PI=TRUE, colour = TRUE) +
+  xlab('Year') +
+  ylab('Total kWh') +
+  ggtitle('Forecast Energy Consumption')
+summary.lm(fit1)
 fit1
 x
-summary(x)
+summary(x, robust=FALSE)
 
 # Month/Day of Week
-fit2 <- tslm(housePWR_mnthTS ~ trend + season)
+fit2 <- tslm(housePWR_mnthTS ~ trend)
 y <- forecast(fit2, h=10)
 autoplot(y, PI=TRUE, colour=TRUE) +
   xlab('Month') +
   ylab('Total kWh') +
   ggtitle('Forecast Energy Consumption')
-summary(fit2)
+summary.lm(fit2)
 y
 
 # Day of Week / Hour
-fit3 <- tslm(housePWR_dofWkTS ~ trend + season)
+fit3 <- tslm(housePWR_dofWkTS ~ trend)
 z <- forecast(fit3, h=24)
 autoplot(z, PI=TRUE, colour=TRUE) +
   xlab('Day of Week') +
   ylab('Total kWh') +
   ggtitle('Forecast Energy Consumption')
-summary(z)
+summary.lm(fit3)
 z
 
 # Hour of Day / Minute
