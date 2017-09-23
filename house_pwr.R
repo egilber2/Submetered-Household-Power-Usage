@@ -304,7 +304,7 @@ housePWR_mnth <- house_pwr %>%
 
 # Subset by Day of Week and hour of day
 housePWR_dofWk <- house_pwr %>%
-  filter(year(DateTime)==2007 | year(DateTime)==2008 | year(DateTime)==2009) %>%
+  filter(year(DateTime)>2006) %>%
   group_by(wday(DateTime), hour(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(Sub_metering_1/1000),3),
             Sub_Meter_2=round(sum(Sub_metering_2/1000),3),
@@ -314,7 +314,7 @@ housePWR_dofWk <- house_pwr %>%
 
 # Subset hour of day
 housePWR_hofDay <- house_pwr %>%
-  filter(year(DateTime)==2007 | year(DateTime)==2008 | year(DateTime)==2009) %>%
+  filter(year(DateTime)>2006) %>%
   filter(minute(DateTime)==00 | minute(DateTime)==15 | minute(DateTime)==30 | minute(DateTime)==45) %>%
   group_by(hour(DateTime), minute(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(Sub_metering_1/1000),3),
@@ -574,7 +574,8 @@ mnth_smoothFcast1 <- forecast(mnth_smooth1)
 autoplot(mnth_smoothFcast,
          xlim=c(10,13),
          xlab='Month',
-         ylab='kWh')
+         ylab='kWh',
+         main='30 Day Forecast of Sub-Meter-1')
 
 #sub-meter-2
 mnth_smooth2 <- HoltWinters(mnth_seasonAdj[,2], beta=FALSE, gamma=FALSE)
@@ -584,7 +585,8 @@ mnth_smoothFcast2 <- forecast(mnth_smooth2)
 autoplot(mnth_smoothFcast2,
          xlim=c(10,13),
          xlab='Month',
-         ylab='kWh')
+         ylab='kWh',
+         main='30 Day Forecast of Sub-Meter-2')
 
 #sub-meter-3
 mnth_smooth3 <- HoltWinters(mnth_seasonAdj[,3], beta=FALSE, gamma=FALSE)
@@ -594,7 +596,8 @@ mnth_smoothFcast3 <- forecast(mnth_smooth3)
 autoplot(mnth_smoothFcast3,
          xlim=c(10,13),
          xlab='Month',
-         ylab='kWh')
+         ylab='kWh',
+         main='30 Day Forecast of Sub-Meter-3')
 
 #####################
 # Day of Week / Hour#
@@ -614,8 +617,12 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 dofW_smooth1 <- HoltWinters(dofW_seasonAdj[,1], beta=FALSE, gamma=FALSE)
 plot(dofW_smooth1)
 
-dofW_smoothFcast1 <- forecast(dofW_smooth1)
-autoplot(dofW_smoothFcast1)
+dofW_smoothFcast1 <- forecast(dofW_smooth1, h=30)
+autoplot(dofW_smoothFcast1,
+         xlim= c(5, 9),
+         xlab='Day of the Week',
+         ylab='kWh',
+         main='Forecast of Sub-Meter-1')
 
 #sub-meter-2
 dofW_smooth2 <- HoltWinters(dofW_seasonAdj[,2], beta=FALSE, gamma=FALSE)
