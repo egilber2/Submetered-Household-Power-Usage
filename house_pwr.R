@@ -37,14 +37,6 @@ library(scales)
 library(forecast)
 library(stargazer)
 
-# Parallel Processing -----------------------------------------------------
-
-cluster <- makeCluster(detectCores() - 1)
-registerDoParallel(cluster)
-
-stopCluster(cluster)
-registerDoSEQ()
-
 # Load Data ---------------------------------------------------------------
 
 
@@ -337,15 +329,8 @@ housePWR_hofDay <- house_pwr %>%
             first_DateTime = first(DateTime))
 
 # Subset by Weekends
-housePWR_wknd <- house_pwr %>%
-  filter(year(DateTime)>2006) %>%
-  filter(day(DateTime)==1 | day(DateTime)==7) %>%
-  group_by(year(DateTime), day(DateTime), hour(DateTime)) %>%
-  summarise(Sub_Meter_1=round(sum(Sub_metering_1/1000),3),
-            Sub_Meter_2=round(sum(Sub_metering_2/1000),3),
-            Sub_Meter_3=round(sum(Sub_metering_3/1000),3),
-            first_DateTime = first(DateTime))
-
+housePWR_wknd <- housePWR_dofWk %>%
+  filter(`wday(DateTime)`==1 | `wday(DateTime)`==7)
 
 # Convert to Time Series --------------------------------------------------
 
@@ -373,7 +358,7 @@ b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('top', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 # Day of Week / Hour
-housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency=23, start = 1, end=7)
+housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency=23, start = c(1,0), end=c(7,23))
 plot(housePWR_dofWkTS, plot.type='s',
      xaxp = c(1, 7, 6),
      col=c('red', 'green', 'blue'),
@@ -395,14 +380,16 @@ b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 # Weekend hourly use
-housePWR_wkndTS <- ts(housePWR_wknd, frequency = 23, start=0, end=7)
+housePWR_wkndTS <- ts(housePWR_wknd[,3], frequency=7, start=c(1,0), end=c(7,23))
 plot(housePWR_wkndTS, plot.type='s',
-     #xaxp = c(0, 23, 23),
+     xaxp = c(1, 7, 2),
      col=c('red', 'green', 'blue'),
-     xlab='Hour of the Day', ylab = 'Total kWh',
-     main='Total kWh Consumption by Hour of the Day (2007-2010)')
+     xlab='Day of Week', ylab = 'Total kWh',
+     main='Total Weekend Energy Usage on Sub-Meter-1')
+minor.tick(nx=24)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
+
 
 # Forecasting Trend-------------------------------------------------------------
 
@@ -446,6 +433,15 @@ autoplot(w, PI=TRUE, colour=TRUE) +
   ggtitle('Forecast Energy Consumption')
 summary(w)
 w
+
+# Weekend hours
+fit5 <- tslm(housePWR_wkndTS ~ trend)
+zz <- forecast(fit5, h=20)
+autoplot(zz, PI=TRUE, colour=TRUE) +
+  xlab('Weekend Day') +
+  ylab('Total kWh') +
+  ggtitle('Forecast Energy Consumption')
+summary(w)
 
 # Decompose Time Series' -------------------------------------------------------------
 
@@ -530,6 +526,12 @@ plot(hofDay_decomp$random, xlab='Hour of Day', ylab='kWh',
 
 summary(hofDay_decomp)
 hofDay_decomp
+
+#################
+# Weekend Hours #
+#################
+Wknd_decomp <- decompose(housePWR_wkndTS)
+plot(Wknd_decomp)
 
 
 # Holt-Winters Smooting------------------------------------------------------------
@@ -705,3 +707,21 @@ plot(hofDay_smooth3)
 hofDay_smoothFcast3 <- forecast(hofDay_smooth3, h=20)
 autoplot(hofDay_smoothFcast3)
 
+##########
+# Weekend#
+##########
+
+Wknd_seasonAdj <- housePWR_wkndTS - Wknd_decomp$seasonal
+plot(Wknd_seasonAdj, plot.type='s',
+     xaxp = c(1, 3, 2),
+     col= 'red',
+     xlab='Hour of Day', ylab='kWh',
+     main='Seasonally-Adjusted Hourly Energy Consumption')
+b <- 'Sub-meter-1'
+legend('topleft', b, col='red')
+
+Wknd_smooth <- HoltWinters(Wknd_seasonAdj, beta=FALSE, gamma = FALSE)
+plot(Wknd_smooth)
+
+Wknd_smoothFcast1 <- forecast(Wknd_smooth, h=20)
+plot(Wknd_smoothFcast1)
