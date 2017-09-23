@@ -329,8 +329,16 @@ housePWR_hofDay <- house_pwr %>%
             first_DateTime = first(DateTime))
 
 # Subset by Weekends
-housePWR_wknd <- housePWR_dofWk %>%
-  filter(`wday(DateTime)`==1 | `wday(DateTime)`==7)
+housePWR_wknd <- house_pwr %>%
+  filter(year(DateTime)>2006) %>%
+  filter(wday(DateTime)==c(1,7)) %>%
+  group_by(wday(DateTime), hour(DateTime)) %>%
+  summarise(Sub_Meter_1=round(sum(Sub_metering_1/1000),3),
+            Sub_Meter_2=round(sum(Sub_metering_2/1000),3),
+            Sub_Meter_3=round(sum(Sub_metering_3/1000),3),
+            first_DateTime = first(DateTime))
+
+
 
 # Convert to Time Series --------------------------------------------------
 
@@ -380,9 +388,9 @@ b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 # Weekend hourly use
-housePWR_wkndTS <- ts(housePWR_wknd[,3], frequency=7, start=c(1,0), end=c(7,23))
+housePWR_wkndTS <- ts(housePWR_wknd[,3], frequency=23, start=c(7,0))
 plot(housePWR_wkndTS, plot.type='s',
-     xaxp = c(1, 7, 2),
+     xaxp = c(1, 7, 3),
      col=c('red', 'green', 'blue'),
      xlab='Day of Week', ylab = 'Total kWh',
      main='Total Weekend Energy Usage on Sub-Meter-1')
