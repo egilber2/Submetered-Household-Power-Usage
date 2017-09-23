@@ -331,12 +331,24 @@ housePWR_hofDay <- house_pwr %>%
 # Subset by Weekends
 housePWR_wknd <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
-  filter(wday(DateTime)==c(1,7)) %>%
+  filter(wday(DateTime)==c(7,1)) %>%
   group_by(wday(DateTime), hour(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(Sub_metering_1/1000),3),
             Sub_Meter_2=round(sum(Sub_metering_2/1000),3),
             Sub_Meter_3=round(sum(Sub_metering_3/1000),3),
-            first_DateTime = first(DateTime))
+            first_DateTime = first(DateTime)) %>%
+  arrange(desc(`wday(DateTime)`))
+
+housePWR_wknd <- house_pwr %>%
+  select(DateTime, Sub_metering_1) %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(weekend=lubridate::wday(DateTime, label=TRUE, abbr=FALSE)) %>%
+  #mutate(weekend=wday(DateTime)) %>%
+  filter(weekend==c('Saturday','Sunday')) %>%
+  group_by(weekend, hour(DateTime)) %>%
+  summarise(Sub_meter_1=round(sum(Sub_metering_1/1000),3),
+            first_DateTime=first(DateTime)) %>%
+  arrange(desc(weekend))
 
 
 
@@ -388,15 +400,14 @@ b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 # Weekend hourly use
-housePWR_wkndTS <- ts(housePWR_wknd[,3], frequency=23, start=c(7,0))
-plot(housePWR_wkndTS, plot.type='s',
-     xaxp = c(1, 7, 3),
-     col=c('red', 'green', 'blue'),
-     xlab='Day of Week', ylab = 'Total kWh',
+housePWR_wkndTS <- ts(housePWR_wknd[,3], frequency=23, start=7)
+plot.ts(housePWR_wkndTS,
+        col='red',
+        xlab='Weekend Day', ylab = 'Total kWh',
      main='Total Weekend Energy Usage on Sub-Meter-1')
 minor.tick(nx=24)
-b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
-legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
+b <- 'Sub-meter-1'
+legend('topleft', b, col='red', lwd=2, bty='n')
 
 
 # Forecasting Trend-------------------------------------------------------------
@@ -721,7 +732,7 @@ autoplot(hofDay_smoothFcast3)
 
 Wknd_seasonAdj <- housePWR_wkndTS - Wknd_decomp$seasonal
 plot(Wknd_seasonAdj, plot.type='s',
-     xaxp = c(1, 3, 2),
+     #xaxp = c(1, 3, 2),
      col= 'red',
      xlab='Hour of Day', ylab='kWh',
      main='Seasonally-Adjusted Hourly Energy Consumption')
