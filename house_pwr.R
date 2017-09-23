@@ -29,15 +29,12 @@ install.packages('grid')
 library(caret)
 library(tidyverse)
 library(magrittr)
-library(doParallel)
-library(parallel)
 library(lubridate)
 library(VIM)
 library(Hmisc)
 library(GGally)
 library(scales)
 library(forecast)
-library(xts)
 library(stargazer)
 
 # Parallel Processing -----------------------------------------------------
@@ -92,8 +89,12 @@ str(house_pwr9v)
 # Create tidy tibble
 house_pwr_tidy <- house_pwr9v %>%
   gather(Meter, Watt_hr, Sub_metering_1, Sub_metering_2, Sub_metering_3)
+
 house_pwr_tidy %>% as_tibble(house_pwr_tidy)
 is_tibble(house_pwr_tidy)
+
+house_pwr_tidy$Meter <- factor(house_pwr_tidy$Meter)
+glimpse(house_pwr_tidy)
 
 
 # Exploratory Data Analysis -----------------------------------------------
@@ -170,6 +171,19 @@ house_pwr_tidy %>%
   labs(x='Day of the Week', y='Proportion of Energy Useage') +
   ggtitle('Avg Daily Sub-Metered  Energy Useage (2007-2009)') +
   geom_bar(stat='identity', position='fill', color='black')
+
+##-DayII
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(wday(DateTime), Meter) %>%
+  summarise(avg=mean(Watt_hr)) %>%
+  ggplot(aes(x=factor(Meter), avg, fill= factor(`wday(DateTime)`,
+  labels = c('Sun', 'Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat')))) +
+  labs(x='Sub-Meter', y='Proportion of Energy Useage') +
+  ggtitle('Proportion of Energy Consumption by Sub-Meter and Day of the Week') +
+  scale_fill_brewer(palette='Set3') +
+  labs(fill='Day of the Week') +
+  geom_col(position='fill', color='black')
 
 ##-Month
 house_pwr_tidy %>%
@@ -322,6 +336,16 @@ housePWR_hofDay <- house_pwr %>%
             Sub_Meter_3=round(sum(Sub_metering_3/1000),3),
             first_DateTime = first(DateTime))
 
+# Subset by Weekends
+housePWR_wknd <- house_pwr %>%
+  filter(year(DateTime)>2006) %>%
+  filter(day(DateTime)==1 | day(DateTime)==7) %>%
+  group_by(year(DateTime), day(DateTime), hour(DateTime)) %>%
+  summarise(Sub_Meter_1=round(sum(Sub_metering_1/1000),3),
+            Sub_Meter_2=round(sum(Sub_metering_2/1000),3),
+            Sub_Meter_3=round(sum(Sub_metering_3/1000),3),
+            first_DateTime = first(DateTime))
+
 
 # Convert to Time Series --------------------------------------------------
 
@@ -370,7 +394,15 @@ plot(housePWR_hofDayTS, plot.type='s',
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
-
+# Weekend hourly use
+housePWR_wkndTS <- ts(housePWR_wknd, frequency = 23, start=0, end=7)
+plot(housePWR_wkndTS, plot.type='s',
+     #xaxp = c(0, 23, 23),
+     col=c('red', 'green', 'blue'),
+     xlab='Hour of the Day', ylab = 'Total kWh',
+     main='Total kWh Consumption by Hour of the Day (2007-2010)')
+b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
+legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 # Forecasting Trend-------------------------------------------------------------
 
@@ -656,7 +688,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 hofDay_smooth1 <- HoltWinters(hofDay_seasonAdj[,1], beta=FALSE, gamma=FALSE)
 plot(hofDay_smooth1)
 
-hofDay_smoothFcast1 <- forecast(hofDay_smooth1)
+hofDay_smoothFcast1 <- forecast(hofDay_smooth1, h=24)
 autoplot(hofDay_smoothFcast1)
 
 #sub-meter-2
