@@ -24,8 +24,10 @@ install.packages('timeSeries')
 install.packages('Hmisc')
 install.packages('stargazer')
 install.packages('grid')
+install.packages("viridis")
 
 
+library(viridis)
 library(caret)
 library(tidyverse)
 library(magrittr)
@@ -146,13 +148,13 @@ house_pwr_tidy %>%
 # plot of proportional use across zones
 ##-HOUR
 house_pwr_tidy %>%
-  filter(year(DateTime)==2007 | year(DateTime)==2008 | year(DateTime)==2009) %>%
+  filter(year(DateTime)>2006) %>%
   group_by(hour(DateTime), Meter) %>%
   summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`hour(DateTime)`), avg, group=Meter,fill=Meter)) +
+  ggplot(aes(x=factor(Meter), avg, fill = factor(`hour(DateTime)`))) +
   labs(x='Hour of the Day', y='Proportion of Energy Useage') +
   ggtitle('Avg. Hourly Sub-Metered Energy Useage (2007-2009)') +
-  geom_bar(stat='identity', position='fill', color='black')
+  geom_col(position='fill', color='black')
 
 ##-Day
 house_pwr_tidy %>%
@@ -169,7 +171,7 @@ house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   group_by(wday(DateTime), Meter) %>%
   summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(Meter), avg, fill= factor(`wday(DateTime)`,
+  ggplot(aes(x=factor(Meter), avg, fill = factor(`wday(DateTime)`,
   labels = c('Sun', 'Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat')))) +
   labs(x='Sub-Meter', y='Proportion of Energy Useage') +
   ggtitle('Proportion of Energy Consumption by Sub-Meter and Day of the Week') +
@@ -186,6 +188,20 @@ house_pwr_tidy %>%
   labs(x='Month of the Year', y='Proportion of Energy Useage') +
   ggtitle('Metered Monthly Energy Useage') +
   geom_bar(stat='identity', position='fill', color='black')
+
+## MonthII
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(month(DateTime), Meter) %>%
+  summarise(avg=mean(Watt_hr)) %>%
+  ggplot(aes(x=factor(Meter), avg, fill= factor(`month(DateTime)`,
+  labels = c('Jan', 'Feb', 'Mar', 'April', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+             'Oct', 'Nov', 'Dec')))) +
+  labs(x='Sub-Meter', y='Proportion of Energy Useage') +
+  ggtitle('Proportion of Energy Consumption by Sub-Meter and Day of the Week') +
+  scale_fill_brewer(palette='Set3') +
+  labs(fill='Months of the Year') +
+  geom_col(position='fill', color='black')
 
 ##-Year
 house_pwr_tidy %>%
