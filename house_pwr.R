@@ -98,42 +98,11 @@ glimpse(house_pwr_tidy)
 #  group_by(year(DateTime), day(DateTime), month(DateTime), hour(DateTime), minute(DateTime))
 
 
-
-# plot of average HOUR_OF_DAY useage
-house_pwr_tidy %>%
-  group_by(Meter, hour(DateTime)) %>%
-  summarise(avg=mean(Watt_hr), DateTime=first(DateTime)) %>%
-  ggplot(aes(x=factor(`hour(DateTime)`), group=Meter ,avg, colour=Meter)) +
-  labs(x='Hour of the Day', y='Avg Watt Hour Useage') +
-  ggtitle('Average Hourly Watt Hour Useage') +
-  geom_line(size=1) +
-  geom_line() +
-
-
-# plot of average DAY_OF_MONTH useage
-#Not informative
-house_pwr_tidy %>%
-  group_by(day(DateTime), Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`day(DateTime)`), avg, group=Meter,colour=Meter)) +
-  labs(x='Day of the Month', y='Avg Watt Hour Useage') +
-  ggtitle('Average Daily Watt Hour Useage') +
-  geom_line(size=1) +
-  geom_line()
-
-
-# plot of average DAY_OF_WEEK useage
-house_pwr_tidy %>%
-  #mutate(wday=wday(DateTime, label=TRUE)) %>%
-  group_by(wday(DateTime), Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`wday(DateTime)`), avg, group=Meter,color=Meter)) +
-  labs(x='Day of the Week', y='Avg Watt Hour Useage') +
-  ggtitle('Average Daily Watt Hour Useage') +
-  geom_line(size=1) +
-  geom_line()
-
 # Proportional and Line Plots across sub-metered zones-------------------------
+
+###- Year-Proportional Plot of total energy across sub-metered zones
+
+
 
 ##-Year_Proportional Plot
 house_pwr_tidy %>%
@@ -178,6 +147,17 @@ house_pwr_tidy %>%
   geom_line(size=1) +
   geom_line()
 
+### Day of the Month- Line Plot
+#Not informative
+house_pwr_tidy %>%
+  group_by(day(DateTime), Meter) %>%
+  summarise(avg=mean(Watt_hr)) %>%
+  ggplot(aes(x=factor(`day(DateTime)`), avg, group=Meter,colour=Meter)) +
+  labs(x='Day of the Month', y='Avg Watt Hour Useage') +
+  ggtitle('Average Daily Watt Hour Useage') +
+  geom_line(size=1) +
+  geom_line()
+
 
 ###-Day of Week- Porportional Plot
 house_pwr_tidy %>%
@@ -202,69 +182,26 @@ house_pwr_tidy %>%
   geom_line(size=1) +
   geom_line()
 
-
-
-# plot of MAX_HOUR_OF_DAY useage
-house_pwr_tidy %>%
-  group_by(hour(DateTime), Meter) %>%
-  summarise(max=max(Watt_hr)) %>%
-  ggplot(aes(x=factor(`hour(DateTime)`), max, group=Meter,colour=Meter)) +
-  geom_line()
-
-# plot of MAX_MONTH_OF_YEAR useage
-house_pwr_tidy %>%
-  group_by(month(DateTime), Meter) %>%
-  summarise(max=max(Watt_hr)) %>%
-  ggplot(aes(x=factor(`month(DateTime)`), max, group=Meter,colour=Meter)) +
-  geom_line()
-
-# plot AVG_HOUR_OF_DAY across YEARS- facet
+###-Hour of the Day- Proportional Plot
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
-  #filter(month(DateTime)==7) %>%
-  group_by(year(DateTime), hour(DateTime), Meter) %>%
+  group_by(hour(DateTime), Meter) %>%
+  summarise(avg=mean(Watt_hr)) %>%
+  ggplot(aes(x=factor(`hour(DateTime)`), avg, group=Meter,fill=Meter)) +
+  labs(x='Hour of the Day', y='Proportion of Energy Useage') +
+  ggtitle('Proportion of Average Energy Consumption by Hour of the Day') +
+  geom_bar(stat='identity', position='fill', color='black')
+
+###-Hour of the Day-Line Plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(hour(DateTime), Meter) %>%
   summarise(avg=mean(Watt_hr)) %>%
   ggplot(aes(x=factor(`hour(DateTime)`), avg, group=Meter,colour=Meter)) +
-  geom_line() +
-  labs(x='Hour of the Day', y='Avg Watt Hour Useage') +
-  ggtitle('Average Hourly Watt Hour Useage for Years 2007-2010') +
-  geom_line(size=1)+
-  facet_grid(`year(DateTime)` ~.)
-
-
-
-# plot MAX Watt_hr useage across years- facet
-house_pwr_tidy %>%
-  filter(year(DateTime)>2006) %>%
-  group_by(year(DateTime), hour(DateTime), Meter) %>%
-  summarise(max=max(Watt_hr)) %>%
-  ggplot(aes(x=factor(`hour(DateTime)`), max, group=Meter,colour=Meter)) +
-  labs(x='Hour of the Day', y='Max Watt Hour Useage') +
-  ggtitle('Max Hourly Watt Hour Useage for Years 2007-2010') +
+  labs(x='Hour of the Day', y='Watt-hour') +
+  ggtitle('Proportion of Average Energy Consumption by Hour of the Day') +
   geom_line(size=1) +
-  facet_grid(`year(DateTime)` ~.)
-
-
-
-
-# Energy consumpton total_ breakdown over years -for days of month
-#HISTOGRAM
-#no obvious trends observed
-house_pwr_tidy %>%
-  filter(year(DateTime)>2006) %>%
-  group_by(year(DateTime), month(DateTime),day(DateTime), hour(DateTime), minute(DateTime),Meter) %>%
-  summarise(avg=mean(Watt_hr)/1000) %>%
-  ggplot(aes(x=`year(DateTime)`, avg, fill=Meter)) +
-  geom_histogram(stat='identity') +
-  labs(title='Monitored Energy Consumption as Part of Total',
-       x='Year',
-       y='Avg kWh Consumption') +
-  theme(axis.text.x= element_text(face='bold', size=14)) +
-  theme(axis.text.y= element_text(face='bold', size=14)) +
-    theme(title = element_text(size = 18),
-        axis.title = element_text(size = 14),
-        axis.text = element_text(size = 20))
-
+  geom_line()
 
 
 
