@@ -156,14 +156,15 @@ house_pwr_tidy %>%
   ggtitle('Avg. Hourly Sub-Metered Energy Useage (2007-2009)') +
   geom_col(position='fill', color='black')
 
-##-Day
+####-Day
 house_pwr_tidy %>%
-  group_by(wday(DateTime), Meter) %>%
-  filter(year(DateTime)==2007 | year(DateTime)==2008 | year(DateTime)==2009) %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Day, Meter) %>%
   summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`wday(DateTime)`), avg, group=Meter,fill=Meter)) +
+  ggplot(aes(x=factor(Day), avg, group=Meter,fill=Meter)) +
   labs(x='Day of the Week', y='Proportion of Energy Useage') +
-  ggtitle('Avg Daily Sub-Metered  Energy Useage (2007-2009)') +
+  ggtitle('Proportion of Average Energy Consumption by Day of the Week') +
   geom_bar(stat='identity', position='fill', color='black')
 
 ##-DayII
@@ -179,14 +180,15 @@ house_pwr_tidy %>%
   labs(fill='Day of the Week') +
   geom_col(position='fill', color='black')
 
-##-Month
+###-Month
 house_pwr_tidy %>%
-  filter(year(DateTime)==2007 | year(DateTime)==2008 | year(DateTime)==2009) %>%
-  group_by(month(DateTime), Meter) %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Month, Meter) %>%
   summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`month(DateTime)`), avg, group=Meter,fill=Meter)) +
+  ggplot(aes(x=factor(Month), avg, group=Meter,fill=Meter)) +
   labs(x='Month of the Year', y='Proportion of Energy Useage') +
-  ggtitle('Metered Monthly Energy Useage') +
+  ggtitle('Sub-Metered Average Monthly Energy Useage') +
   geom_bar(stat='identity', position='fill', color='black')
 
 ## MonthII
@@ -205,12 +207,12 @@ house_pwr_tidy %>%
 
 ##-Year
 house_pwr_tidy %>%
-  filter(year(DateTime)==2007 | year(DateTime)==2008 | year(DateTime)==2009) %>%
+  filter(year(DateTime)>2006) %>%
   group_by(year(DateTime), Meter) %>%
   summarise(avg=mean(Watt_hr)) %>%
   ggplot(aes(x=factor(`year(DateTime)`), avg, group=Meter,fill=Meter)) +
   labs(x='Year', y='Proportion of Energy Useage') +
-  ggtitle('Avg. Yearly Sub-Metered Energy Useage (2007-2009)') +
+  ggtitle('Proportion of Average Yearly Sub-Metered Energy Consumption') +
   geom_bar(stat='identity', position='fill', color='black')
 
 
