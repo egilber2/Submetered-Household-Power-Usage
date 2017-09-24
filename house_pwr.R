@@ -93,10 +93,6 @@ glimpse(house_pwr_tidy)
 
 # Exploratory Data Analysis -----------------------------------------------
 
-str(house_pwr_tidy)
-
-summary(house_pwr_tidy)
-
 
 #house_pwrMtrs <- select(house_pwr9v, DateTime, Sub_metering_1, Sub_metering_2, Sub_metering_3, Engy_remain) %>%
 #  group_by(year(DateTime), day(DateTime), month(DateTime), hour(DateTime), minute(DateTime))
@@ -112,15 +108,7 @@ house_pwr_tidy %>%
   ggtitle('Average Hourly Watt Hour Useage') +
   geom_line(size=1) +
   geom_line() +
-  geom_point()
 
-#house_pwr_tidy %>%
-  group_by(hour(DateTime), Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`hour(DateTime)`), y=avg, colour=Meter)) +
-  labs(x='Hour of the Day', y='Avg Watt Hour Useage') +
-  ggtitle('Average Hourly Watt Hour Useage') +
-  geom_point()
 
 # plot of average DAY_OF_MONTH useage
 #Not informative
@@ -145,42 +133,29 @@ house_pwr_tidy %>%
   geom_line(size=1) +
   geom_line()
 
-# plot of proportional use across zones
-##-HOUR
-house_pwr_tidy %>%
-  filter(year(DateTime)>2006) %>%
-  group_by(hour(DateTime), Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(Meter), avg, fill = factor(`hour(DateTime)`))) +
-  labs(x='Hour of the Day', y='Proportion of Energy Useage') +
-  ggtitle('Avg. Hourly Sub-Metered Energy Useage (2007-2009)') +
-  geom_col(position='fill', color='black')
+# Proportional and Line Plots across sub-metered zones-------------------------
 
-####-Day
+##-Year_Proportional Plot
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
-  mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
-  group_by(Day, Meter) %>%
+  group_by(year(DateTime), Meter) %>%
   summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(Day), avg, group=Meter,fill=Meter)) +
-  labs(x='Day of the Week', y='Proportion of Energy Useage') +
-  ggtitle('Proportion of Average Energy Consumption by Day of the Week') +
+  ggplot(aes(x=factor(`year(DateTime)`), avg, group=Meter,fill=Meter)) +
+  labs(x='Year', y='Proportion of Energy Useage') +
+  ggtitle('Proportion of Average Yearly Sub-Metered Energy Consumption') +
   geom_bar(stat='identity', position='fill', color='black')
 
-##-DayII
+##-Year_Line Plot
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
-  group_by(wday(DateTime), Meter) %>%
+  group_by(year(DateTime), Meter) %>%
   summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(Meter), avg, fill = factor(`wday(DateTime)`,
-  labels = c('Sun', 'Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat')))) +
-  labs(x='Sub-Meter', y='Proportion of Energy Useage') +
-  ggtitle('Proportion of Energy Consumption by Sub-Meter and Day of the Week') +
-  scale_fill_brewer(palette='Set3') +
-  labs(fill='Day of the Week') +
-  geom_col(position='fill', color='black')
+  ggplot(aes(x=factor(`year(DateTime)`), avg, group=Meter, colour=Meter)) +
+  labs(x='Year', y='Watt-hours') +
+  ggtitle('Average Yearly Sub-Metered Energy Consumption (Watt-hours)') +
+  geom_line()
 
-###-Month
+###-Month- Proportional Plot
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
@@ -191,40 +166,43 @@ house_pwr_tidy %>%
   ggtitle('Sub-Metered Average Monthly Energy Useage') +
   geom_bar(stat='identity', position='fill', color='black')
 
-## MonthII
+###-Month- Line Plot
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
-  group_by(month(DateTime), Meter) %>%
+  mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Month, Meter) %>%
   summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(Meter), avg, fill= factor(`month(DateTime)`,
-  labels = c('Jan', 'Feb', 'Mar', 'April', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-             'Oct', 'Nov', 'Dec')))) +
-  labs(x='Sub-Meter', y='Proportion of Energy Useage') +
-  ggtitle('Proportion of Energy Consumption by Sub-Meter and Day of the Week') +
-  scale_fill_brewer(palette='Set3') +
-  labs(fill='Months of the Year') +
-  geom_col(position='fill', color='black')
-
-##-Year
-house_pwr_tidy %>%
-  filter(year(DateTime)>2006) %>%
-  group_by(year(DateTime), Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`year(DateTime)`), avg, group=Meter,fill=Meter)) +
-  labs(x='Year', y='Proportion of Energy Useage') +
-  ggtitle('Proportion of Average Yearly Sub-Metered Energy Consumption') +
-  geom_bar(stat='identity', position='fill', color='black')
-
-
-# plot of average MONTHLY
-house_pwr_tidy %>%
-  group_by(month(DateTime), Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`month(DateTime)`), avg, group=Meter,colour=Meter)) +
-  labs(x='Month', y='Avg Watt Hour Useage') +
+  ggplot(aes(x=factor(Month), avg, group=Meter, colour=Meter)) +
+  labs(x='Month of the Year', y='Watt hour') +
   ggtitle('Average Monthly Watt Hour Useage') +
   geom_line(size=1) +
   geom_line()
+
+
+###-Day of Week- Porportional Plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Day, Meter) %>%
+  summarise(avg=mean(Watt_hr)) %>%
+  ggplot(aes(x=factor(Day), avg, group=Meter,fill=Meter)) +
+  labs(x='Day of the Week', y='Proportion of Energy Useage') +
+  ggtitle('Proportion of Average Energy Consumption by Day of the Week') +
+  geom_bar(stat='identity', position='fill', color='black')
+
+###-Day of Week- Line Plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Day, Meter) %>%
+  summarise(avg=mean(Watt_hr)) %>%
+  ggplot(aes(x=factor(Day), avg, group=Meter, colour=Meter)) +
+  labs(x='Day of the Week', y='Proportion of Energy Useage') +
+  ggtitle('Proportion of Average Energy Consumption by Day of the Week') +
+  geom_line(size=1) +
+  geom_line()
+
+
 
 # plot of MAX_HOUR_OF_DAY useage
 house_pwr_tidy %>%
@@ -288,12 +266,7 @@ house_pwr_tidy %>%
         axis.text = element_text(size = 20))
 
 
-# yearly kwatt useage
-house_pwr_tidy %>%
-  group_by(year(DateTime), Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`year(DateTime)`), avg, group=Meter, colour=Meter)) +
-  geom_line()
+
 
 # Correlation plot
 ggcorr(house_pwr) +
