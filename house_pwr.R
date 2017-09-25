@@ -24,10 +24,8 @@ install.packages('timeSeries')
 install.packages('Hmisc')
 install.packages('stargazer')
 install.packages('grid')
-install.packages("viridis")
 
 
-library(viridis)
 library(caret)
 library(tidyverse)
 library(magrittr)
@@ -181,6 +179,20 @@ house_pwr_tidy %>%
   ggtitle('Proportion of Average Energy Consumption by Day of the Week') +
   geom_line(size=1) +
   geom_line()
+
+###- Weekend- Proportion Plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(weekend=lubridate::wday(DateTime, label=TRUE, abbr=FALSE)) %>%
+  group_by(weekend, Meter) %>%
+  filter(weekend==c('Saturday','Sunday')) %>%
+  summarise(avg=mean(Watt_hr)) %>%
+  ggplot(aes(x=factor(weekend), avg, group=Meter,fill=Meter)) +
+  labs(x='Weekend Day', y='Proportion of Energy Useage') +
+  ggtitle('Proportion of Average Energy Consumption by Weekend Day') +
+  geom_bar(stat='identity', position='fill', color='black')
+
+
 
 ###-Hour of the Day- Proportional Plot
 house_pwr_tidy %>%
