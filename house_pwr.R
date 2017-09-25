@@ -226,6 +226,14 @@ ggpairs(house_pwr,
         lower = list(continuous = "smooth"))
 
 # Subset ------------------------------------------------------------------
+#Subset by Year
+housePWR_yr <- house_pwr %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(year(DateTime)) %>%
+  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
+            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
+            first_DateTime = first(DateTime))
 
 # Subset by Year and Month
 housePWR_yr <- house_pwr %>%
@@ -294,9 +302,9 @@ housePWR_wknd <- house_pwr %>%
 # Convert to Time Series --------------------------------------------------
 
 # Year/month
-housePWR_yrTS <- ts(housePWR_yr[,3:5], frequency = 12, start = c(2007,1), end=c(2010,11))
+housePWR_yrTS <- ts(housePWR_yr[,3:5], frequency = 12, start=c(2007,1), end = c(2010,11))
 plot(housePWR_yrTS, plot.type='s',
-     #xaxp = c(2007, 2010, 3),
+     xaxp = c(2007, 2011, 4),
      col=c('red', 'green', 'blue'),
      main='Total Yearly Kwh Consumption (2007-2010)',
      xlab='Year', ylab = 'Total kWh')
@@ -306,9 +314,9 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 # Month/Day of Week
-housePWR_mnthTS <- ts(housePWR_mnth[,3:5], frequency = 7, start= 1, end=12)
+housePWR_mnthTS <- ts(housePWR_mnth[,3:5], frequency = 12, start= c(1,1), end=c(12,7))
 plot(housePWR_mnthTS, plot.type='s',
-        xaxp = c(1, 12, 11),
+        #xaxp = c(1, 12, 11),
         col=c('red', 'green', 'blue'),
         xlab='Month', ylab = 'Total kWh',
         main='Total Monthly kWh Consumption (2007-2010)')
@@ -319,7 +327,7 @@ legend('top', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 # Day of Week / Hour
 housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency=23, start = c(1,0), end=c(7,23))
 plot(housePWR_dofWkTS, plot.type='s',
-     xaxp = c(1, 7, 6),
+     #xaxp = c(1, 7, 6),
      col=c('red', 'green', 'blue'),
      xlab='Day of Week', ylab = 'Total kWh',
      main='Total kWh Consumption by Day of the Week (2007-2010)')
@@ -353,7 +361,7 @@ legend('topleft', b, col='red', lwd=2, bty='n')
 
 # Year/month
 fit1 <- tslm(housePWR_yrTS ~ trend)
-x <- forecast(fit1, h=6, level = c(80, 95))
+x <- forecast(fit1, h=4, level = c(85, 95))
 autoplot(x, PI=TRUE, colour = TRUE) +
   xlab('Year') +
   ylab('Total kWh') +
