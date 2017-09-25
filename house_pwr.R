@@ -369,7 +369,7 @@ legend('topleft', b, col='red', lwd=2, bty='n')
 # Year/month
 fit1 <- tslm(housePWR_yrTS ~ trend)
 x <- forecast(fit1, h=4, level = c(85, 95))
-autoplot(x,PI=TRUE, colour=TRUE) +
+autoplot(x, PI=TRUE, colour=TRUE) +
   xlab('Year') +
   ylab('Total kWh')
 
