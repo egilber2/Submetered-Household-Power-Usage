@@ -412,6 +412,8 @@ y
 #level =	Confidence level for prediction intervals.
 
 
+
+
 # Day of Week / Hour
 fit3 <- tslm(housePWR_dofWkTS ~ trend)
 z <- forecast(fit3, h=12, level=c(85,95))
@@ -441,68 +443,124 @@ autoplot(zz, PI=TRUE, colour=TRUE) +
   ggtitle('Forecast Energy Consumption')
 summary(w)
 
+##-Weekdays
+fit6 <- tslm(housePWR_wkdayTS ~ trend)
+xx <- forecast(fit6, h=10)
+autoplot(xx, PI=TRUE, colour=TRUE) +
+  xlab('Weekday') +
+  ylab('Total kWh') +
+  ggtitle('Forecast Energy Consumption')
+summary(xx)
+
 # Decompose Time Series' -------------------------------------------------------------
 
 ##############
 # Year/Month #
 ##############
 
-yr_decomp <- decompose(housePWR_yrTS)
-plot(yr_decomp)
-summary(yr_decomp)
-yr_decomp
+yr_decomp1 <- decompose(housePWR_yrTS[,1])
+autoplot(yr_decomp1, labels=NULL, range.bars = TRUE) +
+  xlab('Year') +
+  ylab('kWh') +
+  ggtitle('Decomposed Yearly Time Series- Sub-Meter-1')
 
-autoplot(yr_decomp$seasonal) +
+yr_decomp2 <- decompose(housePWR_yrTS[,2])
+autoplot(yr_decomp2, labels=NULL, range.bars = TRUE) +
+  xlab('Year') +
+  ylab('kWh') +
+  ggtitle('Decomposed Yearly Time Series- Sub-Meter-2')
+
+yr_decomp3 <- decompose(housePWR_yrTS[,3])
+autoplot(yr_decomp3, labels=NULL, range.bars = TRUE) +
+  xlab('Year') +
+  ylab('kWh') +
+  ggtitle('Decomposed Yearly Time Series- Sub-Meter-3')
+yr_decomp3
+
+#summary(yr_decomp)
+#yr_decomp
+
+#autoplot(yr_decomp$seasonal) +
   xlab('Year') +
   ylab('kWh') +
   ggtitle('Seasonal Component Yearly Time Series')
-summary(yr_decomp$seasonal)
+#summary(yr_decomp$seasonal)
 
-plot(yr_decomp$trend, xlab='Year', ylab='kWh',
-     main='Trend Component for Yearly Time Series')
-summary(yr_decomp$trend)
+#plot(yr_decomp$trend, xlab='Year', ylab='kWh',
+     #main='Trend Component for Yearly Time Series')
+#summary(yr_decomp$trend)
 
-plot(yr_decomp$random, xlab='Year',
-     main='Random Component of Yearly Time Series')
-summary(yr_decomp$random)
-
-summary(yr_decomp)
-yr_decomp
+#plot(yr_decomp$random, xlab='Year',
+    # main='Random Component of Yearly Time Series')
+#summary(yr_decomp$random)
 
 #######################
 # Month / Day of Week #
 #######################
 
-mnth_decomp <- decompose(housePWR_mnthTS)
-plot(mnth_decomp)
+mnth_decomp1 <- decompose(housePWR_mnthTS[,1])
+autoplot(mnth_decomp1, labels=NULL, range.bars = TRUE) +
+  xlab('Month') +
+  ylab('kWh') +
+  ggtitle('Decomposed Monthly Time Series- Sub-Meter-1')
 
-plot(mnth_decomp$seasonal, xlab='Month', ylab='kWh',
-     main='Seasonal Component for Monthly Time Series')
+mnth_decomp2 <- decompose(housePWR_mnthTS[,2])
+autoplot(mnth_decomp2, labels=NULL, range.bars = TRUE) +
+  xlab('Month') +
+  ylab('kWh') +
+  ggtitle('Decomposed Monthly Time Series- Sub-Meter-2')
 
-plot(mnth_decomp$trend, xlab='Month', ylab='kWh',
-     main='Trend Component for Monthly Time Series')
+mnth_decomp3 <- decompose(housePWR_mnthTS[,3])
+autoplot(mnth_decomp3, labels=NULL, range.bars = TRUE) +
+  xlab('Month') +
+  ylab('kWh') +
+  ggtitle('Decomposed Monthly Time Series- Sub-Meter-3')
 
-plot(mnth_decomp$random, xlab='Month',
-     main='Random Component of Monthlhy Time Series')
 
-summary(mnth_decomp)
-mnth_decomp
+
+#plot(mnth_decomp$seasonal, xlab='Month', ylab='kWh',
+    # main='Seasonal Component for Monthly Time Series')
+
+#plot(mnth_decomp$trend, xlab='Month', ylab='kWh',
+   #  main='Trend Component for Monthly Time Series')
+
+#plot(mnth_decomp$random, xlab='Month',
+     #main='Random Component of Monthlhy Time Series')
+
+summary(mnth_decomp1)
+mnth_decomp1
 
 #####################
 # Day of Week / Hour#
 #####################
 
-dofW_decomp <- decompose(housePWR_dofWkTS)
-plot(dofW_decomp)
+dofW_decomp1 <- decompose(housePWR_dofWkTS[,1])
+autoplot(dofW_decomp1, labels=NULL, range.bars = TRUE) +
+  xlab('Dau of Week') +
+  ylab('kWh') +
+  ggtitle('Decomposed Daily Time Series- Sub-Meter-1')
 
-plot(dofW_decomp$seasonal, xlab='Day of Week', ylab='kWh',
-     main='Seasonal Component of Daily Time Series')
+dofW_decomp2 <- decompose(housePWR_dofWkTS[,2])
+autoplot(dofW_decomp2, labels=NULL, range.bars = TRUE) +
+  xlab('Dau of Week') +
+  ylab('kWh') +
+  ggtitle('Decomposed Daily Time Series- Sub-Meter-2')
 
-plot(dofW_decomp$trend, xlab='Day of Week', ylab='kWh',
-     main='Trend Component of Daily Time Series')
+dofW_decomp3 <- decompose(housePWR_dofWkTS[,3])
+autoplot(dofW_decomp3, labels=NULL, range.bars = TRUE, colour=TRUE) +
+  xlab('Dau of Week') +
+  ylab('kWh') +
+  ggtitle('Decomposed Daily Time Series- Sub-Meter-3')
 
-plot(dofW_decomp$random, xlab='Day of Week',
-     main='Random Component of Daily Time Series')
+
+#plot(dofW_decomp$seasonal, xlab='Day of Week', ylab='kWh',
+    # main='Seasonal Component of Daily Time Series')
+
+#plot(dofW_decomp$trend, xlab='Day of Week', ylab='kWh',
+  #   main='Trend Component of Daily Time Series')
+
+#plot(dofW_decomp$random, xlab='Day of Week',
+    # main='Random Component of Daily Time Series')
 
 summary(dofW_decomp)
 
@@ -511,7 +569,7 @@ summary(dofW_decomp)
 ##########################
 
 hofDay_decomp <- decompose(housePWR_hofDayTS)
-plot(hofDay_decomp)
+autoplot(hofDay_decomp, xlim=c(0,24))
 
 plot(hofDay_decomp$seasonal,xlab='Hour of Day', ylab='kWh',
      main='Seasonal Component of Hourly Time Series')
@@ -543,7 +601,7 @@ plot(Wknd_decomp)
 # Remove seasonal component
 yr_seasonAdj <- housePWR_yrTS - yr_decomp$seasonal
 plot(yr_seasonAdj, plot.type='s',
-     xaxp = c(2007, 2011, 4),
+     #xaxp = c(2007, 2011, 4),
      col=c('red', 'green', 'blue'),
      xlab='Year', ylab='kWh',
      main='Seasonally-Adjusted Yearly Energy Consumption')
