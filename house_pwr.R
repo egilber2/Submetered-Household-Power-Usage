@@ -67,6 +67,10 @@ colnames(house_pwr)[8] <- 'Sub-Meter-3'
 MonthLst <- c('Jan', 'Feb', 'Mar','Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
               'Oct', 'Nov','Dec')
 
+WkdayLst <- c('Mon', 'Tues', 'Wed', 'Thurs', 'Fri')
+
+WkLst <- c('Sun','Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat' )
+
 # Assess missing values
 aggr_plot <- aggr(house_pwr, col=c('navyblue','red'), numbers=TRUE, sortVars=TRUE, labels=names(house_pwr),cex.axis=.7,
   gap=3, ylab=c("Histogram of missing data","Pattern"), digits=2)
@@ -269,6 +273,17 @@ housePWR_dofWk <- house_pwr %>%
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
             first_DateTime = first(DateTime))
 
+##-Subset by Weekday
+housePWR_wkday <- house_pwr %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(Wkday=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  filter(Wkday == c('Mon', 'Tues', 'Wed', 'Thurs', 'Fri')) %>%
+  group_by(Wkday, hour(DateTime)) %>%
+  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000),3),
+            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000),3),
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
+            first_DateTime = first(DateTime))
+
 
 # Subset hour of day
 housePWR_hofDay <- house_pwr %>%
@@ -327,21 +342,33 @@ plot(housePWR_mnthTS, plot.type='s', xaxt='n',
      ylim=c(0,275),
      main='Total Monthly kWh Consumption (2007-2010)')
 axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12), labels=MonthLst)
-#minor.tick(nx=7)
+minor.tick(nx=14)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 # Day of Week / Hour
-housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency=23, start = c(1,0), end=c(7,23))
-plot(housePWR_dofWkTS, plot.type='s',
+housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency=24, start = c(1,0), end=c(7,23))
+plot(housePWR_dofWkTS, plot.type='s', xaxt='n',
      xaxp = c(1, 7, 6),
      col=c('red', 'green', 'blue'),
      xlab='Day of Week', ylab = 'Total kWh',
      main='Total kWh Consumption by Day of the Week (2007-2010)')
+axis(side=1, at= c(1, 2,3,4,5,6,7), labels=WkLst)
 minor.tick(nx=24)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
+##-Weekday
+housePWR_wkdayTS <- ts(housePWR_wkday[,3:5], frequency=24, start=c(1,0), end=c(5,23))
+plot(housePWR_wkdayTS, plot.type='s', xaxt='n',
+     xaxp = c(1, 5, 4),
+     col=c('red', 'green', 'blue'),
+     xlab='Weekday', ylab = 'Total kWh',
+     main='Total kWh Consumption by Day of the Week (2007-2010)')
+minor.tick(nx=24)
+axis(side=1, at= c(1,2,3,4,5), labels=WkdayLst)
+b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
+legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 # Hour of Day / 15_Minute
 housePWR_hofDayTS <- ts(housePWR_hofDay[,3:5], frequency=4, start=0, end=23)
@@ -352,6 +379,9 @@ plot(housePWR_hofDayTS, plot.type='s',
      main='Total kWh Consumption by Hour of the Day (2007-2010)')
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
+
+##-Weekday Hourly Useage
+
 
 # Weekend hourly use
 housePWR_wkndTS <- ts(housePWR_wknd[,3], frequency=23, start=7)
@@ -387,6 +417,8 @@ autoplot(y, PI=TRUE, colour=TRUE) +
   ggtitle('Forecasted Monthly Trend of Energy Consumption')
 summary(fit2)
 y
+#level =	Confidence level for prediction intervals.
+
 
 # Day of Week / Hour
 fit3 <- tslm(housePWR_dofWkTS ~ trend)
@@ -395,7 +427,7 @@ autoplot(z, PI=TRUE, colour=TRUE) +
   xlab('Day of Week') +
   ylab('Total kWh') +
   ggtitle('Forecasted Daily Trend of Energy Consumption')
-summary.lm(fit3)
+summary(fit3)
 z
 
 # Hour of Day / Minute
