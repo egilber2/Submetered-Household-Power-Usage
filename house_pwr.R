@@ -371,10 +371,8 @@ fit1 <- tslm(housePWR_yrTS ~ trend)
 x <- forecast(fit1, h=4, level = c(85, 95))
 autoplot(x, PI=TRUE, colour=TRUE) +
   xlab('Year') +
-  ylab('Total kWh')
-
-
-ggtitle('Forecasted Yearly Trend for Energy Consumption')
+  ylab('Total kWh') +
+  ggtitle('Forecasted Yearly Trend for Energy Consumption')
 xlim=c(2010,2013)
 summary(fit1)
 fit1
