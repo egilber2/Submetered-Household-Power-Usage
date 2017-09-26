@@ -254,16 +254,7 @@ housePWR_mnth <- house_pwr %>%
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
             first_DateTime = first(DateTime))
 
-housePWR_mnth <- house_pwr %>%
-  filter(year(DateTime)>2006 | year(DateTime)<2011) %>%
-  mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
-  group_by(Month) %>%
-  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000),3),
-            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000),3),
-            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
-            first_DateTime = first(DateTime))
-
-# Subset by Day of Week and hour of day
+# Subset by Day of Week / hour of day
 housePWR_dofWk <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
   mutate(Month=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
@@ -288,12 +279,13 @@ housePWR_wkday <- house_pwr %>%
 # Subset hour of day
 housePWR_hofDay <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
-  filter(minute(DateTime)==00 | minute(DateTime)==15 | minute(DateTime)==30 | minute(DateTime)==45) %>%
+  filter((minute(DateTime) %% 5) == 0) %>%
   group_by(hour(DateTime), minute(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000),3),
             Sub_Meter_2=round(sum(`Sub-Meter-2`/1000),3),
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
             first_DateTime = first(DateTime))
+
 
 # Subset by Weekends
 housePWR_wknd <- house_pwr %>%
@@ -370,10 +362,10 @@ axis(side=1, at= c(1,2,3,4,5), labels=WkdayLst)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
-# Hour of Day / 15_Minute
-housePWR_hofDayTS <- ts(housePWR_hofDay[,3:5], frequency=4, start=0, end=23)
+# Hour of Day / 5_Minute
+housePWR_hofDayTS <- ts(housePWR_hofDay[,3:5], frequency=12)
 plot(housePWR_hofDayTS, plot.type='s',
-     xaxp = c(0, 23, 23),
+     #xaxp = c(0,48, 47),
      col=c('red', 'green', 'blue'),
      xlab='Hour of the Day', ylab = 'Total kWh',
      main='Total kWh Consumption by Hour of the Day (2007-2010)')
@@ -410,7 +402,7 @@ x
 
 # Month/Day of Week
 fit2 <- tslm(housePWR_mnthTS ~ trend)
-y <- forecast(fit2, h=10, level=c(85,95))
+y <- forecast(fit2,level=c(85,95))
 autoplot(y, PI=TRUE, colour=TRUE) +
   xlab('Month') +
   ylab('Total kWh') +
@@ -515,7 +507,7 @@ plot(dofW_decomp$random, xlab='Day of Week',
 summary(dofW_decomp)
 
 ##########################
-# Hour of Day / 15_minute#
+# Hour of Day / 5_minute#
 ##########################
 
 hofDay_decomp <- decompose(housePWR_hofDayTS)
@@ -606,13 +598,14 @@ plot(mnth_seasonAdj, plot.type='s',
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('top', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
+
 #sub-meter-1
 mnth_smooth1 <- HoltWinters(mnth_seasonAdj[,1], beta=FALSE, gamma=FALSE)
 plot(mnth_smooth1)
 
 mnth_smoothFcast1 <- forecast(mnth_smooth1)
-autoplot(mnth_smoothFcast,
-         xlim=c(10,13),
+autoplot(mnth_smoothFcast1,
+         #xlim=c(10,13),
          xlab='Month',
          ylab='kWh',
          main='30 Day Forecast of Sub-Meter-1')
@@ -623,7 +616,7 @@ plot(mnth_smooth2)
 
 mnth_smoothFcast2 <- forecast(mnth_smooth2)
 autoplot(mnth_smoothFcast2,
-         xlim=c(10,13),
+         xlim=c(10,15),
          xlab='Month',
          ylab='kWh',
          main='30 Day Forecast of Sub-Meter-2')
@@ -634,7 +627,7 @@ plot(mnth_smooth3)
 
 mnth_smoothFcast3 <- forecast(mnth_smooth3)
 autoplot(mnth_smoothFcast3,
-         xlim=c(10,13),
+         xlim=c(10,15),
          xlab='Month',
          ylab='kWh',
          main='30 Day Forecast of Sub-Meter-3')
@@ -679,7 +672,7 @@ dofW_smoothFcast3 <- forecast(dofW_smooth3)
 autoplot(dofW_smoothFcast3)
 
 ##########################
-# Hour of Day / 15_minute#
+# Hour of Day / 10_minute#
 ##########################
 
 
