@@ -69,7 +69,7 @@ MonthLst <- c('Jan', 'Feb', 'Mar','Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
 
 WkdayLst <- c('Mon', 'Tues', 'Wed', 'Thurs', 'Fri')
 
-WkLst <- c('Sun','Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat' )
+WkLst <- c('Sun','Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun' )
 
 # Assess missing values
 aggr_plot <- aggr(house_pwr, col=c('navyblue','red'), numbers=TRUE, sortVars=TRUE, labels=names(house_pwr),cex.axis=.7,
@@ -178,7 +178,7 @@ house_pwr_tidy %>%
   group_by(Day, Meter) %>%
   summarise(avg=mean(Watt_hr)) %>%
   ggplot(aes(x=factor(Day), avg, group=Meter, colour=Meter)) +
-  labs(x='Day of the Week', y='Proportion of Energy Useage') +
+  labs(x='Day of the Week', y='Wh') +
   ggtitle('Average Daily Energy Consumption') +
   geom_line(size=1) +
   geom_line()
@@ -318,7 +318,7 @@ housePWR_yrTS <- ts(housePWR_yr[,3:5], frequency = 12, start=c(2007,1), end = c(
 plot(housePWR_yrTS, plot.type='s',
      xaxp = c(2007, 2011, 4),
      col=c('red', 'green', 'blue'),
-     main='Total Yearly Kwh Consumption (2007-2010)',
+     main='Total Yearly Kwh Consumption',
      xlab='Year', ylab = 'Total kWh')
 minor.tick(nx=12)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
@@ -341,11 +341,11 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 # Day of Week / Hour
 housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency=24, start = c(1,0), end=c(7,23))
 plot(housePWR_dofWkTS, plot.type='s', xaxt='n',
-     xaxp = c(1, 7, 6),
+     xaxp = c(1, 8, 7),
      col=c('red', 'green', 'blue'),
      xlab='Day of Week', ylab = 'Total kWh',
      main='Total kWh Consumption by Day of the Week (2007-2010)')
-axis(side=1, at= c(1, 2,3,4,5,6,7), labels=WkLst)
+axis(side=1, at= c(1, 2,3,4,5,6,7, 8), labels=WkLst)
 minor.tick(nx=24)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
@@ -368,7 +368,7 @@ plot(housePWR_hofDayTS, plot.type='s',
      #xaxp = c(0,48, 47),
      col=c('red', 'green', 'blue'),
      xlab='Hour of the Day', ylab = 'Total kWh',
-     main='Total kWh Consumption by Hour of the Day (2007-2010)')
+     main='Total kWh Consumption by Hour of the Day')
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
@@ -390,7 +390,7 @@ legend('topleft', b, col='red', lwd=2, bty='n')
 
 # Year/month
 fit1 <- tslm(housePWR_yrTS ~ trend)
-x <- forecast(fit1, h=4, level = c(85, 95))
+x <- forecast(fit1, h=4, level = c(90, 95))
 autoplot(x, PI=TRUE, colour=TRUE) +
   xlab('Year') +
   ylab('Total kWh') +
@@ -415,7 +415,7 @@ y
 
 # Day of Week / Hour
 fit3 <- tslm(housePWR_dofWkTS ~ trend)
-z <- forecast(fit3, h=12, level=c(85,95))
+z <- forecast(fit3, h=12, level=c(90,95))
 autoplot(z, PI=TRUE, colour=TRUE) +
   xlab('Day of Week') +
   ylab('Total kWh') +
@@ -451,12 +451,13 @@ autoplot(xx, PI=TRUE, colour=TRUE) +
   ggtitle('Forecast Energy Consumption')
 summary(xx)
 
-# Decompose Time Series' -------------------------------------------------------------
+# Decompose Time Series / Remove Seasonality' -------------------------------------------------------------
 
 ##############
 # Year/Month #
 ##############
 
+##-Sub-Meter-1
 yr_decomp1 <- decompose(housePWR_yrTS[,1])
 autoplot(yr_decomp1, labels=NULL, range.bars = TRUE) +
   xlab('Year') +
@@ -464,7 +465,11 @@ autoplot(yr_decomp1, labels=NULL, range.bars = TRUE) +
   ggtitle('Decomposed Yearly Time Series- Sub-Meter-1')
 acf(housePWR_yrTS[,1], lag=20)
 
+#remove seasonality
+yr_seasonAdj1 <- seasadj(yr_decomp1)
+plot(yr_seasonAdj1)
 
+##-Sub-Meter-2
 yr_decomp2 <- decompose(housePWR_yrTS[,2])
 autoplot(yr_decomp2, labels=NULL, range.bars = TRUE) +
   xlab('Year') +
@@ -472,6 +477,12 @@ autoplot(yr_decomp2, labels=NULL, range.bars = TRUE) +
   ggtitle('Decomposed Yearly Time Series- Sub-Meter-2')
 acf(yr_decomp2)
 
+#remove seasonality
+yr_seasonAdj2 <- seasadj(yr_decomp2)
+plot(yr_seasonAdj2)
+
+
+##-Sub-Meter-3
 yr_decomp3 <- decompose(housePWR_yrTS[,3])
 autoplot(yr_decomp3, labels=NULL, range.bars = TRUE, PI=TRUE, colour=TRUE) +
   xlab('Year') +
@@ -480,6 +491,10 @@ autoplot(yr_decomp3, labels=NULL, range.bars = TRUE, PI=TRUE, colour=TRUE) +
 yr_decomp3
 acf(housePWR_yrTS[,3])
 
+#-remove seasonality
+yr_seasonAdj3 <- seasadj(yr_decomp3)
+plot(yr_seasonAdj3)
+acf(yr_seasonAdj3)
 
 
 #summary(yr_decomp)
@@ -503,11 +518,14 @@ acf(housePWR_yrTS[,3])
 # Month / Day of Week #
 #######################
 
+
 mnth_decomp1 <- decompose(housePWR_mnthTS[,1])
 autoplot(mnth_decomp1, labels=NULL, range.bars = TRUE) +
   xlab('Month') +
   ylab('kWh') +
   ggtitle('Decomposed Monthly Time Series- Sub-Meter-1')
+
+
 
 mnth_decomp2 <- decompose(housePWR_mnthTS[,2])
 autoplot(mnth_decomp2, labels=NULL, range.bars = TRUE) +
@@ -515,13 +533,17 @@ autoplot(mnth_decomp2, labels=NULL, range.bars = TRUE) +
   ylab('kWh') +
   ggtitle('Decomposed Monthly Time Series- Sub-Meter-2')
 
+##-Sub-Meter-3
 mnth_decomp3 <- decompose(housePWR_mnthTS[,3])
 autoplot(mnth_decomp3, labels=NULL, range.bars = TRUE) +
   xlab('Month') +
   ylab('kWh') +
   ggtitle('Decomposed Monthly Time Series- Sub-Meter-3')
 
-
+#-remove seasonality
+mnth_seasonAdj3 <- seasadj(mnth_decomp3)
+plot(mnth_seasonAdj3)
+acf(mnth_seasonAdj3, lag=48)
 
 #plot(mnth_decomp$seasonal, xlab='Month', ylab='kWh',
     # main='Seasonal Component for Monthly Time Series')
@@ -642,7 +664,10 @@ autoplot(Wknd_decomp3, labels=NULL, range.bars = TRUE) +
 #sub-meter-1
 #remove seasonality
 yr_seasonAdj1 <- housePWR_yrTS[,1]-yr_decomp1$seasonal
+plot(yr_seasonAdj1)
 acf(yr_seasonAdj1)
+
+yr_seasonAdj1 <- seasadj(yr_decomp1)
 
 yr_smooth1 <- HoltWinters(yr_seasonAdj1, beta=FALSE, gamma=FALSE)
 plot(yr_smooth1)
@@ -653,6 +678,7 @@ autoplot(yr_smoothFcast1)
 #sub-meter-2
 #remove seasonality
 yr_seasonAdj2 <- housePWR_yrTS[,2]-yr_decomp2$seasonal
+plot(yr_seasonAdj2)
 acf(yr_seasonAdj2)
 
 yr_smooth2 <- HoltWinters(yr_seasonAdj2, beta=FALSE, gamma=FALSE)
@@ -664,6 +690,7 @@ autoplot(yr_smoothFcast2)
 #sub-meter-3
 #remove seasonality
 yr_seasonAdj3 <- housePWR_yrTS[,3]-yr_decomp3$seasonal
+plot(yr_seasonAdj3)
 acf(yr_seasonAdj3)
 
 yr_smooth3 <- HoltWinters(yr_seasonAdj3, beta=FALSE, gamma=FALSE)
