@@ -725,6 +725,7 @@ autoplot(mnth_smoothFcast1)
 #Sub-Meter-2
 #Remove Seasonality
 mnth_seasonAdj2 <- housePWR_mnthTS[,2]-mnth_decomp2$seasonal
+acf(mnth_seasonAdj2)
 
 mnth_smooth2 <- HoltWinters(mnth_seasonAdj2, beta=FALSE, gamma=FALSE)
 plot(mnth_smooth2)
@@ -735,6 +736,9 @@ autoplot(mnth_smoothFcast2)
 #Sub-meter-3
 #Remove Seasonality
 mnth_seasonAdj3 <- housePWR_mnthTS[,3]-mnth_decomp3$seasonal
+acf(mnth_seasonAdj3)
+plot(mnth_seasonAdj3)
+
 
 mnth_smooth3 <- HoltWinters(mnth_seasonAdj3, beta=FALSE, gamma=FALSE)
 plot(mnth_smooth3)
