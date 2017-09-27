@@ -324,6 +324,8 @@ minor.tick(nx=12)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
+ggseasonplot(housePWR_yrTS[,3])
+
 
 # Month/Day of Week
 housePWR_mnthTS <- ts(housePWR_mnth[,3:5], frequency = 7, start=c(1,1), end=c(12,7))
@@ -338,6 +340,8 @@ minor.tick(nx=14)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
+ggseasonplot(housePWR_mnthTS[,1])
+
 # Day of Week / Hour
 housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency=24, start = c(1,0), end=c(7,23))
 plot(housePWR_dofWkTS, plot.type='s', xaxt='n',
@@ -349,6 +353,8 @@ axis(side=1, at= c(1, 2,3,4,5,6,7, 8), labels=WkLst)
 minor.tick(nx=24)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
+
+ggseasonplot(housePWR_dofWkTS[,3])
 
 ##-Weekday
 housePWR_wkdayTS <- ts(housePWR_wkday[,3:5], frequency=24, start=c(1,0), end=c(5,23))
@@ -390,14 +396,13 @@ legend('topleft', b, col='red', lwd=2, bty='n')
 
 # Year/month
 fit1 <- tslm(housePWR_yrTS ~ trend)
-x <- forecast(fit1, h=4, level = c(90, 95))
+x <- forecast(fit1, h=6, level = c(90, 95))
 autoplot(x, PI=TRUE, colour=TRUE) +
   xlab('Year') +
   ylab('Total kWh') +
-  ggtitle('Forecasted Yearly Trend for Energy Consumption')
-xlim=c(2010,2013)
+  ggtitle('Forecasted Trend of Yearly Energy Consumption')
 summary(fit1)
-fit1
+acf(fit1$residuals)
 x
 
 # Month/Day of Week
@@ -408,10 +413,9 @@ autoplot(y, PI=TRUE, colour=TRUE) +
   ylab('Total kWh') +
   ggtitle('Forecasted Monthly Trend of Energy Consumption')
 summary(fit2)
+acf(fit2$residuals)
 y
 #level =	Confidence level for prediction intervals.
-
-
 
 # Day of Week / Hour
 fit3 <- tslm(housePWR_dofWkTS ~ trend)
@@ -419,17 +423,17 @@ z <- forecast(fit3, h=12, level=c(90,95))
 autoplot(z, PI=TRUE, colour=TRUE) +
   xlab('Day of Week') +
   ylab('Total kWh') +
-  ggtitle('Forecasted Daily Trend of Energy Consumption')
+  ggtitle('Forecasted Trend of Daily Energy Consumption')
 summary(fit3)
 z
 
 # Hour of Day / Minute
 fit4 <- tslm(housePWR_hofDayTS ~ trend)
-w <- forecast(fit4, h=20)
+w <- forecast(fit4, h=24)
 autoplot(w, PI=TRUE, colour=TRUE) +
   xlab('Hour of Day') +
   ylab('Total kWh') +
-  ggtitle('Forecast Energy Consumption')
+  ggtitle('Forecasted Trend of Hourly Energy Consumption')
 summary(w)
 w
 
@@ -451,7 +455,9 @@ autoplot(xx, PI=TRUE, colour=TRUE) +
   ggtitle('Forecast Energy Consumption')
 summary(xx)
 
+
 # Decompose Time Series / Remove Seasonality' -------------------------------------------------------------
+
 
 ##############
 # Year/Month #
@@ -475,7 +481,6 @@ autoplot(yr_decomp2, labels=NULL, range.bars = TRUE) +
   xlab('Year') +
   ylab('kWh') +
   ggtitle('Decomposed Yearly Time Series- Sub-Meter-2')
-acf(yr_decomp2)
 
 #remove seasonality
 yr_seasonAdj2 <- seasadj(yr_decomp2)
@@ -484,7 +489,7 @@ plot(yr_seasonAdj2)
 
 ##-Sub-Meter-3
 yr_decomp3 <- decompose(housePWR_yrTS[,3])
-autoplot(yr_decomp3, labels=NULL, range.bars = TRUE, PI=TRUE, colour=TRUE) +
+autoplot(yr_decomp3,  range.bars = TRUE) +
   xlab('Year') +
   ylab('kWh') +
   ggtitle('Decomposed Yearly Time Series- Sub-Meter-3')
@@ -567,11 +572,18 @@ autoplot(dofW_decomp1, labels=NULL, range.bars = TRUE) +
   ylab('kWh') +
   ggtitle('Decomposed Daily Time Series- Sub-Meter-1')
 
+##-Sub-Meter-2
 dofW_decomp2 <- decompose(housePWR_dofWkTS[,2])
 autoplot(dofW_decomp2, labels=NULL, range.bars = TRUE) +
   xlab('Day of Week') +
   ylab('kWh') +
   ggtitle('Decomposed Daily Time Series- Sub-Meter-2')
+
+dofW_seasonAdj2 <- seasadj(dofW_decomp2)
+autoplot(dofW_seasonAdj2)
+acf(dofW_seasonAdj2)
+
+
 
 dofW_decomp3 <- decompose(housePWR_dofWkTS[,3])
 autoplot(dofW_decomp3, labels=NULL, range.bars = TRUE, colour=TRUE) +
@@ -761,17 +773,16 @@ mnth_smoothFcast2 <- forecast(mnth_smooth2)
 autoplot(mnth_smoothFcast2)
 
 #Sub-meter-3
-#Remove Seasonality
-mnth_seasonAdj3 <- housePWR_mnthTS[,3]-mnth_decomp3$seasonal
-acf(mnth_seasonAdj3)
-plot(mnth_seasonAdj3)
-
 
 mnth_smooth3 <- HoltWinters(mnth_seasonAdj3, beta=FALSE, gamma=FALSE)
 plot(mnth_smooth3)
 
-mnth_smoothFcast3 <- forecast(mnth_smooth3)
+mnth_smoothFcast3 <- forecast(mnth_smooth3, h=10)
+mnth_smoothFcast3
+
 autoplot(mnth_smoothFcast3)
+acf(mnth_smoothFcast3$residuals, na.action=na.pass)
+
 
 # Remove seasonal component
 mnth_seasonAdj <- housePWR_mnthTS - mnth_decomp$seasonal
@@ -873,6 +884,7 @@ plot(hofDay_smoothFcast1)
 #-Sub-meter-2
 hofDay_seasonAdj2 <- housePWR_hofDayTS[,2] - hofDay_decomp2$seasonal
 acf(hofDay_seasonAdj2)
+
 hofDay_smooth2 <- HoltWinters(hofDay_seasonAdj2, beta=FALSE, gamma=FALSE)
 plot(hofDay_smooth2)
 
