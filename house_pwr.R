@@ -71,6 +71,8 @@ WkdayLst <- c('Mon', 'Tues', 'Wed', 'Thurs', 'Fri')
 
 WkLst <- c('Sun','Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun' )
 
+WkndList <- c('Sat', 'Sun', 'Mon')
+
 # Assess missing values
 aggr_plot <- aggr(house_pwr, col=c('navyblue','red'), numbers=TRUE, sortVars=TRUE, labels=names(house_pwr),cex.axis=.7,
   gap=3, ylab=c("Histogram of missing data","Pattern"), digits=2)
@@ -290,26 +292,14 @@ housePWR_hofDay <- house_pwr %>%
 # Subset by Weekends
 housePWR_wknd <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
-  filter(wday(DateTime)==c(7,1)) %>%
-  group_by(wday(DateTime), hour(DateTime)) %>%
+  mutate(Wknd=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  filter(Wknd == c('Sat', 'Sun')) %>%
+  group_by(Wknd, hour(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000),3),
             Sub_Meter_2=round(sum(`Sub-Meter-2`/1000),3),
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
-            first_DateTime = first(DateTime)) %>%
-  arrange(desc(`wday(DateTime)`))
-
-housePWR_wknd <- house_pwr %>%
-  select(DateTime, `Sub-Meter-1`) %>%
-  filter(year(DateTime)>2006) %>%
-  mutate(weekend=lubridate::wday(DateTime, label=TRUE, abbr=FALSE)) %>%
-  #mutate(weekend=wday(DateTime)) %>%
-  filter(weekend==c('Saturday','Sunday')) %>%
-  group_by(weekend, hour(DateTime)) %>%
-  summarise(Sub_Meter_1 =round(sum(`Sub-Meter-1`/1000),3),
-            first_DateTime=first(DateTime)) %>%
-  arrange(desc(weekend))
-
-
+            first_DateTime = first(DateTime))
+ #arrange(desc(Wknd))
 
 # Convert to Time Series --------------------------------------------------
 
@@ -343,7 +333,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ggseasonplot(housePWR_mnthTS[,1])
 
 # Day of Week / Hour
-housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency=24, start = c(1,0), end=c(7,23))
+housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency=23, start=c(1,0), end = c(7,23))
 plot(housePWR_dofWkTS, plot.type='s', xaxt='n',
      xaxp = c(1, 8, 7),
      col=c('red', 'green', 'blue'),
@@ -357,9 +347,9 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ggseasonplot(housePWR_dofWkTS[,3])
 
 ##-Weekday
-housePWR_wkdayTS <- ts(housePWR_wkday[,3:5], frequency=24, start=c(1,0), end=c(5,23))
-plot(housePWR_wkdayTS, plot.type='s', xaxt='n',
-     xaxp = c(1, 5, 4),
+housePWR_wkdayTS <- ts(housePWR_wkday[,3:5], frequency=23)
+plot(housePWR_wkdayTS, plot.type='s', #xaxt='n',
+     #xaxp = c(1, 5, 4),
      col=c('red', 'green', 'blue'),
      xlab='Weekday', ylab = 'Total kWh',
      main='Total kWh Consumption by Day of the Week (2007-2010)')
@@ -382,14 +372,17 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 # Weekend hourly use
-housePWR_wkndTS <- ts(housePWR_wknd[,3:5], frequency=23, start=7)
-plot.ts(housePWR_wkndTS,
-        col='red',
-        xlab='Weekend Day', ylab = 'Total kWh',
-     main='Total Weekend Energy Usage on Sub-Meter-1')
+housePWR_wkndTS <- ts(housePWR_wknd[,3:5], frequency=23, start=c(1,0))
+plot(housePWR_wkndTS, plot.type='s', xaxt='n',
+     xaxp = c(0, 3,2),
+     col=c('red', 'green', 'blue'),
+     xlab='Weekend Day', ylab = 'Total kWh',
+     ylim=c(0,90),
+     main='Total Weekend Energy Consumption')
+axis(side = 1, at = c(1,2,3), labels = WkndList)
 minor.tick(nx=24)
-b <- 'Sub-meter-1'
-legend('topleft', b, col='red', lwd=2, bty='n')
+b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
+legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 # Forecasting Trend-------------------------------------------------------------
@@ -439,7 +432,7 @@ w
 
 # Weekend hours
 fit5 <- tslm(housePWR_wkndTS ~ trend)
-zz <- forecast(fit5, h=20)
+zz <- forecast(fit5)
 autoplot(zz, PI=TRUE, colour=TRUE) +
   xlab('Weekend Day') +
   ylab('Total kWh') +
@@ -498,7 +491,16 @@ acf(housePWR_yrTS[,3])
 
 #-remove seasonality
 yr_seasonAdj3 <- seasadj(yr_decomp3)
-plot(yr_seasonAdj3)
+plot(yr_seasonAdj3,
+     xaxp = c(2007, 2011, 4),
+     col='blue',
+     xlab='Year', ylab='Total kWh',
+     main='Seasonally Adjusted Yearly Time Series for Sub-Meter-3')
+minor.tick(nx=12)
+b <-'Sub-meter-3'
+legend('topleft', b, col='blue', lwd=2, bty='n')
+
+
 acf(yr_seasonAdj3)
 
 
@@ -584,7 +586,6 @@ autoplot(dofW_seasonAdj2)
 acf(dofW_seasonAdj2)
 
 
-
 dofW_decomp3 <- decompose(housePWR_dofWkTS[,3])
 autoplot(dofW_decomp3, labels=NULL, range.bars = TRUE, colour=TRUE) +
   xlab('Day of Week') +
@@ -645,13 +646,37 @@ autoplot(hofDay_decomp3, labels=NULL, range.bars = TRUE) +
 #################
 # Weekend Hours #
 #################
+#Sub-meter-1
 Wknd_decomp1 <- decompose(housePWR_wkndTS[,1])
 autoplot(Wknd_decomp1, labels=NULL, range.bars = TRUE) +
   xlab('Weekend Day') +
   ylab('kWh') +
   ggtitle('Decomposed Weekend Time Series- Sub-Meter-1')
 
-acf(housePWR_wkndTS[,1])
+#-remove sesonality
+Wknd_seasonAdj1 <- seasadj(Wknd_decomp1)
+plot(Wknd_seasonAdj1, xaxt='n',
+     xaxp=c(0,3,2),
+     col='red',
+     xlab='Weekend Day', ylab = 'Total kWh',
+     main='Seasonally Adjusted Weekend Energy Consumption')
+axis(side = 1, at = c(1,2,3), labels = WkndList)
+minor.tick(nx=24)
+b <- 'Sub-meter-1'
+legend('topleft', b, col='red', lwd=2, bty='n')
+
+plot(housePWR_wkndTS, plot.type='s', xaxt='n',
+     #xaxp = c(0, 3,2),
+     col=c('red', 'green', 'blue'),
+     xlab='Weekend Day', ylab = 'Total kWh',
+     ylim=c(0,90),
+     main='Total Weekend Energy Consumption')
+axis(side = 1, at = c(1,2,3), labels = WkndList)
+minor.tick(nx=24)
+b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
+legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
+
+
 
 
 Wknd_decomp2 <- decompose(housePWR_wkndTS[,2])
@@ -710,6 +735,7 @@ plot(yr_smooth3)
 
 yr_smoothFcast3 <- forecast(yr_smooth3)
 autoplot(yr_smoothFcast3)
+acf(yr_smoothFcast3$residuals, na.action = na.omit, lag=50)
 
 #######################################################
 
@@ -781,7 +807,7 @@ mnth_smoothFcast3 <- forecast(mnth_smooth3, h=10)
 mnth_smoothFcast3
 
 autoplot(mnth_smoothFcast3)
-acf(mnth_smoothFcast3$residuals, na.action=na.pass)
+acf(mnth_smoothFcast3$residuals, na.action=na.pass, lag=50)
 
 
 # Remove seasonal component
@@ -942,17 +968,11 @@ autoplot(hofDay_smoothFcast3)
 # Weekend#
 ##########
 
-Wknd_seasonAdj <- housePWR_wkndTS - Wknd_decomp$seasonal
-plot(Wknd_seasonAdj, plot.type='s',
-     #xaxp = c(1, 3, 2),
-     col= 'red',
-     xlab='Hour of Day', ylab='kWh',
-     main='Seasonally-Adjusted Hourly Energy Consumption')
-b <- 'Sub-meter-1'
-legend('topleft', b, col='red')
+Wknd_smooth1 <- HoltWinters(Wknd_seasonAdj1, beta=FALSE, gamma = FALSE)
+plot(Wknd_smooth1)
 
-Wknd_smooth <- HoltWinters(Wknd_seasonAdj, beta=FALSE, gamma = FALSE)
-plot(Wknd_smooth)
-
-Wknd_smoothFcast1 <- forecast(Wknd_smooth, h=20)
+Wknd_smoothFcast1 <- forecast(Wknd_smooth1, h=20)
 plot(Wknd_smoothFcast1)
+
+acf(Wknd_smoothFcast1$residuals, na.action = na.pass, lag=48)
+
