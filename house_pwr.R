@@ -334,7 +334,8 @@ plot(housePWR_mnthTS, plot.type='s', xaxt='n',
      col=c('red', 'green', 'blue'),
      main='Total Monthly kWh Consumption (2007-2010)',
      xlab='Month', ylab = 'Total kWh',
-     ylim=c(0,75))
+     ylim=c(0,75)
+     )
 axis(side=1, at= c(1, 2,3,4,5,6,7, 8,9, 10,11,12,13), labels=MonthLst)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
@@ -616,7 +617,7 @@ plot(mnth_smooth3)
 plot(mnth_smooth3, xaxt='n', col='blue',
      xaxp=c(1,13,12),
      xlab='Month', ylab = 'Total kWh',
-     ylim=c(0,75),
+     ylim=c(0,70),
      main='Fitted Holt-Winters Model for Monthly Time Series')
 axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
@@ -625,13 +626,13 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 mnth_smoothFcast3 <- forecast(mnth_smooth3, h=30)
 mnth_smoothFcast3
 plot(mnth_smoothFcast3,include=1,
-     #xaxt='n',
+     xaxt='n',
      col='blue',
-     xaxp=c(1,6,1),
+     xaxp=c(13,15,1),
      xlab='Month', ylab = 'Total kWh',
-     ylim=c(0,100),
-     main='One Month Forecast for Sub-Meter 3')
-axis(side=1, at= c(1, 6), labels=c('Jan', 'Feb'))
+     ylim=c(0,80),
+     main='30 Day Forecast of Monthly Useage on Sub-Meter 3')
+axis(side=1, at= c(13, 14), labels=c('Jan', 'Feb'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 
@@ -681,16 +682,16 @@ axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
 legend('topleft', 'Sub-Meter-2', col='blue', lwd=2, bty='n')
 
 #Forecast
-dofW_smoothFcast2 <- forecast(dofW_smooth2)
+dofW_smoothFcast2 <- forecast(dofW_smooth2, h=26)
 dofW_smoothFcast2
 plot(dofW_smoothFcast2,include=1,
-     #xaxt='n',
+     xaxt='n',
      col='blue',
-     #xaxp=c(1,6,1),
-     xlab='Day', ylab = 'Total kWh',
+     xaxp=c(8,10,1),
+     xlab='Month', ylab = 'Total kWh',
     # ylim=c(0,100),
-     main='One Month Forecast for Sub-Meter 3')
-axis(side=1, at= c(1, 6), labels=c('Jan', 'Feb'))
+     main='One Month Forecast of Daily Usage on Sub-Meter 3')
+axis(side=1, at= c(8, 9), labels=c('Jan', 'Feb'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 
