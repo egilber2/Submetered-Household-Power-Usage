@@ -350,7 +350,7 @@ plot(housePWR_dofWkTS, plot.type='s', xaxt='n',
      ylim=c(0,200),
      main='Total kWh Consumption by Day of Week')
 axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
-#minor.tick(nx=14)
+minor.tick(nx=24)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
@@ -435,11 +435,11 @@ y
 
 #day of Week
 fit3 <- tslm(housePWR_dofWkTS ~ trend)
-z <- forecast(fit3, level=c(90,95))
+z <- forecast(fit3, level=c(90,95), h=10)
 autoplot(z, PI=TRUE, colour=TRUE) +
   xlab('Day of the Week') +
   ylab('Total kWh') +
-  ggtitle('Forecasted Trend of Energy Consumption in a Week')
+  ggtitle('Forecasted Trend of Daily Energy Consumption')
 summary(fit3)
 z
 
@@ -524,14 +524,11 @@ b <-'Sub-meter-3'
 legend('topleft', b, col='blue', lwd=2, bty='n')
 
 yr_smooth3 <- HoltWinters(yr_seasonAdj3, beta=FALSE, gamma=FALSE)
-plot(yr_smooth3)
-
 plot(yr_smooth3, col='blue',
-     xaxp=c(2007, 2011, 4),
+     xaxp=c(2007, 2010, 3),
      xlab='Year', ylab = 'kWh',
      main='Fitted Holt-Winters Model for Yearly Time Series')
 minor.tick(nx=12)
-axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 
@@ -670,14 +667,32 @@ autoplot(dofW_decomp2, labels=NULL, range.bars = TRUE) +
 
 dofW_seasonAdj2 <- seasadj(dofW_decomp2)
 autoplot(dofW_seasonAdj2)
-acf(dofW_seasonAdj2)
 
 
-dofW_decomp3 <- decompose(housePWR_dofWkTS[,3])
-autoplot(dofW_decomp3, labels=NULL, range.bars = TRUE, colour=TRUE) +
-  xlab('Day of Week') +
-  ylab('kWh') +
-  ggtitle('Decomposed Daily Time Series- Sub-Meter-3')
+dofW_smooth2 <- HoltWinters(dofW_seasonAdj2, beta=FALSE, gamma=FALSE)
+plot(dofW_smooth2)
+
+plot(dofW_smooth2, xaxt='n', col='blue',
+     xaxp=c(1,8,7),
+     xlab='Day of Week', ylab = 'Total kWh',
+     #ylim=c(0,75),
+     main='Fitted Holt-Winters Model for Daily Time Series')
+axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
+legend('topleft', 'Sub-Meter-2', col='blue', lwd=2, bty='n')
+
+#Forecast
+dofW_smoothFcast2 <- forecast(dofW_smooth2)
+dofW_smoothFcast2
+plot(dofW_smoothFcast2,include=1,
+     #xaxt='n',
+     col='blue',
+     #xaxp=c(1,6,1),
+     xlab='Day', ylab = 'Total kWh',
+    # ylim=c(0,100),
+     main='One Month Forecast for Sub-Meter 3')
+axis(side=1, at= c(1, 6), labels=c('Jan', 'Feb'))
+legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
+
 
 
 #plot(dofW_decomp$seasonal, xlab='Day of Week', ylab='kWh',
