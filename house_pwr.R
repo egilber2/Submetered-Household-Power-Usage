@@ -65,7 +65,7 @@ colnames(house_pwr)[7] <- 'Sub-Meter-2'
 colnames(house_pwr)[8] <- 'Sub-Meter-3'
 
 MonthLst <- c('Jan', 'Feb', 'Mar','Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-              'Oct', 'Nov','Dec')
+              'Oct', 'Nov','Dec', 'Jan')
 
 WkdayLst <- c('Mon', 'Tues', 'Wed', 'Thurs', 'Fri')
 
@@ -235,10 +235,9 @@ ggpairs(house_pwr,
         lower = list(continuous = "smooth"))
 
 # Subset ------------------------------------------------------------------
-
-# Subset by Year and Month
 housePWR_yr <- house_pwr %>%
-  filter(year(DateTime)>2006) %>%
+  filter(year(DateTime) > 2006) %>%
+  #filter(year(DateTime)<2010) %>%
   group_by(year(DateTime), month(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
             Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
@@ -246,21 +245,34 @@ housePWR_yr <- house_pwr %>%
             first_DateTime = first(DateTime))
 
 
-# Subset by Month / Day of Week
+# Subset Month
 housePWR_mnth <- house_pwr %>%
+  filter(year(DateTime) > 2006) %>%
+  filter(year(DateTime)<2011) %>%
+  group_by(month(DateTime), mday(DateTime)) %>%
+  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
+            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
+            first_DateTime = first(DateTime))
+
+
+# Subset Day of Week
+housePWR_dofWk <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
-  mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
-  group_by(Month, wday(DateTime)) %>%
+  #filter(year(DateTime)<2010) %>%
+  mutate(DofWk=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(wday(DateTime), hour(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000),3),
             Sub_Meter_2=round(sum(`Sub-Meter-2`/1000),3),
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
             first_DateTime = first(DateTime))
 
-# Subset by Day of Week / hour of day
-housePWR_dofWk <- house_pwr %>%
+# hour of day
+housePWR_hrWk <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
-  mutate(Month=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
-  group_by(Month, hour(DateTime)) %>%
+  #filter(year(DateTime)<2010) %>%
+  mutate(DofWk=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(DofWk, hour(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000),3),
             Sub_Meter_2=round(sum(`Sub-Meter-2`/1000),3),
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
@@ -292,6 +304,7 @@ housePWR_hofDay <- house_pwr %>%
 # Subset by Weekends
 housePWR_wknd <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
+  #filter(year(DateTime)<2010) %>%
   mutate(Wknd=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   filter(Wknd == c('Sat', 'Sun')) %>%
   group_by(Wknd, hour(DateTime)) %>%
@@ -302,43 +315,54 @@ housePWR_wknd <- house_pwr %>%
  arrange(desc(Wknd))
 
 # Convert to Time Series --------------------------------------------------
-
-# Year/month
-housePWR_yrTS <- ts(housePWR_yr[,3:5], frequency = 12, start=c(2007,1), end = c(2010,11))
-plot(housePWR_yrTS, plot.type='s',
-     xaxp = c(2007, 2011, 4),
+# Year
+housePWR_yrTS <- ts(housePWR_yr[,3:5], frequency = 12, start=c(2007,1), end=c(2010,11))
+plot(housePWR_yrTS, plot.type='s', #xaxt='n',
+     xaxp = c(2007, 2010, 3),
      col=c('red', 'green', 'blue'),
-     main='Total Yearly Kwh Consumption',
+     main='Total Yearly kWh Consumption (2007-2010)',
      xlab='Year', ylab = 'Total kWh')
 minor.tick(nx=12)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
-ggseasonplot(housePWR_yrTS[,3])
 
-
-# Month/Day of Week
-housePWR_mnthTS <- ts(housePWR_mnth[,3:5], frequency = 7, start=c(1,1), end=c(12,7))
+#Month
+housePWR_mnthTS <- ts(housePWR_mnth[,3:5], frequency = 30, start=c(1,1), end=c(12,31))
 plot(housePWR_mnthTS, plot.type='s', xaxt='n',
-     xaxp = c(1, 12, 11),
+     xaxp = c(1,13,12),
      col=c('red', 'green', 'blue'),
+     main='Total Monthly kWh Consumption (2007-2010)',
      xlab='Month', ylab = 'Total kWh',
-     ylim=c(0,275),
-     main='Total Monthly kWh Consumption (2007-2010)')
-axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12), labels=MonthLst)
-minor.tick(nx=14)
+     ylim=c(0,75))
+axis(side=1, at= c(1, 2,3,4,5,6,7, 8,9, 10,11,12,13), labels=MonthLst)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
-ggseasonplot(housePWR_mnthTS[,1])
 
-# Day of Week / Hour
-housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency=24, start=c(1,0), end = c(7,23))
+
+# Day of Week
+housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency =24, start=c(1,0), end=c(7,23))
 plot(housePWR_dofWkTS, plot.type='s', xaxt='n',
-     xaxp = c(1, 8, 7),
+     xaxp = c(1, 7, 6),
      col=c('red', 'green', 'blue'),
      xlab='Day of Week', ylab = 'Total kWh',
-     main='Total kWh Consumption by Day of the Week (2007-2010)')
+     ylim=c(0,200),
+     main='Total kWh Consumption by Day of Week')
+axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
+#minor.tick(nx=14)
+b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
+legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
+
+
+# Hour_Day
+housePWR_hrWkTS <- ts(housePWR_hrWk[,3:5], frequency=24, start=c(1,0), end = c(7,23))
+plot(housePWR_hrWkTS, plot.type='s', xaxt='n',
+     xaxp = c(1, 8, 7),
+     col=c('red', 'green', 'blue'),
+     ylim=c(0,210),
+     xlab='Day of Week', ylab = 'Total kWh',
+     main='Total Hourly kWh Consumption by Day of the Week')
 axis(side=1, at= c(1, 2,3,4,5,6,7, 8), labels=WkLst)
 minor.tick(nx=24)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
@@ -347,7 +371,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ggseasonplot(housePWR_dofWkTS[,3])
 
 ##-Weekday
-housePWR_wkdayTS <- ts(housePWR_wkday[,3:5], frequency=23)
+housePWR_wkdayTS <- ts(housePWR_wkday[,3:5], frequency=24)
 plot(housePWR_wkdayTS, plot.type='s', #xaxt='n',
      #xaxp = c(1, 5, 4),
      col=c('red', 'green', 'blue'),
@@ -371,14 +395,15 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ##-Weekday Hourly Useage
 
 
-# Weekend hourly use
+# Hour_Weekend
 housePWR_wkndTS <- ts(housePWR_wknd[,3:5], frequency=24, end(7,23))
 plot(housePWR_wkndTS, plot.type='s', xaxt='n',
      xaxp = c(0, 3,2),
+     xlim=c(1,3),
      col=c('red', 'green', 'blue'),
      xlab='Weekend Day', ylab = 'Total kWh',
      ylim=c(0,90),
-     main='Total Weekend Energy Consumption')
+     main='Total Weekend Energy Consumption by Hour')
 axis(side = 1, at = c(1,2,3), labels = WkndList)
 minor.tick(nx=24)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
@@ -387,36 +412,34 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 # Forecasting Trend-------------------------------------------------------------
 
-# Year/month
+# Year
 fit1 <- tslm(housePWR_yrTS ~ trend)
-x <- forecast(fit1, h=6, level = c(90, 95))
+x <- forecast(fit1, h=6, level = c(90, 95), robust=TRUE)
 autoplot(x, PI=TRUE, colour=TRUE) +
   xlab('Year') +
   ylab('Total kWh') +
   ggtitle('Forecasted Trend of Yearly Energy Consumption')
 summary(fit1)
-acf(fit1$residuals)
 x
 
-# Month/Day of Week
+# Month
 fit2 <- tslm(housePWR_mnthTS ~ trend)
-y <- forecast(fit2,level=c(85,95))
+y <- forecast(fit2,h=20, level=c(85,95))
 autoplot(y, PI=TRUE, colour=TRUE) +
   xlab('Month') +
   ylab('Total kWh') +
   ggtitle('Forecasted Monthly Trend of Energy Consumption')
 summary(fit2)
-acf(fit2$residuals)
 y
 #level =	Confidence level for prediction intervals.
 
-# Day of Week / Hour
+#day of Week
 fit3 <- tslm(housePWR_dofWkTS ~ trend)
-z <- forecast(fit3, h=12, level=c(90,95))
+z <- forecast(fit3, level=c(90,95))
 autoplot(z, PI=TRUE, colour=TRUE) +
-  xlab('Day of Week') +
+  xlab('Day of the Week') +
   ylab('Total kWh') +
-  ggtitle('Forecasted Trend of Daily Energy Consumption')
+  ggtitle('Forecasted Trend of Energy Consumption in a Week')
 summary(fit3)
 z
 
@@ -426,17 +449,17 @@ w <- forecast(fit4, h=24)
 autoplot(w, PI=TRUE, colour=TRUE) +
   xlab('Hour of Day') +
   ylab('Total kWh') +
-  ggtitle('Forecasted Trend of Hourly Energy Consumption')
+  ggtitle('Forecasted Trend of Hourly Energy Consumption in a Day')
 summary(w)
 w
 
 # Weekend hours
 fit5 <- tslm(housePWR_wkndTS ~ trend)
-zz <- forecast(fit5)
+zz <- forecast(fit5, level=c(90,95))
 autoplot(zz, PI=TRUE, colour=TRUE) +
   xlab('Weekend Day') +
   ylab('Total kWh') +
-  ggtitle('Forecast Energy Consumption')
+  ggtitle('Forecasted Trend of Weekend Energy Consumption')
 summary(w)
 
 ##-Weekdays
@@ -453,7 +476,7 @@ summary(xx)
 
 
 ##############
-# Year/Month #
+# Year       #
 ##############
 
 ##-Sub-Meter-1
@@ -461,7 +484,7 @@ yr_decomp1 <- decompose(housePWR_yrTS[,1])
 autoplot(yr_decomp1, labels=NULL, range.bars = TRUE) +
   xlab('Year') +
   ylab('kWh') +
-  ggtitle('Decomposed Yearly Time Series- Sub-Meter-1')
+  ggtitle('Decomposed Monthly Time Series- Sub-Meter-1')
 acf(housePWR_yrTS[,1], lag=20)
 
 #remove seasonality
@@ -485,13 +508,13 @@ yr_decomp3 <- decompose(housePWR_yrTS[,3])
 autoplot(yr_decomp3,  range.bars = TRUE) +
   xlab('Year') +
   ylab('kWh') +
-  ggtitle('Decomposed Yearly Time Series- Sub-Meter-3')
+  ggtitle('Decomposed Monthly Time Series- Sub-Meter-3')
 yr_decomp3
 acf(housePWR_yrTS[,3])
 
 #-remove seasonality
 yr_seasonAdj3 <- seasadj(yr_decomp3)
-plot(yr_seasonAdj3,
+plot(yr_seasonAdj3, xaxt='n',
      xaxp = c(2007, 2011, 4),
      col='blue',
      xlab='Year', ylab='Total kWh',
@@ -499,6 +522,37 @@ plot(yr_seasonAdj3,
 minor.tick(nx=12)
 b <-'Sub-meter-3'
 legend('topleft', b, col='blue', lwd=2, bty='n')
+
+yr_smooth3 <- HoltWinters(yr_seasonAdj3, beta=FALSE, gamma=FALSE)
+plot(yr_smooth3)
+
+plot(yr_smooth3, col='blue',
+     xaxp=c(2007, 2011, 4),
+     xlab='Year', ylab = 'kWh',
+     main='Fitted Holt-Winters Model for Yearly Time Series')
+minor.tick(nx=12)
+axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
+legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
+
+
+
+yr_smoothFcast3 <- forecast(yr_smooth3, h=3)
+plot(yr_smoothFcast3)
+yr_smoothFcast3
+
+plot(yr_smoothFcast3, include=1,
+     xaxt='n',
+     col='blue',
+     xaxp=c(1,13,12),
+     xlab='Month', ylab = 'Total kWh',
+     #ylim=c(0,250),
+     main='One Month Forecast for Sub-Meter 3')
+#axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
+legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
+
+
+
+
 
 
 acf(yr_seasonAdj3)
@@ -539,7 +593,7 @@ autoplot(mnth_decomp2, labels=NULL, range.bars = TRUE) +
   xlab('Month') +
   ylab('kWh') +
   ggtitle('Decomposed Monthly Time Series- Sub-Meter-2')
-
+################################################################
 ##-Sub-Meter-3
 mnth_decomp3 <- decompose(housePWR_mnthTS[,3])
 autoplot(mnth_decomp3, labels=NULL, range.bars = TRUE) +
@@ -549,8 +603,41 @@ autoplot(mnth_decomp3, labels=NULL, range.bars = TRUE) +
 
 #-remove seasonality
 mnth_seasonAdj3 <- seasadj(mnth_decomp3)
-plot(mnth_seasonAdj3)
-acf(mnth_seasonAdj3, lag=48)
+plot(mnth_seasonAdj3, #xaxt='n',
+     #xaxp = c(2007, 2011, 4),
+     col= 'blue',
+     main='',
+     xlab='Year', ylab = 'Total kWh')
+minor.tick(nx=12)
+b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
+legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
+
+#-Fit Holt Winters Model
+mnth_smooth3 <- HoltWinters(mnth_seasonAdj3, beta=FALSE, gamma=FALSE)
+plot(mnth_smooth3)
+
+plot(mnth_smooth3, xaxt='n', col='blue',
+     xaxp=c(1,13,12),
+     xlab='Month', ylab = 'Total kWh',
+     ylim=c(0,75),
+     main='Fitted Holt-Winters Model for Monthly Time Series')
+axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
+legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
+
+#Forecast
+mnth_smoothFcast3 <- forecast(mnth_smooth3, h=30)
+mnth_smoothFcast3
+plot(mnth_smoothFcast3,include=1,
+     #xaxt='n',
+     col='blue',
+     xaxp=c(1,6,1),
+     xlab='Month', ylab = 'Total kWh',
+     ylim=c(0,100),
+     main='One Month Forecast for Sub-Meter 3')
+axis(side=1, at= c(1, 6), labels=c('Jan', 'Feb'))
+legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
+
+
 
 #plot(mnth_decomp$seasonal, xlab='Month', ylab='kWh',
     # main='Seasonal Component for Monthly Time Series')
@@ -664,19 +751,6 @@ axis(side = 1, at = c(1,2,3), labels = WkndList)
 minor.tick(nx=24)
 b <- 'Sub-meter-1'
 legend('topleft', b, col='red', lwd=2, bty='n')
-
-plot(housePWR_wkndTS, plot.type='s', xaxt='n',
-     #xaxp = c(0, 3,2),
-     col=c('red', 'green', 'blue'),
-     xlab='Weekend Day', ylab = 'Total kWh',
-     ylim=c(0,90),
-     main='Total Weekend Energy Consumption')
-axis(side = 1, at = c(1,2,3), labels = WkndList)
-minor.tick(nx=24)
-b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
-legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
-
-
 
 
 Wknd_decomp2 <- decompose(housePWR_wkndTS[,2])
@@ -800,13 +874,18 @@ autoplot(mnth_smoothFcast2)
 
 #Sub-meter-3
 
-mnth_smooth3 <- HoltWinters(mnth_seasonAdj3, beta=FALSE, gamma=FALSE)
-plot(mnth_smooth3)
 
-mnth_smoothFcast3 <- forecast(mnth_smooth3, h=10)
-mnth_smoothFcast3
 
-autoplot(mnth_smoothFcast3)
+
+
+
+
+
+
+
+
+
+
 acf(mnth_smoothFcast3$residuals, na.action=na.pass, lag=50)
 
 
