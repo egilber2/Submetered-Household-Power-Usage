@@ -549,30 +549,6 @@ plot(yr_smoothFcast3, include=1,
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 
-
-
-
-
-acf(yr_seasonAdj3)
-
-
-#summary(yr_decomp)
-#yr_decomp
-
-#autoplot(yr_decomp$seasonal) +
-  xlab('Year') +
-  ylab('kWh') +
-  ggtitle('Seasonal Component Yearly Time Series')
-#summary(yr_decomp$seasonal)
-
-#plot(yr_decomp$trend, xlab='Year', ylab='kWh',
-     #main='Trend Component for Yearly Time Series')
-#summary(yr_decomp$trend)
-
-#plot(yr_decomp$random, xlab='Year',
-    # main='Random Component of Yearly Time Series')
-#summary(yr_decomp$random)
-
 #######################
 # Month / Day of Week #
 #######################
@@ -637,18 +613,6 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 
 
-#plot(mnth_decomp$seasonal, xlab='Month', ylab='kWh',
-    # main='Seasonal Component for Monthly Time Series')
-
-#plot(mnth_decomp$trend, xlab='Month', ylab='kWh',
-   #  main='Trend Component for Monthly Time Series')
-
-#plot(mnth_decomp$random, xlab='Month',
-     #main='Random Component of Monthlhy Time Series')
-
-summary(mnth_decomp1)
-mnth_decomp1
-
 #####################
 # Day of Week / Hour#
 #####################
@@ -695,17 +659,6 @@ axis(side=1, at= c(8, 9), labels=c('Jan', 'Feb'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 
-
-#plot(dofW_decomp$seasonal, xlab='Day of Week', ylab='kWh',
-    # main='Seasonal Component of Daily Time Series')
-
-#plot(dofW_decomp$trend, xlab='Day of Week', ylab='kWh',
-  #   main='Trend Component of Daily Time Series')
-
-#plot(dofW_decomp$random, xlab='Day of Week',
-    # main='Random Component of Daily Time Series')
-
-#summary(dofW_decomp)
 
 ##########################
 # Hour of Day / 5_minute#
