@@ -298,8 +298,8 @@ housePWR_wknd <- house_pwr %>%
   summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000),3),
             Sub_Meter_2=round(sum(`Sub-Meter-2`/1000),3),
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
-            first_DateTime = first(DateTime))
- #arrange(desc(Wknd))
+            first_DateTime = first(DateTime)) %>%
+ arrange(desc(Wknd))
 
 # Convert to Time Series --------------------------------------------------
 
@@ -333,7 +333,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ggseasonplot(housePWR_mnthTS[,1])
 
 # Day of Week / Hour
-housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency=23, start=c(1,0), end = c(7,23))
+housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency=24, start=c(1,0), end = c(7,23))
 plot(housePWR_dofWkTS, plot.type='s', xaxt='n',
      xaxp = c(1, 8, 7),
      col=c('red', 'green', 'blue'),
@@ -372,7 +372,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 # Weekend hourly use
-housePWR_wkndTS <- ts(housePWR_wknd[,3:5], frequency=23, start=c(1,0))
+housePWR_wkndTS <- ts(housePWR_wknd[,3:5], frequency=24, end(7,23))
 plot(housePWR_wkndTS, plot.type='s', xaxt='n',
      xaxp = c(0, 3,2),
      col=c('red', 'green', 'blue'),
