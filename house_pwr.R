@@ -263,7 +263,7 @@ housePWR_qtr <- house_pwr %>%
 housePWR_mnth <- house_pwr %>%
   filter(year(DateTime) > 2006) %>%
   filter(year(DateTime)<2011) %>%
-  group_by(month(DateTime), mday(DateTime)) %>%
+  group_by(year(DateTime), month(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
             Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
@@ -357,15 +357,15 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 #Month
-housePWR_mnthTS <- ts(housePWR_mnth[,3:5], frequency = 30, start=c(1,1), end=c(12,31))
-plot(housePWR_mnthTS, plot.type='s',xaxt='n',
-     xaxp = c(1,13,12),
+housePWR_mnthTS <- ts(housePWR_mnth[,3:5], frequency = 12, start=c(2007,1), end=c(2010,11))
+plot(housePWR_mnthTS, plot.type='s',#xaxt='n',
+     #xaxp = c(1,13,12),
      col=c('red', 'green', 'blue'),
      main='Total Monthly kWh Consumption (2007-2010)',
      xlab='Month', ylab = 'Total kWh',
-     ylim=c(0,75)
-     )
+     xlim=c(2007,2011))
 axis(side=1, at= c(1, 2,3,4,5,6,7, 8,9, 10,11,12,13), labels=MonthLst)
+minor.tick(nx=12)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
@@ -685,7 +685,7 @@ plot(mnth_smooth3)
 plot(mnth_smooth3, xaxt='n', col='blue',
      xaxp=c(1,13,12),
      xlab='Month', ylab = 'Total kWh',
-     ylim=c(0,70),
+     #ylim=c(0,70),
      main='Fitted Holt-Winters Model for Monthly Time Series')
 axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
@@ -694,12 +694,11 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 mnth_smoothFcast3 <- forecast(mnth_smooth3, h=30)
 mnth_smoothFcast3
 plot(mnth_smoothFcast3,include=1,
-     showgap=FALSE,
      xaxt='n',
      col='blue',
      xaxp=c(13,15,1),
      xlab='Month', ylab = 'Total kWh',
-     ylim=c(0,80),
+     #ylim=c(0,80),
      main='One Month Forecast of Energy Useage on Sub-Meter 3')
 axis(side=1, at= c(13, 14), labels=c('0', '1'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
