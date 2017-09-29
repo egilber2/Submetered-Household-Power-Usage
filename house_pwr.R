@@ -372,15 +372,15 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 # Day of Week
-housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency =24, start=c(1,0), end=c(7,23))
+housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency =24, start=c(1,0))
 plot(housePWR_dofWkTS, plot.type='s', xaxt='n',
      xaxp = c(1, 7, 6),
      col=c('red', 'green', 'blue'),
      xlab='Day of Week', ylab = 'Total kWh',
-     ylim=c(0,200),
-     main='Total kWh Consumption by Day of Week')
+     #ylim=c(0,200),
+     main='Total Hourly Energy Consumption by Day of Week')
 axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
-minor.tick(nx=24)
+minor.tick(nx=23)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
@@ -465,11 +465,11 @@ y
 
 #day of Week
 fit3 <- tslm(housePWR_dofWkTS ~ trend)
-z <- forecast(fit3, level=c(90,95), h=10)
+z <- forecast(fit3, level=c(90,95), h=24)
 autoplot(z, PI=TRUE, colour=TRUE) +
   xlab('Day of the Week') +
   ylab('Total kWh') +
-  ggtitle('Forecasted Trend of Daily Energy Consumption')
+  ggtitle('Forecasted Trend of Hourly Energy Consumption')
 summary(fit3)
 z
 
@@ -682,24 +682,24 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 mnth_smooth3 <- HoltWinters(mnth_seasonAdj3, beta=FALSE, gamma=FALSE)
 plot(mnth_smooth3)
 
-plot(mnth_smooth3, xaxt='n', col='blue',
-     xaxp=c(1,13,12),
+plot(mnth_smooth3, col='blue',
+     #xaxt='n',
      xlab='Month', ylab = 'Total kWh',
-     #ylim=c(0,70),
+     xlim=c(2007,2011),
+     xaxp=c(2007,2011,4),
      main='Fitted Holt-Winters Model for Monthly Time Series')
-axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
+minor.tick(nx=12)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 #Forecast
-mnth_smoothFcast3 <- forecast(mnth_smooth3, h=30)
+mnth_smoothFcast3 <- forecast(mnth_smooth3, h=5)
 mnth_smoothFcast3
-plot(mnth_smoothFcast3,include=1,
-     xaxt='n',
+plot(mnth_smoothFcast3,include=1, showgap=TRUE,
+     #xaxt='n',
      col='blue',
-     xaxp=c(13,15,1),
+     #xaxp=c(13,15,1),
      xlab='Month', ylab = 'Total kWh',
-     #ylim=c(0,80),
-     main='One Month Forecast of Energy Useage on Sub-Meter 3')
+     main='Five Month Forecast of Energy Useage on Sub-Meter 3')
 axis(side=1, at= c(13, 14), labels=c('0', '1'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
@@ -728,21 +728,21 @@ plot(dofW_smooth1, xaxt='n', col='black',
      #ylim=c(0,75),
      main='Fitted Holt-Winters Model for Daily Time Series')
 axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
-legend('topleft', 'Sub-Meter-2', col='blue', lwd=2, bty='n')
+legend('topleft', 'Sub-Meter-1', col='black', lwd=2, bty='n')
 
 #Forecast
 dofW_smoothFcast1 <- forecast(dofW_smooth1, h=26)
 dofW_smoothFcast1
 plot(dofW_smoothFcast1,
-     #include=1,
+     include=1,
      PI=TRUE, showgap=FALSE,
-     #xaxt='n',
+     xaxt='n',
      fcol='red',
      #xaxp=c(8,10,1),
      xlab='Day', ylab = 'Total kWh',
      # ylim=c(0,100),
-     main='Daily Forecast of Energy Usage on Sub-Meter 1')
-axis(side=1, at= c(8, 9), labels=c('Jan', 'Feb'))
+     main='24 h Forecast of Energy Usage on Sub-Meter 1')
+axis(side=1, at= c(8, 9), labels=c('0', '24'))
 legend('topleft', 'Sub-Meter-1', col='red', lwd=2, bty='n')
 
 ##-Sub-Meter-2
