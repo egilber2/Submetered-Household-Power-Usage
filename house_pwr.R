@@ -633,7 +633,7 @@ plot(qtr_smoothFcast3, include=0,
      #xaxp=c(1,13,12),
      xlab='Year', ylab = 'Total kWh',
      #xlim=c(2010,2011),
-     main='Quarterly Forecast for Sub-Meter 3')
+     main='5 Quarter Forecast of Quarterly Energy Useage on Sub-Meter 3')
 minor.tick(nx=2)
 #axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
@@ -699,7 +699,7 @@ plot(mnth_smoothFcast3,include=1, showgap=TRUE,
      col='blue',
      #xaxp=c(13,15,1),
      xlab='Month', ylab = 'Total kWh',
-     main='Five Month Forecast of Energy Useage on Sub-Meter 3')
+     main='Five Month Forecast of Monthly Energy Useage on Sub-Meter 3')
 axis(side=1, at= c(13, 14), labels=c('0', '1'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
@@ -741,7 +741,7 @@ plot(dofW_smoothFcast1,
      #xaxp=c(8,10,1),
      xlab='Day', ylab = 'Total kWh',
      # ylim=c(0,100),
-     main='24 h Forecast of Energy Usage on Sub-Meter 1')
+     main='24 h Forecast of Hourly Energy Usage on Sub-Meter 1')
 axis(side=1, at= c(8, 9), labels=c('0', '24'))
 legend('topleft', 'Sub-Meter-1', col='red', lwd=2, bty='n')
 
