@@ -141,14 +141,14 @@ house_pwr_tidy %>%
 #Quarter bar  plot
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
-  group_by(year(DateTime), quarter(DateTime), Meter) %>%
+  filter(year(DateTime)<2010) %>%
+  group_by(quarter(DateTime), Meter) %>%
   #filter(quarter(DateTime)<3) %>%
   summarise(sum=round(sum(Watt_hr)/1000),3) %>%
   ggplot(aes(x=factor(`quarter(DateTime)`), y=sum)) +
   labs(x='Quarter of the Year', y='kWh') +
-  ggtitle('Total Quarterly Energy Consumption') +
-  geom_bar(stat='identity', aes(fill = Meter), color='black') +
-  facet_grid(. ~ `year(DateTime)`)
+  ggtitle('Total Quarterly Energy Consumption (2007-2010)') +
+  geom_bar(stat='identity', aes(fill = Meter), color='black')
 
 #Quarter Proportion plot
 house_pwr_tidy %>%
@@ -190,12 +190,13 @@ house_pwr_tidy %>%
 ###-Month bar chart
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
+  filter(year(DateTime)<2010) %>%
   mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Month, Meter) %>%
   summarise(sum=round(sum(Watt_hr)/1000),3) %>%
   ggplot(aes(x=factor(Month), y=sum)) +
   labs(x='Month of the Year', y='kWh') +
-  ggtitle('Total Energy Useage by Month of the Year') +
+  ggtitle('Total Energy Useage by Month of the Year (2007-2010)') +
   geom_bar(stat='identity', aes(fill = Meter), colour='black')
 
 ### Day of the Month- Line Plot
