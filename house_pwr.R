@@ -150,6 +150,17 @@ house_pwr_tidy %>%
   geom_line(size=1) +
   geom_line()
 
+###-Month bar chart
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Month, Meter) %>%
+  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  ggplot(aes(x=factor(Month), y=sum)) +
+  labs(x='Month of the Year', y='kWh') +
+  ggtitle('Total Energy Useage by Month of the Year') +
+  geom_bar(stat='identity', aes(fill = Meter), colour='black')
+
 ### Day of the Month- Line Plot
 #Not informative
 house_pwr_tidy %>%
@@ -184,6 +195,18 @@ house_pwr_tidy %>%
   ggtitle('Average Daily Energy Consumption') +
   geom_line(size=1) +
   geom_line()
+
+###-Day of Week bar chart
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Day, Meter) %>%
+  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  ggplot(aes(x=factor(Day), y=sum)) +
+  labs(x='Day of the Week', y='kWh') +
+  ggtitle('Total Energy Useage by Day of Week') +
+  geom_bar(stat='identity', aes(fill = Meter), colour='black')
+
 
 
 
@@ -225,6 +248,15 @@ house_pwr_tidy %>%
   geom_line(size=1) +
   geom_line()
 
+#Hour of day bar chart
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(hour(DateTime), Meter) %>%
+  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  ggplot(aes(x=factor(`hour(DateTime)`), y=sum)) +
+  labs(x='Hour of the Day', y='kWh') +
+  ggtitle('Total Energy Useage by Hour of the Day') +
+  geom_bar(stat='identity', aes(fill = Meter), colour='black')
 
 
 # Correlation plot
@@ -275,7 +307,7 @@ housePWR_dofWk <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
   #filter(year(DateTime)<2010) %>%
   mutate(DofWk=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
-  group_by(month(DateTime), wday(DateTime)) %>%
+  group_by(wday(DateTime), hour(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000),3),
             Sub_Meter_2=round(sum(`Sub-Meter-2`/1000),3),
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
@@ -360,8 +392,8 @@ housePWR_mnthTS <- ts(housePWR_mnth[,3:5], frequency = 12, start=c(2007,1))
 plot(housePWR_mnthTS, plot.type='s',#xaxt='n',
      #xaxp = c(1,13,12),
      col=c('red', 'green', 'blue'),
-     main='Total Monthly kWh Consumption (2007-2010)',
-     xlab='year', ylab = 'Total kWh')
+     main='Total Monthly kWh Consumption',
+     xlab='Year/Month', ylab = 'kWh')
 minor.tick(nx=12)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
@@ -369,12 +401,12 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 # Day of Week/hour
-housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency =7)
-plot(housePWR_dofWkTS, plot.type='s', #xaxt='n',
-     #xaxp = c(1, 7, 6),
+housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency =24)
+plot(housePWR_dofWkTS, plot.type='s', xaxt='n',
+     xaxp = c(1, 7, 6),
      col=c('red', 'green', 'blue'),
      xlab='Day of Week', ylab = 'Total kWh',
-     #ylim=c(0,200),
+     ylim=c(0,200),
      main='Total Hourly Energy Consumption by Day of Week')
 axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
 minor.tick(nx=23)
@@ -409,12 +441,13 @@ b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 # Hour of Day
-housePWR_hofDayTS <- ts(housePWR_hofDay[,3:5], frequency=12)
+housePWR_hofDayTS <- ts(housePWR_hofDay[,3:5], frequency=12, start=c(0,0))
 plot(housePWR_hofDayTS, plot.type='s',
      #xaxp = c(0,48, 47),
      col=c('red', 'green', 'blue'),
-     xlab='Hour of the Day', ylab = 'Total kWh',
+     xlab='Hour of Day', ylab = 'kWh',
      main='Total kWh Consumption by Hour of the Day')
+minor.tick(nx=12)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
@@ -807,7 +840,7 @@ plot(hofDay_smooth3, #xaxt='n',
      #xaxp=c(1,8,7),
      xlab='Hour of Day', ylab = 'Total kWh',
      #ylim=c(0,75),
-     main='Fitted Holt-Winters Model for Daily Time Series')
+     main='Fitted Holt-Winters Model for Hourly Useage in a Day')
 #axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
@@ -822,7 +855,7 @@ plot(hofDay_smoothFcast3,
      #xaxp=c(8,9,1),
      xlab='Hour', ylab = 'Total kWh',
      # ylim=c(0,100),
-     main='24 hour Forecast of Hourly Energy Usage on Sub-Meter 3')
+     main='24 hour Forecast Based on Hourly Energy Usage in a Day')
 axis(side=1, at= c(8, 9), labels=c('0', '1'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
