@@ -127,7 +127,18 @@ house_pwr_tidy %>%
   ggtitle('Total Yearly Energy Consumption') +
   geom_line(size=1)
 
-#Quarter  plot
+##-Year Bar Chart
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(year(DateTime), Meter) %>%
+  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  ggplot(aes(x=factor(`year(DateTime)`), y=sum)) +
+  labs(x='Year', y='kWh') +
+  ggtitle('Total Energy Useage by Year') +
+  geom_bar(stat='identity', aes(fill = Meter), colour='black')
+
+
+#Quarter bar  plot
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   group_by(year(DateTime), quarter(DateTime), Meter) %>%
@@ -138,6 +149,19 @@ house_pwr_tidy %>%
   ggtitle('Total Quarterly Energy Consumption') +
   geom_bar(stat='identity', aes(fill = Meter), color='black') +
   facet_grid(. ~ `year(DateTime)`)
+
+#Quarter Proportion plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(year(DateTime), quarter(DateTime), Meter) %>%
+  #filter(quarter(DateTime)<3) %>%
+  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  ggplot(aes(x=factor(`quarter(DateTime)`), sum,group=Meter, fill=Meter)) +
+  labs(x='Quarter of the Year', y='kWh') +
+  ggtitle('Total Quarterly Energy Consumption') +
+  geom_bar(stat='identity', position='full', color='black')
+  #facet_grid(. ~ `year(DateTime)`)
+
 
 
 ###-Month- Proportional Plot
