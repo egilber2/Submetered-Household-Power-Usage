@@ -111,10 +111,10 @@ glimpse(house_pwr_tidy)
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   group_by(year(DateTime), Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`year(DateTime)`), avg, group=Meter,fill=Meter)) +
+  summarise(sum=sum(Watt_hr)) %>%
+  ggplot(aes(x=factor(`year(DateTime)`), sum, group=Meter,fill=Meter)) +
   labs(x='Year', y='Proportion of Energy Useage') +
-  ggtitle('Proportion of Average Yearly Energy Consumption') +
+  ggtitle('Proportion of Total Yearly Energy Consumption') +
   geom_bar(stat='identity', position='fill', color='black')
 
 ##-Year_Line Plot
@@ -126,6 +126,19 @@ house_pwr_tidy %>%
   labs(x='Year', y='kWh') +
   ggtitle('Total Yearly Energy Consumption') +
   geom_line(size=1)
+
+#Quarter  plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(year(DateTime), quarter(DateTime), Meter) %>%
+  #filter(quarter(DateTime)<3) %>%
+  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  ggplot(aes(x=factor(`quarter(DateTime)`), y=sum)) +
+  labs(x='Quarter of the Year', y='kWh') +
+  ggtitle('Total Quarterly Energy Consumption') +
+  geom_bar(stat='identity', aes(fill = Meter), color='black') +
+  facet_grid(. ~ `year(DateTime)`)
+
 
 ###-Month- Proportional Plot
 house_pwr_tidy %>%
@@ -278,6 +291,16 @@ housePWR_yr <- house_pwr %>%
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
             first_DateTime = first(DateTime))
 
+#Semester
+housePWR_semstr <- house_pwr %>%
+  filter(year(DateTime) > 2006) %>%
+  #filter(semester(DateTime)==2) %>%
+  group_by(year(DateTime), semester(DateTime)) %>%
+  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
+            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
+            first_DateTime = first(DateTime))
+
 #Quarter
 housePWR_qtr <- house_pwr %>%
   filter(year(DateTime) > 2006) %>%
@@ -363,7 +386,7 @@ housePWR_wknd <- house_pwr %>%
 
 # Convert to Time Series --------------------------------------------------
 # Year
-housePWR_yrTS <- ts(housePWR_yr[,2:4], frequency = 1, start=c(2007))
+housePWR_yrTS <- ts(housePWR_yr[,3:5], frequency = 1, start=c(2007))
 plot(housePWR_yrTS, plot.type='s', #xaxt='n',
      xaxp = c(2007, 2010, 3),
      col=c('red', 'green', 'blue'),
@@ -372,6 +395,15 @@ plot(housePWR_yrTS, plot.type='s', #xaxt='n',
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
+#Semester
+housePWR_semstrTS <- ts(housePWR_semstr[,3:5], frequency = 2, start=c(2007,1), end=c(2010,1))
+plot(housePWR_semstrTS, plot.type='s', #xaxt='n',
+     #xaxp = c(2007, 2010, 3),
+     col=c('red', 'green', 'blue'),
+     main='Total Yearly kWh Consumption (2007-2010)',
+     xlab='Year', ylab = 'Total kWh')
+b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
+legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 #Quarter
 housePWR_qtrTS <- ts(housePWR_qtr[,3:5], frequency=4, start=c(2007,1))
@@ -480,6 +512,15 @@ autoplot(x, PI=TRUE, colour=TRUE, showgap=FALSE) +
   ggtitle('Forecasted Trend of Yearly Energy Consumption')
 summary(fit1)
 x
+
+#Semester
+fit1a <- tslm(housePWR_semstrTS ~ trend)
+xa <- forecast(fit1a, h=2, level = c(90, 95), robust=TRUE)
+autoplot(xa, PI=TRUE, colour=TRUE) +
+  xlab('Year') +
+  ylab('Total kWh') +
+  ggtitle('Forecasted Trend of Yearly Energy Consumption')
+summary(fit1a)
 
 # Month
 fit2 <- tslm(housePWR_mnthTS ~ trend)
