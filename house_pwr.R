@@ -200,6 +200,20 @@ house_pwr_tidy %>%
   ggtitle('Total Energy Useage by Month of the Year (2007-2010)') +
   geom_bar(stat='identity', aes(fill = Meter), colour='black')
 
+#Week of the year
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(week(DateTime), Meter) %>%
+  summarise(avg=mean(Watt_hr)) %>%
+  ggplot(aes(x=factor(`week(DateTime)`), avg, group=Meter,colour=Meter)) +
+  labs(x='Week of the Year', y='Avg Watt Hour Useage') +
+  ggtitle('Average Weekly Energy Usage') +
+  theme(axis.text.x = element_text(angle=90)) +
+  geom_line(size=1) +
+  geom_line()
+
+
+
 ### Day of the Month- Line Plot
 #Not informative
 house_pwr_tidy %>%
@@ -280,8 +294,8 @@ house_pwr_tidy %>%
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   group_by(hour(DateTime), Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`hour(DateTime)`), avg, group=Meter,colour=Meter)) +
+  summarise(sum=round(mean(Watt_hr), 3)) %>%
+  ggplot(aes(x=factor(`hour(DateTime)`), sum, group=Meter,colour=Meter)) +
   labs(x='Hour of the Day', y='Wh') +
   ggtitle('Average Hourly Energy Consumption') +
   geom_line(size=1) +
@@ -346,12 +360,12 @@ housePWR_mnth <- house_pwr %>%
               Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
               first_DateTime = first(DateTime))
 
-# Subset Day of Week
-housePWR_dofWk <- house_pwr %>%
+# Subset week of year
+housePWR_wkofYr <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
   #filter(year(DateTime)<2010) %>%
   mutate(DofWk=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
-  group_by(wday(DateTime), hour(DateTime)) %>%
+  group_by(year(DateTime),week(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
             Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
@@ -360,8 +374,8 @@ housePWR_dofWk <- house_pwr %>%
 # Subset hour of day
 housePWR_hofDay <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
-  filter((minute(DateTime) %% 5) == 0) %>%
-  group_by(hour(DateTime), minute(DateTime)) %>%
+  #filter((minute(DateTime) %% 5) == 0) %>%
+  group_by(wday(DateTime), hour(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
             Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
@@ -428,27 +442,27 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 
-# Day of Week/hour
-housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency =24)
-plot(housePWR_dofWkTS, plot.type='s', xaxt='n',
-     xaxp = c(1, 7, 6),
+# Week of the year
+housePWR_wkofYrTS <- ts(housePWR_wkofYr[,3:5], frequency =53, start=c(2007,1), end=c(2010,48))
+plot(housePWR_wkofYrTS, plot.type='s', #xaxt='n',
+     #xaxp = c(1, 13, 12),
      col=c('red', 'green', 'blue'),
-     xlab='Day of Week', ylab = 'Total kWh',
-     #ylim=c(0,200),
-     main='Total Hourly Energy Consumption by Day of Week')
-axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
-minor.tick(nx=23)
+     xlab ='Year', ylab = 'Total kWh',
+     #ylim=c(0,250),
+     main='Total Energy Consumption by Day of Week')
+#axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12,13), labels=MonthLst)
+minor.tick(nx=52)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 # Hour of Day
-housePWR_hofDayTS <- ts(housePWR_hofDay[,3:5], frequency=12, start=c(0,0))
+housePWR_hofDayTS <- ts(housePWR_hofDay[,3:5], frequency=24, start=c(0,0))
 plot(housePWR_hofDayTS, plot.type='s',
      #xaxp = c(0,48, 47),
      col=c('red', 'green', 'blue'),
      xlab='Hour of Day', ylab = 'kWh',
      main='Total kWh Consumption by Hour of the Day')
-minor.tick(nx=12)
+minor.tick(nx=24)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
@@ -499,17 +513,17 @@ summary(z)
 z
 #level =	Confidence level for prediction intervals.
 
-#day of Week
-fit4 <- tslm(housePWR_dofWkTS ~ trend)
-xx <- forecast(fit4, level=c(90,95), h=24)
-autoplot(z, PI=TRUE, colour=TRUE) +
-  xlab('Day of the Week') +
+#Week of year
+fit4 <- tslm(housePWR_wkofYrTS ~ trend)
+xx <- forecast(fit4, level=c(90,95), h=14)
+autoplot(xx, PI=TRUE, colour=TRUE) +
+  xlab('Month') +
   ylab('Total kWh') +
-  ggtitle('Forecasted Trend over a Week of Hourly Energy Consumption in a day')
+  ggtitle('Forecasted Trend of Energy Consumption by Week of the Year')
 summary(xx)
 xx
 
-# Hour of Day /5- Minute
+# Hour of Day /dofWk
 fit5 <- tslm(housePWR_hofDayTS ~ trend)
 yy <- forecast(fit5, h=48)
 autoplot(yy, PI=TRUE, colour=TRUE) +
@@ -703,6 +717,53 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 summary(mnth_smoothFcast3)
 
 acf(mnth_smoothFcast3$residuals, na.action = na.omit)
+
+
+##################
+#Week of the Year#
+##################
+##-Sub-Meter-3
+wkofYr_decomp3 <- decompose(housePWR_wkofYrTS[,3])
+autoplot(wkofYr_decomp3, labels=NULL, range.bars = TRUE) +
+  xlab('Day of Week') +
+  ylab('kWh') +
+  ggtitle('Decomposed Daily Time Series- Sub-Meter-2')
+
+acf(housePWR_wkofYrTS[,3], na.action=na.omit, lag=30)
+
+wkofYr_seasonAdj3 <- seasadj(wkofYr_decomp3)
+autoplot(wkofYr_seasonAdj3)
+
+acf(wkofYr_seasonAdj3, na.action=na.omit, lag=30)
+
+wkofYr_smooth3 <- HoltWinters(wkofYr_seasonAdj3, beta=FALSE, gamma=FALSE)
+plot(wkofYr_smooth3)
+
+plot(wkofYr_smooth3, xaxt='n', col='blue',
+     xaxp=c(1,8,7),
+     xlab='Day of Week', ylab = 'Total kWh',
+     #ylim=c(0,75),
+     main='Fitted Holt-Winters Model for Daily Time Series')
+axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
+legend('topleft', 'Sub-Meter-2', col='green', lwd=2, bty='n')
+
+#Forecast
+wkofYr_smoothFcast3 <- forecast(wkofYr_smooth3, h=5, level=c(90, 95))
+wkofYr_smoothFcast3
+plot(wkofYr_smoothFcast3,
+     include=1, showgap=TRUE,
+     PI=TRUE,
+     shadecols=c('slategray3','slategray'),
+     #xaxt='n',
+     fcol='blue',
+     #xaxp=c(8,9,1),
+     xlab='Day', ylab = 'kWh',
+     # ylim=c(0,100),
+     main='5-Week Forecast of Energy Usage on Sub-Meter 3')
+axis(side=1, at= c(8, 9), labels=c('0', '1'))
+legend('topleft', 'Sub-Meter-2', col='blue', lwd=2, bty='n')
+
+
 
 #####################
 # Day of Week / Hour#
