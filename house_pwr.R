@@ -542,7 +542,6 @@ autoplot(yr_decomp1, labels=NULL, range.bars = TRUE) +
   xlab('Year') +
   ylab('kWh') +
   ggtitle('Decomposed Monthly Time Series- Sub-Meter-1')
-acf(housePWR_yrTS[,1], lag=20)
 
 #remove seasonality
 yr_seasonAdj1 <- seasadj(yr_decomp1)
@@ -608,7 +607,6 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 Quarter#
 ########
 
-
 qtr_decomp3 <- decompose(housePWR_qtrTS[,3])
 autoplot(qtr_decomp3,  range.bars = TRUE) +
   xlab('Year') +
@@ -619,6 +617,8 @@ qtr_decomp3
 
 #-remove seasonality
 qtr_seasonAdj3 <- seasadj(qtr_decomp3)
+acf(qtr_seasonAdj3, na.action=na.omit,lag=30)
+
 plot(qtr_seasonAdj3, #xaxt='n',
      col='blue',
      xlab='Year', ylab='Total kWh',
@@ -660,8 +660,6 @@ plot(qtr_smoothFcast3, include=1,
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 
-
-
 #######################
 # Month / day of month #
 #######################
@@ -676,6 +674,9 @@ autoplot(mnth_decomp3, labels=NULL, range.bars = TRUE) +
 #-remove seasonality
 mnth_seasonAdj3 <- seasadj(mnth_decomp3)
 
+acf(mnth_seasonAdj3, na.action=na.omit, lag=30)
+
+
 #-Fit Holt Winters Model
 mnth_smooth3 <- HoltWinters(mnth_seasonAdj3, beta=FALSE, gamma=FALSE)
 plot(mnth_smooth3, col='blue',
@@ -688,9 +689,9 @@ minor.tick(nx=12)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 #Forecast
-mnth_smoothFcast3 <- forecast(mnth_smooth3, h=4, level=c(90,95))
+mnth_smoothFcast3 <- forecast(mnth_smooth3, h=5, level=c(90,95))
 mnth_smoothFcast3
-plot(mnth_smoothFcast3,include=1, showgap=FALSE,
+plot(mnth_smoothFcast3,include=1, showgap=TRUE,
      #xaxt='n',
      col='blue',
      shadecols=c('slategray3','slategray'),
@@ -701,6 +702,7 @@ plot(mnth_smoothFcast3,include=1, showgap=FALSE,
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 summary(mnth_smoothFcast3)
 
+acf(mnth_smoothFcast3$residuals, na.action = na.omit)
 
 #####################
 # Day of Week / Hour#
@@ -714,9 +716,12 @@ autoplot(dofW_decomp2, labels=NULL, range.bars = TRUE) +
   ylab('kWh') +
   ggtitle('Decomposed Daily Time Series- Sub-Meter-2')
 
+acf(housePWR_dofWkTS[,2], na.action=na.omit, lag=30)
+
 dofW_seasonAdj2 <- seasadj(dofW_decomp2)
 autoplot(dofW_seasonAdj2)
 
+acf(dofW_seasonAdj2, na.action=na.omit, lag=30)
 
 dofW_smooth2 <- HoltWinters(dofW_seasonAdj2, beta=FALSE, gamma=FALSE)
 plot(dofW_smooth2)
@@ -735,10 +740,10 @@ dofW_smoothFcast2
 plot(dofW_smoothFcast2,
      include=1,
      PI=TRUE, showgap=FALSE,
-     xaxt='n',
+     #xaxt='n',
      fcol='green',
-     xaxp=c(8,9,1),
-     xlab='Day', ylab = 'Wh',
+     #xaxp=c(8,9,1),
+     xlab='Day', ylab = 'kWh',
     # ylim=c(0,100),
      main='Daily Forecast of Energy Usage on Sub-Meter 2')
 axis(side=1, at= c(8, 9), labels=c('0', '1'))
@@ -750,19 +755,6 @@ legend('topleft', 'Sub-Meter-2', col='green', lwd=2, bty='n')
 # Hour of Day / 5_minute#
 ##########################
 
-hofDay_decomp1 <- decompose(housePWR_hofDayTS[,1])
-autoplot(hofDay_decomp1, labels=NULL, range.bars = TRUE) +
-  xlab('Hour of Day') +
-  ylab('kWh') +
-  ggtitle('Decomposed Hourly Time Series- Sub-Meter-1')
-
-hofDay_decomp2 <- decompose(housePWR_hofDayTS[,2])
-autoplot(hofDay_decomp2, labels=NULL, range.bars = TRUE) +
-  xlab('Hour of Day') +
-  ylab('kWh') +
-  ggtitle('Decomposed Hourly Time Series- Sub-Meter-2')
-
-
 #-Sub Meter 3
 hofDay_decomp3 <- decompose(housePWR_hofDayTS[,3])
 autoplot(hofDay_decomp3, labels=NULL, range.bars = TRUE) +
@@ -772,7 +764,7 @@ autoplot(hofDay_decomp3, labels=NULL, range.bars = TRUE) +
 
 hofDay_seasonAdj3 <- seasadj(hofDay_decomp3)
 autoplot(hofDay_seasonAdj3)
-
+acf(hofDay_seasonAdj3, na.action=na.omit, lag=100)
 
 hofDay_smooth3 <- HoltWinters(hofDay_seasonAdj3, beta=FALSE, gamma=FALSE)
 plot(hofDay_smooth3)
@@ -803,21 +795,6 @@ axis(side=1, at= c(8, 9), labels=c('0', '1'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 
-
-#hofDay_decomp <- decompose(housePWR_hofDayTS)
-#autoplot(hofDay_decomp, xlim=c(0,24))
-
-#(hofDay_decomp$seasonal,xlab='Hour of Day', ylab='kWh',
-    # main='Seasonal Component of Hourly Time Series')
-
-#plot(hofDay_decomp$trend, xlab='Hour of Day', ylab='kWh',
-     #main='Trend Component of Hourly Time Series')
-
-#plot(hofDay_decomp$random, xlab='Hour of Day', ylab='kWh',
-    # main='Random Component of Hourly Time Series')
-
-#summary(hofDay_decomp)
-#hofDay_decomp
 
 #################
 # Weekend Hours #
@@ -878,307 +855,4 @@ legend('topleft', 'Sub-Meter-1', col='red', lwd=2, bty='n')
 
 
 
-
-
-Wknd_decomp2 <- decompose(housePWR_wkndTS[,2])
-autoplot(Wknd_decomp2, labels=NULL, range.bars = TRUE) +
-  xlab('Weekend Day') +
-  ylab('kWh') +
-  ggtitle('Decomposed Weekend Time Series- Sub-Meter-2')
-
-Wknd_decomp3 <- decompose(housePWR_wkndTS[,3])
-autoplot(Wknd_decomp3, labels=NULL, range.bars = TRUE) +
-  xlab('Weekend Day') +
-  ylab('kWh') +
-  ggtitle('Decomposed Weekend Time Series- Sub-Meter-3')
-
-
-# Holt-Winters Smooting------------------------------------------------------------
-
-##########
-# Yearly #
-##########
-
-#sub-meter-1
-#remove seasonality
-yr_seasonAdj1 <- housePWR_yrTS[,1]-yr_decomp1$seasonal
-plot(yr_seasonAdj1)
-acf(yr_seasonAdj1)
-
-yr_seasonAdj1 <- seasadj(yr_decomp1)
-
-yr_smooth1 <- HoltWinters(yr_seasonAdj1, beta=FALSE, gamma=FALSE)
-plot(yr_smooth1)
-
-yr_smoothFcast1 <- forecast(yr_smooth1)
-autoplot(yr_smoothFcast1)
-
-#sub-meter-2
-#remove seasonality
-yr_seasonAdj2 <- housePWR_yrTS[,2]-yr_decomp2$seasonal
-plot(yr_seasonAdj2)
-acf(yr_seasonAdj2)
-
-yr_smooth2 <- HoltWinters(yr_seasonAdj2, beta=FALSE, gamma=FALSE)
-plot(yr_smooth2)
-
-yr_smoothFcast2 <- forecast(yr_smooth2)
-autoplot(yr_smoothFcast2)
-
-#sub-meter-3
-#remove seasonality
-yr_seasonAdj3 <- housePWR_yrTS[,3]-yr_decomp3$seasonal
-plot(yr_seasonAdj3)
-acf(yr_seasonAdj3)
-
-yr_smooth3 <- HoltWinters(yr_seasonAdj3, beta=FALSE, gamma=FALSE)
-plot(yr_smooth3)
-
-yr_smoothFcast3 <- forecast(yr_smooth3)
-autoplot(yr_smoothFcast3)
-acf(yr_smoothFcast3$residuals, na.action = na.omit, lag=50)
-
-#######################################################
-
-#sub-meter-1
-
-# Remove seasonal component
-yr_seasonAdj <- housePWR_yrTS - yr_decomp$seasonal
-plot(yr_seasonAdj, plot.type='s',
-     #xaxp = c(2007, 2011, 4),
-     col=c('red', 'green', 'blue'),
-     xlab='Year', ylab='kWh',
-     main='Seasonally-Adjusted Yearly Energy Consumption')
-minor.tick(nx=6)
-b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
-legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
-
-yr_smooth1 <- HoltWinters(housePWR_yrTS[,1], beta=FALSE, gamma=FALSE)
-
-plot(yr_smooth1, plot.type='m',
-     #xaxp= c(2007, 2010, 3),
-     xlab='Year', ylab='kWh',
-     ylim= c(0,80),
-     main='Holt-Winters Forecast of Yearly Energy Consumption')
-b <- 'Sub-meter-1'
-legend('topleft', b, col='red', lwd=2, bty='n')
-
-
-yr_smoothFcast1 <- forecast(yr_smooth1, h=2)
-autoplot(yr_smoothFcast1,
-         xlim=c(2010.5, 2011.1),
-         xlab='Year', ylab='Total kWh',
-         main='30 day Forecast of Energy Consumption')
-
-
-
-
-
-#######################
-# Month / Day of Week #
-#######################
-#sub-meter-1
-#-Remove seasonality
-mnth_seasonAdj1 <- housePWR_mnthTS[,1]-mnth_decomp1$seasonal
-acf(mnth_seasonAdj1)
-
-mnth_smooth1 <- HoltWinters(mnth_seasonAdj1, beta=FALSE, gamma=FALSE)
-plot(mnth_smooth1)
-
-mnth_smoothFcast1 <- forecast(mnth_smooth1)
-autoplot(mnth_smoothFcast1)
-
-#Sub-Meter-2
-#Remove Seasonality
-mnth_seasonAdj2 <- housePWR_mnthTS[,2]-mnth_decomp2$seasonal
-acf(mnth_seasonAdj2)
-
-mnth_smooth2 <- HoltWinters(mnth_seasonAdj2, beta=FALSE, gamma=FALSE)
-plot(mnth_smooth2)
-
-mnth_smoothFcast2 <- forecast(mnth_smooth2)
-autoplot(mnth_smoothFcast2)
-
-#Sub-meter-3
-
-
-
-
-
-
-
-
-
-
-
-
-
-acf(mnth_smoothFcast3$residuals, na.action=na.pass, lag=50)
-
-
-# Remove seasonal component
-mnth_seasonAdj <- housePWR_mnthTS - mnth_decomp$seasonal
-plot(mnth_seasonAdj, plot.type='s',
-     xaxp = c(1, 12, 11),
-     col=c('red', 'green', 'blue'),
-         xlab='Month', ylab='kWh',
-         main='Seasonally-Adjusted Monthly Energy Consumption')
-b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
-legend('top', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
-
-############################################
-#sub-meter-1
-mnth_smooth1 <- HoltWinters(mnth_seasonAdj[,1], beta=FALSE, gamma=FALSE)
-plot(mnth_smooth1)
-
-mnth_smoothFcast1 <- forecast(mnth_smooth1)
-autoplot(mnth_smoothFcast1,
-         #xlim=c(10,13),
-         xlab='Month',
-         ylab='kWh',
-         main='30 Day Forecast of Sub-Meter-1')
-
-#sub-meter-2
-mnth_smooth2 <- HoltWinters(mnth_seasonAdj[,2], beta=FALSE, gamma=FALSE)
-plot(mnth_smooth2)
-
-mnth_smoothFcast2 <- forecast(mnth_smooth2)
-autoplot(mnth_smoothFcast2,
-         xlim=c(10,15),
-         xlab='Month',
-         ylab='kWh',
-         main='30 Day Forecast of Sub-Meter-2')
-
-#sub-meter-3
-mnth_smooth3 <- HoltWinters(mnth_seasonAdj[,3], beta=FALSE, gamma=FALSE)
-plot(mnth_smooth3)
-
-mnth_smoothFcast3 <- forecast(mnth_smooth3)
-autoplot(mnth_smoothFcast3,
-         xlim=c(10,15),
-         xlab='Month',
-         ylab='kWh',
-         main='30 Day Forecast of Sub-Meter-3')
-
-#####################
-# Day of Week / Hour#
-#####################
-
-dofW_seasonAdj <- housePWR_dofWkTS - dofW_decomp$seasonal
-plot(dofW_seasonAdj, plot.type='s',
-     xaxp = c(1, 7, 6),
-     col=c('red', 'green', 'blue'),
-     xlab='Day of Week', ylab='kWh',
-     main='Seasonally-Adjusted Energy Consumption for Days of the Week')
-b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
-legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
-
-
-#sub-meter-1
-dofW_smooth1 <- HoltWinters(dofW_seasonAdj[,1], beta=FALSE, gamma=FALSE)
-plot(dofW_smooth1)
-
-dofW_smoothFcast1 <- forecast(dofW_smooth1, h=30)
-autoplot(dofW_smoothFcast1,
-         xlim= c(5, 9),
-         xlab='Day of the Week',
-         ylab='kWh',
-         main='Forecast of Sub-Meter-1')
-
-#sub-meter-2
-dofW_smooth2 <- HoltWinters(dofW_seasonAdj[,2], beta=FALSE, gamma=FALSE)
-plot(dofW_smooth2)
-
-dofW_smoothFcast2 <- forecast(dofW_smooth2)
-autoplot(dofW_smoothFcast2)
-
-#sub-meter-3
-dofW_smooth3 <- HoltWinters(dofW_seasonAdj[,3], beta=FALSE, gamma=FALSE)
-plot(dofW_smooth3)
-
-dofW_smoothFcast3 <- forecast(dofW_smooth3)
-autoplot(dofW_smoothFcast3)
-
-##########################
-# Hour of Day / 10_minute#
-##########################
-
-#sub-meter-1
-##-Remove seasonality
-hofDay_seasonAdj1 <- housePWR_hofDayTS[,1] - hofDay_decomp1$seasonal
-acf(hofDay_seasonAdj1)
-hofDay_smooth1 <- HoltWinters(hofDay_seasonAdj1, beta=FALSE, gamma=FALSE)
-plot(hofDay_smooth1)
-
-hofDay_smoothFcast1 <- forecast(hofDay_smooth1)
-plot(hofDay_smoothFcast1)
-
-#-Sub-meter-2
-hofDay_seasonAdj2 <- housePWR_hofDayTS[,2] - hofDay_decomp2$seasonal
-acf(hofDay_seasonAdj2)
-
-hofDay_smooth2 <- HoltWinters(hofDay_seasonAdj2, beta=FALSE, gamma=FALSE)
-plot(hofDay_smooth2)
-
-hofDay_smoothFcast2 <- forecast(hofDay_smooth2)
-plot(hofDay_smoothFcast2)
-
-#-Sub-meter-3
-hofDay_seasonAdj3 <- housePWR_hofDayTS[,3] - hofDay_decomp3$seasonal
-acf(hofDay_seasonAdj3)
-hofDay_smooth2 <- HoltWinters(hofDay_seasonAdj3, beta=FALSE, gamma=FALSE)
-plot(hofDay_smooth3)
-
-hofDay_smoothFcast3 <- forecast(hofDay_smooth3, h=50)
-plot(hofDay_smoothFcast3)
-
-
-
-
-
-
-hofDay_seasonAdj3 <- housePWR_hofDayTS[,3]-hofDay_decomp3$seasonal
-plot(hofDay_seasonAdj3, plot.type='s',
-     xaxp = c(0, 23, 23),
-     col=c('red', 'green', 'blue'),
-     xlab='Hour of Day', ylab='kWh',
-     main='Seasonally-Adjusted Hourly Energy Consumption')
-b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
-legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
-
-acf(housePWR_hofDayTS, lag=40)
-acf(hofDay_seasonAdj3, lag=40)
-
-#sub-meter-1
-hofDay_smooth1 <- HoltWinters(hofDay_seasonAdj[,1], beta=FALSE, gamma=FALSE)
-plot(hofDay_smooth1)
-
-hofDay_smoothFcast1 <- forecast(hofDay_smooth1, h=24)
-autoplot(hofDay_smoothFcast1)
-
-#sub-meter-2
-hofDay_smooth2 <- HoltWinters(hofDay_seasonAdj[,2], beta=FALSE, gamma=FALSE)
-plot(hofDay_smooth2)
-
-hofDay_smoothFcast2 <- forecast(hofDay_smooth2)
-autoplot(hofDay_smoothFcast2)
-
-#sub-meter-3
-hofDay_smooth3 <- HoltWinters(hofDay_seasonAdj3, beta=FALSE, gamma=FALSE)
-plot(hofDay_smooth3)
-
-hofDay_smoothFcast3 <- forecast(hofDay_smooth3, h=150)
-autoplot(hofDay_smoothFcast3)
-
-##########
-# Weekend#
-##########
-
-Wknd_smooth1 <- HoltWinters(Wknd_seasonAdj1, beta=FALSE, gamma = FALSE)
-plot(Wknd_smooth1)
-
-Wknd_smoothFcast1 <- forecast(Wknd_smooth1, h=20)
-plot(Wknd_smoothFcast1)
-
-acf(Wknd_smoothFcast1$residuals, na.action = na.pass, lag=48)
 
