@@ -215,12 +215,12 @@ house_pwr_tidy %>%
 
 #Week of the year- bar plot
 house_pwr_tidy %>%
-  filter(year(DateTime)>2006) %>%
+  #filter(year(DateTime)>2006) %>%
   group_by(week(DateTime), Meter) %>%
-  summarie(sum=sum(Watt_hr/1000)) %>%
+  summarise(sum=sum(Watt_hr/1000)) %>%
   ggplot(aes(x=factor(`week(DateTime)`), y=sum)) +
-  labs(x='Week of the Year', y='Wh') +
-  ggtitle('Average Energy Usage by Week of the Year') +
+  labs(x='Week of the Year', y='kWh') +
+  ggtitle('Total Energy Usage by Week of the Year') +
   theme(axis.text.x = element_text(angle=90)) +
   geom_bar(stat='identity', aes(fill=Meter), colour='black')
 
@@ -266,10 +266,10 @@ house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Day, Meter) %>%
-  summarie(sum=sum(Watt_hr/1000)) %>%
+  summarise(sum=sum(Watt_hr/1000)) %>%
   ggplot(aes(x=factor(Day), y=sum)) +
-  labs(x='Day of the Week', y='Wh') +
-  ggtitle('Average Energy Useage by Day of Week') +
+  labs(x='Day of the Week', y='kWh') +
+  ggtitle('Total Energy Useage by Day of Week') +
   geom_bar(stat='identity', aes(fill = Meter), colour='black')
 
 
@@ -296,7 +296,7 @@ house_pwr_tidy %>%
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   group_by(hour(DateTime), Meter) %>%
-  summarie(sum=sum(Watt_hr/1000)) %>%
+  summarise(sum=sum(Watt_hr/1000)) %>%
   ggplot(aes(x=factor(`hour(DateTime)`), sum, group=Meter,fill=Meter)) +
   labs(x='Hour of the Day', y='Proportion of Energy Useage') +
   ggtitle('Proportion of Average Hourly Energy Consumption') +
@@ -372,7 +372,7 @@ housePWR_mnth <- house_pwr %>%
 
 # Subset week of year
 housePWR_wkofYr <- house_pwr %>%
-  filter(year(DateTime)>2006) %>%
+  #filter(year(DateTime)>2006) %>%
   #filter(year(DateTime)<2010) %>%
   mutate(DofWk=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(year(DateTime),week(DateTime)) %>%
@@ -464,13 +464,13 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 # Week of the year
-housePWR_wkofYrTS <- ts(housePWR_wkofYr[,3:5], frequency =53, start=c(2007,1), end=c(2010,48))
+housePWR_wkofYrTS <- ts(housePWR_wkofYr[,3:5], frequency =53, start=c(2006,51), end=c(2010,48))
 plot(housePWR_wkofYrTS, plot.type='s', #xaxt='n',
      #xaxp = c(1, 13, 12),
      col=c('red', 'green', 'blue'),
-     xlab ='Year', ylab = 'Wh',
-     #ylim=c(0,250),
-     main='Average Energy Consumption by Week of the Year')
+     xlab ='Year', ylab = 'kWh',
+     ylim=c(0,120),
+     main='Total Energy Consumption by Week of the Year')
 #axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12,13), labels=MonthLst)
 minor.tick(nx=52)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
@@ -481,8 +481,8 @@ housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency =7, start=c(1,1))
 plot(housePWR_dofWkTS, plot.type='s', #xaxt='n',
      col=c('red', 'green', 'blue'),
      xlab ='Week of Year', ylab = 'Wh',
-     #xlim = c(1,53) , ylim=c(0,13),
-     main='Average Energy Consumption by Day of Week')
+     xlim = c(1,53) , ylim=c(0,75),
+     main='Total Energy Consumption by Day of Week')
 minor.tick(nx=70)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
@@ -493,7 +493,7 @@ housePWR_hofDayTS <- ts(housePWR_hofDay[,3:5], frequency=24, start=c(0,0))
 plot(housePWR_hofDayTS, plot.type='s',
      #xaxp = c(0,48, 47),
      col=c('red', 'green', 'blue'),
-     xlab='Hour of Day', ylab = 'kWh',
+     xlab='Day', ylab = 'kWh',
      main='Total kWh Consumption by Hour of the Day')
 minor.tick(nx=24)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
@@ -550,7 +550,7 @@ z
 fit4 <- tslm(housePWR_wkofYrTS ~ trend)
 xx <- forecast(fit4, level=c(90,95), h=14)
 autoplot(xx, PI=TRUE, colour=TRUE) +
-  xlab('Month') +
+  xlab('Year') +
   ylab('Total kWh') +
   ggtitle('Forecasted Trend of Energy Consumption by Week of the Year')
 summary(xx)
@@ -563,14 +563,14 @@ autoplot(xxa, PI=TRUE, colour=TRUE) +
   xlab('Week of the Year') +
   ylab('Total kWh') +
   ggtitle('Forecasted Trend of Energy Consumption by Day of the Week')
-summary(xxa)
+summary(fit4a)
 xxa
 
-# Hour of Day /dofWk
+# Hour of Day
 fit5 <- tslm(housePWR_hofDayTS ~ trend)
 yy <- forecast(fit5, h=48)
 autoplot(yy, PI=TRUE, colour=TRUE) +
-  xlab('Hour of Day') +
+  xlab('Day of the Week') +
   ylab('Total kWh') +
   ggtitle('Forecasted Trend of Hourly Energy Consumption in a Day')
 summary(yy)
@@ -850,7 +850,7 @@ plot(dofW_smoothFcast2,
      fcol='green',
      #xaxp=c(8,9,1),
      xlab='Week', ylab = 'Wh',
-     ylim=c(-0.5,3),
+     #ylim=c(-0.5,3),
      main='14 Day Forecast of Energy Usage on Sub-Meter 2')
 axis(side=1, at= c(8, 9), labels=c('0', '1'))
 legend('topleft', 'Sub-Meter-2', col='green', lwd=2, bty='n')
