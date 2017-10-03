@@ -371,6 +371,16 @@ housePWR_wkofYr <- house_pwr %>%
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
             first_DateTime = first(DateTime))
 
+housePWR_dofWk <- house_pwr %>%
+  filter(year(DateTime)>2006) %>%
+  #filter(year(DateTime)<2010) %>%
+  mutate(DofWk=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(week(DateTime),DofWk) %>%
+  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
+            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
+            first_DateTime = first(DateTime))
+
 # Subset hour of day
 housePWR_hofDay <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
@@ -455,6 +465,20 @@ minor.tick(nx=52)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
+#Day of Week
+housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency =7, start=c(1,1), end=c(53,4))
+plot(housePWR_dofWkTS, plot.type='s', #xaxt='n',
+     #xaxp = c(1, 13, 12),
+     col=c('red', 'green', 'blue'),
+     xlab ='Week of Year', ylab = 'Total kWh',
+     ylim=c(0,80),
+     main='Total Energy Consumption by Day of Week')
+#axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12,13), labels=MonthLst)
+minor.tick(nx=52)
+b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
+legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
+
+
 # Hour of Day
 housePWR_hofDayTS <- ts(housePWR_hofDay[,3:5], frequency=24, start=c(0,0))
 plot(housePWR_hofDayTS, plot.type='s',
@@ -522,6 +546,16 @@ autoplot(xx, PI=TRUE, colour=TRUE) +
   ggtitle('Forecasted Trend of Energy Consumption by Week of the Year')
 summary(xx)
 xx
+
+#day of week
+fit4a <- tslm(housePWR_dofWkTS ~ trend)
+xxa <- forecast(fit4a, level=c(90,95), h=20)
+autoplot(xxa, PI=TRUE, colour=TRUE) +
+  xlab('Month') +
+  ylab('Total kWh') +
+  ggtitle('Forecasted Trend of Energy Consumption by Day of the Week')
+summary(xxa)
+xxa
 
 # Hour of Day /dofWk
 fit5 <- tslm(housePWR_hofDayTS ~ trend)
@@ -725,9 +759,9 @@ acf(mnth_smoothFcast3$residuals, na.action = na.omit)
 ##-Sub-Meter-3
 wkofYr_decomp3 <- decompose(housePWR_wkofYrTS[,3])
 autoplot(wkofYr_decomp3, labels=NULL, range.bars = TRUE) +
-  xlab('Day of Week') +
+  xlab('Week of the Year') +
   ylab('kWh') +
-  ggtitle('Decomposed Daily Time Series- Sub-Meter-2')
+  ggtitle('Decomposed Weekly Time Series- Sub-Meter-2')
 
 acf(housePWR_wkofYrTS[,3], na.action=na.omit, lag=30)
 
@@ -775,7 +809,7 @@ dofW_decomp2 <- decompose(housePWR_dofWkTS[,2])
 autoplot(dofW_decomp2, labels=NULL, range.bars = TRUE) +
   xlab('Day of Week') +
   ylab('kWh') +
-  ggtitle('Decomposed Daily Time Series- Sub-Meter-2')
+  ggtitle('Decomposed Day of the Week Time Series- Sub-Meter-2')
 
 acf(housePWR_dofWkTS[,2], na.action=na.omit, lag=30)
 
@@ -787,26 +821,27 @@ acf(dofW_seasonAdj2, na.action=na.omit, lag=30)
 dofW_smooth2 <- HoltWinters(dofW_seasonAdj2, beta=FALSE, gamma=FALSE)
 plot(dofW_smooth2)
 
-plot(dofW_smooth2, xaxt='n', col='green',
-     xaxp=c(1,8,7),
+plot(dofW_smooth2, col='green',
+     #xaxp=c(1,8,7),
      xlab='Day of Week', ylab = 'Total kWh',
      #ylim=c(0,75),
-     main='Fitted Holt-Winters Model for Daily Time Series')
-axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
+     main='Fitted Holt-Winters Model for Day of the Week Series')
+#axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
+minor.tick(nx=52)
 legend('topleft', 'Sub-Meter-2', col='green', lwd=2, bty='n')
 
 #Forecast
-dofW_smoothFcast2 <- forecast(dofW_smooth2, h=48, level=c(90, 95))
+dofW_smoothFcast2 <- forecast(dofW_smooth2, h=32, level=c(90, 95))
 dofW_smoothFcast2
 plot(dofW_smoothFcast2,
-     include=1,
-     PI=TRUE, showgap=FALSE,
+     include=0,
+     PI=TRUE, showgap=TRUE,
      #xaxt='n',
      fcol='green',
      #xaxp=c(8,9,1),
-     xlab='Day', ylab = 'kWh',
+     xlab='Week', ylab = 'kWh',
     # ylim=c(0,100),
-     main='Daily Forecast of Energy Usage on Sub-Meter 2')
+     main='5 Day Forecast of Energy Usage on Sub-Meter 2')
 axis(side=1, at= c(8, 9), labels=c('0', '1'))
 legend('topleft', 'Sub-Meter-2', col='green', lwd=2, bty='n')
 
