@@ -122,7 +122,7 @@ house_pwr_tidy %>%
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   group_by(year(DateTime), Meter) %>%
-  summarise(sum=sum(Watt_hr/1000)) %>%
+  summarie(sum=sum(Watt_hr/1000)) %>%
   ggplot(aes(x=factor(`year(DateTime)`), sum, group=Meter, colour=Meter)) +
   labs(x='Year', y='kWh') +
   ggtitle('Total Yearly Energy Consumption') +
@@ -131,8 +131,9 @@ house_pwr_tidy %>%
 ##-Year Bar Chart
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
+  #mutate(year=year(DateTime)) %>%
   group_by(year(DateTime), Meter) %>%
-  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  summarise(sum=round(sum(Watt_hr/1000),3)) %>%
   ggplot(aes(x=factor(`year(DateTime)`), y=sum)) +
   labs(x='Year', y='kWh') +
   ggtitle('Total Energy Useage by Year') +
@@ -142,13 +143,13 @@ house_pwr_tidy %>%
 #Quarter bar  plot
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
-  filter(year(DateTime)<2010) %>%
+  #filter(year(DateTime)<2010) %>%
+  #mutate(quarter=quarter(DateTime)) %>%
   group_by(quarter(DateTime), Meter) %>%
-  #filter(quarter(DateTime)<3) %>%
-  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  summarise(sum=round(sum(Watt_hr/1000),3)) %>%
   ggplot(aes(x=factor(`quarter(DateTime)`), y=sum)) +
-  labs(x='Quarter of the Year', y='kWh') +
-  ggtitle('Total Quarterly Energy Consumption (2007-2010)') +
+  labs(x='Quarter of the Year', y='Wh') +
+  ggtitle('Average Quarterly Energy Consumption') +
   geom_bar(stat='identity', aes(fill = Meter), color='black')
 
 #Quarter Proportion plot
@@ -170,8 +171,8 @@ house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Month, Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(Month), avg, group=Meter,fill=Meter)) +
+  summarie(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(Month), sum, group=Meter,fill=Meter)) +
   labs(x='Month of the Year', y='Proportion of Monthly Energy Useage') +
   ggtitle('Proportion of Average Monthly Energy Useage') +
   geom_bar(stat='identity', position='fill', color='black')
@@ -181,8 +182,8 @@ house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Month, Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(Month), avg, group=Meter, colour=Meter)) +
+  summarie(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(Month), sum, group=Meter, colour=Meter)) +
   labs(x='Month of the Year', y='Wh') +
   ggtitle('Average Monthly Energy Useage') +
   geom_line(size=1) +
@@ -191,26 +192,37 @@ house_pwr_tidy %>%
 ###-Month bar chart
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
-  filter(year(DateTime)<2010) %>%
+  #filter(year(DateTime)<2010) %>%
   mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Month, Meter) %>%
   summarise(sum=round(sum(Watt_hr)/1000),3) %>%
   ggplot(aes(x=factor(Month), y=sum)) +
   labs(x='Month of the Year', y='kWh') +
-  ggtitle('Total Energy Useage by Month of the Year (2007-2010)') +
+  ggtitle('Total Energy Useage by Month of the Year') +
   geom_bar(stat='identity', aes(fill = Meter), colour='black')
 
-#Week of the year
+#Week of the year- line plot
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   group_by(week(DateTime), Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`week(DateTime)`), avg, group=Meter,colour=Meter)) +
-  labs(x='Week of the Year', y='Avg Watt Hour Useage') +
-  ggtitle('Average Weekly Energy Usage') +
+  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  ggplot(aes(x=factor(`week(DateTime)`), sum, group=Meter,colour=Meter)) +
+  labs(x='Week of the Year', y='kWh') +
+  ggtitle('Total Energy Usage by Week of the Year') +
   theme(axis.text.x = element_text(angle=90)) +
   geom_line(size=1) +
   geom_line()
+
+#Week of the year- bar plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(week(DateTime), Meter) %>%
+  summarie(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(`week(DateTime)`), y=sum)) +
+  labs(x='Week of the Year', y='Wh') +
+  ggtitle('Average Energy Usage by Week of the Year') +
+  theme(axis.text.x = element_text(angle=90)) +
+  geom_bar(stat='identity', aes(fill=Meter), colour='black')
 
 
 
@@ -218,8 +230,8 @@ house_pwr_tidy %>%
 #Not informative
 house_pwr_tidy %>%
   group_by(day(DateTime), Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`day(DateTime)`), avg, group=Meter,colour=Meter)) +
+  summarie(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(`day(DateTime)`), sum, group=Meter,colour=Meter)) +
   labs(x='Day of the Month', y='Avg Watt Hour Useage') +
   ggtitle('Average Daily Watt Hour Useage') +
   geom_line(size=1) +
@@ -231,8 +243,8 @@ house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Day, Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(Day), avg, group=Meter,fill=Meter)) +
+  summarie(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(Day), sum, group=Meter,fill=Meter)) +
   labs(x='Day of the Week', y='Proportion of Energy Useage') +
   ggtitle('Proportion of Average Daily Energy Consumption') +
   geom_bar(stat='identity', position='fill', color='black')
@@ -242,8 +254,8 @@ house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Day, Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(Day), avg, group=Meter, colour=Meter)) +
+  summarie(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(Day), sum, group=Meter, colour=Meter)) +
   labs(x='Day of the Week', y='Wh') +
   ggtitle('Average Daily Energy Consumption') +
   geom_line(size=1) +
@@ -254,10 +266,10 @@ house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Day, Meter) %>%
-  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  summarie(sum=sum(Watt_hr/1000)) %>%
   ggplot(aes(x=factor(Day), y=sum)) +
-  labs(x='Day of the Week', y='kWh') +
-  ggtitle('Total Energy Useage by Day of Week') +
+  labs(x='Day of the Week', y='Wh') +
+  ggtitle('Average Energy Useage by Day of Week') +
   geom_bar(stat='identity', aes(fill = Meter), colour='black')
 
 
@@ -272,8 +284,8 @@ house_pwr_tidy %>%
   mutate(weekend=lubridate::wday(DateTime, label=TRUE, abbr=FALSE)) %>%
   filter(weekend==c('Saturday','Sunday')) %>%
   group_by(weekend, Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(weekend), avg, group=Meter,fill=Meter)) +
+  summarie(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(weekend), sum, group=Meter,fill=Meter)) +
   labs(x='Weekend Day', y='Proportion of Energy Useage') +
   ggtitle('Proportion of Average Energy Consumption by Weekend Day') +
   geom_bar(stat='identity', position='fill', color='black')
@@ -284,8 +296,8 @@ house_pwr_tidy %>%
 house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   group_by(hour(DateTime), Meter) %>%
-  summarise(avg=mean(Watt_hr)) %>%
-  ggplot(aes(x=factor(`hour(DateTime)`), avg, group=Meter,fill=Meter)) +
+  summarie(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(`hour(DateTime)`), sum, group=Meter,fill=Meter)) +
   labs(x='Hour of the Day', y='Proportion of Energy Useage') +
   ggtitle('Proportion of Average Hourly Energy Consumption') +
   geom_bar(stat='identity', position='fill', color='black')
@@ -326,39 +338,37 @@ housePWR_yr <- house_pwr %>%
   filter(year(DateTime) > 2006) %>%
   #filter(year(DateTime)<2010) %>%
   group_by(year(DateTime)) %>%
-  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
-            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
-            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
+  summarise(Sub_Meter_1=(sum(`Sub-Meter-1`)/1000),
+            Sub_Meter_2=(sum(`Sub-Meter-2`)/1000),
+            Sub_Meter_3=(sum(`Sub-Meter-3`)/1000),
             first_DateTime = first(DateTime))
-
 #Semester
 housePWR_semstr <- house_pwr %>%
   filter(year(DateTime) > 2006) %>%
   group_by(year(DateTime), semester(DateTime)) %>%
-  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
-            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
-            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
+  summarise(Sub_Meter_1=(sum(`Sub-Meter-1`)/1000),
+            Sub_Meter_2=(sum(`Sub-Meter-2`)/1000),
+            Sub_Meter_3=(sum(`Sub-Meter-3`)/1000),
             first_DateTime = first(DateTime))
 
 #Quarter
 housePWR_qtr <- house_pwr %>%
   filter(year(DateTime) > 2006) %>%
-  filter(year(DateTime)<2010) %>%
+  #filter(year(DateTime)<2010) %>%
   group_by(year(DateTime), quarter(DateTime)) %>%
-  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
-            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
-            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
+  summarise(Sub_Meter_1=(sum(`Sub-Meter-1`)/1000),
+            Sub_Meter_2=(sum(`Sub-Meter-2`)/1000),
+            Sub_Meter_3=(sum(`Sub-Meter-3`)/1000),
             first_DateTime = first(DateTime))
-
 # Subset Month
 housePWR_mnth <- house_pwr %>%
   filter(year(DateTime) > 2006) %>%
   filter(year(DateTime)<2011) %>%
   group_by(year(DateTime),month(DateTime)) %>%
-  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
-              Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
-              Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
-              first_DateTime = first(DateTime))
+  summarise(Sub_Meter_1=(sum(`Sub-Meter-1`)/1000),
+            Sub_Meter_2=(sum(`Sub-Meter-2`)/1000),
+            Sub_Meter_3=(sum(`Sub-Meter-3`)/1000),
+            first_DateTime = first(DateTime))
 
 # Subset week of year
 housePWR_wkofYr <- house_pwr %>%
@@ -366,19 +376,20 @@ housePWR_wkofYr <- house_pwr %>%
   #filter(year(DateTime)<2010) %>%
   mutate(DofWk=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(year(DateTime),week(DateTime)) %>%
-  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
-            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
-            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
+  summarise(Sub_Meter_1=(sum(`Sub-Meter-1`)/1000),
+            Sub_Meter_2=(sum(`Sub-Meter-2`)/1000),
+            Sub_Meter_3=(sum(`Sub-Meter-3`)/1000),
             first_DateTime = first(DateTime))
 
+#Subset by day of week
 housePWR_dofWk <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
   #filter(year(DateTime)<2010) %>%
   mutate(DofWk=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(week(DateTime),DofWk) %>%
-  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
-            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
-            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
+  summarise(Sub_Meter_1=(sum(`Sub-Meter-1`)/1000),
+            Sub_Meter_2=(sum(`Sub-Meter-2`)/1000),
+            Sub_Meter_3=(sum(`Sub-Meter-3`)/1000),
             first_DateTime = first(DateTime))
 
 # Subset hour of day
@@ -386,9 +397,9 @@ housePWR_hofDay <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
   #filter((minute(DateTime) %% 5) == 0) %>%
   group_by(wday(DateTime), hour(DateTime)) %>%
-  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
-            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
-            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
+  summarise(Sub_Meter_1=(sum(`Sub-Meter-1`)/1000),
+            Sub_Meter_2=(sum(`Sub-Meter-2`)/1000),
+            Sub_Meter_3=(sum(`Sub-Meter-3`)/1000),
             first_DateTime = first(DateTime))
 
 # Subset by Weekends
@@ -398,9 +409,9 @@ housePWR_wknd <- house_pwr %>%
   mutate(Wknd=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   filter(Wknd == c('Sat', 'Sun')) %>%
   group_by(Wknd, hour(DateTime)) %>%
-  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
-            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
-            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000),3),
+  summarise(Sub_Meter_1=(sum(`Sub-Meter-1`)/1000),
+            Sub_Meter_2=(sum(`Sub-Meter-2`)/1000),
+            Sub_Meter_3=(sum(`Sub-Meter-3`)/1000),
             first_DateTime = first(DateTime)) %>%
  arrange(desc(Wknd))
 
@@ -457,24 +468,22 @@ housePWR_wkofYrTS <- ts(housePWR_wkofYr[,3:5], frequency =53, start=c(2007,1), e
 plot(housePWR_wkofYrTS, plot.type='s', #xaxt='n',
      #xaxp = c(1, 13, 12),
      col=c('red', 'green', 'blue'),
-     xlab ='Year', ylab = 'Total kWh',
+     xlab ='Year', ylab = 'Wh',
      #ylim=c(0,250),
-     main='Total Energy Consumption by Day of Week')
+     main='Average Energy Consumption by Week of the Year')
 #axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12,13), labels=MonthLst)
 minor.tick(nx=52)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 #Day of Week
-housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency =7, start=c(1,1), end=c(53,4))
+housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency =7, start=c(1,1))
 plot(housePWR_dofWkTS, plot.type='s', #xaxt='n',
-     #xaxp = c(1, 13, 12),
      col=c('red', 'green', 'blue'),
-     xlab ='Week of Year', ylab = 'Total kWh',
-     ylim=c(0,80),
-     main='Total Energy Consumption by Day of Week')
-#axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12,13), labels=MonthLst)
-minor.tick(nx=52)
+     xlab ='Week of Year', ylab = 'Wh',
+     #xlim = c(1,53) , ylim=c(0,13),
+     main='Average Energy Consumption by Day of Week')
+minor.tick(nx=70)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
@@ -509,8 +518,8 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 # Year
 fit1 <- tslm(housePWR_yrTS ~ trend)
-x <- forecast(fit1, h=2, level = c(90, 95), robust=TRUE)
-autoplot(x, PI=TRUE, colour=TRUE, showgap=TRUE) +
+x <- forecast(fit1, h=2, level = c(90, 95))
+autoplot(x, PI=TRUE, colour=TRUE, showgap=FALSE) +
   xlab('Year') +
   ylab('Total kWh') +
   ggtitle('Forecasted Trend of Yearly Energy Consumption')
@@ -529,7 +538,7 @@ summary(y)
 # Month
 fit3 <- tslm(housePWR_mnthTS ~ trend)
 z <- forecast(fit3,h=10, level=c(90,95))
-autoplot(y, PI=TRUE, colour=TRUE) +
+autoplot(z, PI=TRUE, colour=TRUE) +
   xlab('Month') +
   ylab('Total kWh') +
   ggtitle('Forecasted Monthly Trend of Energy Consumption')
@@ -549,9 +558,9 @@ xx
 
 #day of week
 fit4a <- tslm(housePWR_dofWkTS ~ trend)
-xxa <- forecast(fit4a, level=c(90,95), h=20)
+xxa <- forecast(fit4a, level=c(90,95), h=30)
 autoplot(xxa, PI=TRUE, colour=TRUE) +
-  xlab('Month') +
+  xlab('Week of the Year') +
   ylab('Total kWh') +
   ggtitle('Forecasted Trend of Energy Consumption by Day of the Week')
 summary(xxa)
@@ -800,7 +809,7 @@ legend('topleft', 'Sub-Meter-2', col='blue', lwd=2, bty='n')
 
 
 #####################
-# Day of Week / Hour#
+# Day of Week
 #####################
 
 
@@ -823,7 +832,7 @@ plot(dofW_smooth2)
 
 plot(dofW_smooth2, col='green',
      #xaxp=c(1,8,7),
-     xlab='Day of Week', ylab = 'Total kWh',
+     xlab='Week of the Year', ylab = 'Wh',
      #ylim=c(0,75),
      main='Fitted Holt-Winters Model for Day of the Week Series')
 #axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
@@ -831,17 +840,18 @@ minor.tick(nx=52)
 legend('topleft', 'Sub-Meter-2', col='green', lwd=2, bty='n')
 
 #Forecast
-dofW_smoothFcast2 <- forecast(dofW_smooth2, h=32, level=c(90, 95))
+dofW_smoothFcast2 <- forecast(dofW_smooth2, h=14, level=c(90, 95))
 dofW_smoothFcast2
 plot(dofW_smoothFcast2,
-     include=0,
-     PI=TRUE, showgap=TRUE,
+     include=1,
+     PI=TRUE, showgap=FALSE,
+     shadecols=c('slategray3','slategray'),
      #xaxt='n',
      fcol='green',
      #xaxp=c(8,9,1),
-     xlab='Week', ylab = 'kWh',
-    # ylim=c(0,100),
-     main='5 Day Forecast of Energy Usage on Sub-Meter 2')
+     xlab='Week', ylab = 'Wh',
+     ylim=c(-0.5,3),
+     main='14 Day Forecast of Energy Usage on Sub-Meter 2')
 axis(side=1, at= c(8, 9), labels=c('0', '1'))
 legend('topleft', 'Sub-Meter-2', col='green', lwd=2, bty='n')
 
