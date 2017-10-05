@@ -14,16 +14,15 @@
 # Load Packages -----------------------------------------------------------
 
 
-library(caret)
-library(tidyverse)
-library(magrittr)
-library(lubridate)
-library(VIM)
-library(Hmisc)
-library(GGally)
+library(caret)      #R modeling workhorse
+library(tidyverse)  #Package for tidying data
+library(magrittr)   #Enables piping
+library(lubridate)  #Simplifies working with dates/times of a time series
+library(VIM)        #Aids visualization and imputing of missing values
+library(Hmisc)      #for descriptive statistics
+library(GGally)     #ggcorr provides pretty cor plot
 library(scales)
-library(forecast)
-library(stargazer)
+library(forecast)   #forcasting package
 
 # Load Data ---------------------------------------------------------------
 
@@ -409,7 +408,7 @@ plot(housePWR_yrTS, plot.type='s', #xaxt='n',
      xaxp = c(2007, 2010, 3),
      col=c('red', 'green', 'blue'),
      main='Total Yearly kWh Consumption (2007-2010)',
-     xlab='Year', ylab = 'Total kWh')
+     xlab='Year', ylab = 'kWh')
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
@@ -433,7 +432,7 @@ plot(housePWR_qtrTS, plot.type='s',
      #xaxp=c(2006, 2011, 5),
      col=c('red', 'green', 'blue'),
      main='Total Quarterly kWh Consumption (2007-2010)',
-     xlab='Year', ylab = 'Total kWh')
+     xlab='Year', ylab = 'kWh')
 minor.tick(nx=4)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
@@ -456,7 +455,7 @@ housePWR_wkofYrTS <- ts(housePWR_wkofYr[,3:5], frequency =53, start=c(2006,51), 
 plot(housePWR_wkofYrTS, plot.type='s', #xaxt='n',
      #xaxp = c(1, 13, 12),
      col=c('red', 'green', 'blue'),
-     xlab ='Year', ylab = 'Wh',
+     xlab ='Year', ylab = 'kWh',
      #ylim=c(0,120),
      main='Average Energy Consumption by Week of the Year')
 #axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12,13), labels=MonthLst)
@@ -469,7 +468,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency =7, start=c(1,1))
 plot(housePWR_dofWkTS, plot.type='s', #xaxt='n',
      col=c('red', 'green', 'blue'),
-     xlab ='Week of Year', ylab = 'Wh',
+     xlab ='Week of Year', ylab = 'kWh',
      #xlim = c(1,53) , ylim=c(0,75),
      main='Total Energy Consumption by Day of Week')
 minor.tick(nx=70)
@@ -495,7 +494,7 @@ plot(housePWR_wkndTS, plot.type='s', xaxt='n',
      xaxp = c(0, 3,2),
      xlim=c(1,3),
      col=c('red', 'green', 'blue'),
-     xlab='Weekend Day', ylab = 'Total kWh',
+     xlab='Weekend Day', ylab = 'kWh',
      ylim=c(0,90),
      main='Total Weekend Energy Consumption by Hour')
 axis(side = 1, at = c(1,2,3), labels = WkndList)
@@ -512,6 +511,7 @@ fit1 <- tslm(housePWR_qtrTS[,3] ~ trend + season)
 x <- forecast(fit1, h=4, level=c(90,95))
 plot(y, showgap=FALSE, include=5,
      shadecols=c('slategray3','slategray'),
+     xlab='Year', ylab='kWh',
      main='4-Quarter Forecast of Quartlerly Energy Consumption for Submeter-3')
 minor.tick(nx=2)
 summary(x)
@@ -552,10 +552,10 @@ summary(y)
 
 #Week of year_forecast
 fit3 <- tslm(housePWR_wkofYrTS[,3] ~ trend + season)
-z <- forecast(fit3, level=c(90,95), h=7)
+z <- forecast(fit3, level=c(90,95), h=24)
 plot(z, showgap=FALSE, include=10,
      shadecols=c('slategray3','slategray'),
-     xlab ='Week',
+     xlab ='Year',
      ylab='kWh',
      main='24-Week Forecast of Weekly Energy Consumption on Submeter-3')
 summary(z)
@@ -571,7 +571,8 @@ summary(z)
 #2011.000       65.34304 42.11671  88.56938 37.616097  93.06999
 
 
-# Decompose Time Series / Remove Seasonality/ HW Smoothing' -------------------------------------------------------------
+# Decompose Time Series/ Remove Seasonality/ HW Smoothing/Predict -------------------------------------------------------------
+
 
 ##########
 #Semester#
@@ -635,7 +636,7 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 #2012.50       2023.736 1585.428 2462.044 1501.460 2546.012
 
 ########
-Quarter#
+#Quarter#
 ########
 
 ##-Sub-Meter-3
@@ -697,6 +698,7 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 #2011 Q3       906.5673 713.6473 1099.487 676.6890 1136.446
 #2011 Q4       906.5673 704.3385 1108.796 665.5968 1147.538
 
+
 #######################
 # Month / day of month #
 #######################
@@ -724,14 +726,14 @@ minor.tick(nx=12)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 #Forecast
-mnth_smoothFcast3 <- forecast(mnth_smooth3, h=5, level=c(90,95))
+mnth_smoothFcast3 <- forecast(mnth_smooth3, h=6, level=c(90,95))
 mnth_smoothFcast3
 plot(mnth_smoothFcast3,include=1, showgap=TRUE,
      #xaxt='n',
      col='blue',
      shadecols=c('slategray3','slategray'),
      #xaxp=c(2010.9,2011.2,3),
-     xlab='Month', ylab = 'kWh',
+     xlab='Year', ylab = 'kWh',
      main='Five Month Forecast of Monthly Energy Useage on Sub-Meter 3')
 #axis(side=1, at= c(2010.9,  2011.2), labels=c('0', '+4'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
@@ -795,160 +797,3 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 #2010.925       63.46413 44.07905 82.84921 40.36539 86.56288
 #2010.943       63.46413 43.59740 83.33087 39.79146 87.13681
 #2010.962       63.46413 43.12714 83.80112 39.23112 87.69715
-
-#####################
-# Day of Week
-#####################
-
-
-##-Sub-Meter-2
-#-Decompose TS
-dofW_decomp2 <- decompose(housePWR_dofWkTS[,2])
-autoplot(dofW_decomp2, labels=NULL, range.bars = TRUE) +
-  xlab('Day of Week') +
-  ylab('kWh') +
-  ggtitle('Decomposed Day of the Week Time Series- Sub-Meter-2')
-
-#-remove seasonality
-dofW_seasonAdj2 <- seasadj(dofW_decomp2)
-autoplot(dofW_seasonAdj2)
-
-#-Fit Holt Winters simple exponetial smoothing model
-dofW_smooth2 <- HoltWinters(dofW_seasonAdj2, beta=FALSE, gamma=FALSE)
-plot(dofW_smooth2)
-
-plot(dofW_smooth2, col='green',
-     #xaxp=c(1,8,7),
-     xlab='Week of the Year', ylab = 'Wh',
-     #ylim=c(0,75),
-     main='Fitted Holt-Winters Model for Day of the Week Series')
-#axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
-minor.tick(nx=52)
-legend('topleft', 'Sub-Meter-2', col='green', lwd=2, bty='n')
-
-#Forecast
-dofW_smoothFcast2 <- forecast(dofW_smooth2, h=14, level=c(90, 95))
-dofW_smoothFcast2
-plot(dofW_smoothFcast2,
-     include=1,
-     PI=TRUE, showgap=FALSE,
-     shadecols=c('slategray3','slategray'),
-     #xaxt='n',
-     fcol='green',
-     #xaxp=c(8,9,1),
-     xlab='Week', ylab = 'Wh',
-     #ylim=c(-0.5,3),
-     main='14 Day Forecast of Energy Usage on Sub-Meter 2')
-axis(side=1, at= c(8, 9), labels=c('0', '1'))
-legend('topleft', 'Sub-Meter-2', col='green', lwd=2, bty='n')
-
-
-
-##########################
-# Hour of Day / 5_minute#
-##########################
-
-#-Sub Meter 3
-#-Decompose TS
-hofDay_decomp3 <- decompose(housePWR_hofDayTS[,3])
-autoplot(hofDay_decomp3, labels=NULL, range.bars = TRUE) +
-  xlab('Hour of Day') +
-  ylab('kWh') +
-  ggtitle('Decomposed Hourly Time Series- Sub-Meter-3')
-
-#-remove seasonality
-hofDay_seasonAdj3 <- seasadj(hofDay_decomp3)
-autoplot(hofDay_seasonAdj3)
-
-#-Fit Holt Winters simple exponetial smoothing model
-hofDay_smooth3 <- HoltWinters(hofDay_seasonAdj3, beta=FALSE, gamma=FALSE)
-plot(hofDay_smooth3)
-
-plot(hofDay_smooth3, #xaxt='n',
-     col='blue',
-     #xaxp=c(1,8,7),
-     xlab='Hour of Day', ylab = 'Total kWh',
-     #ylim=c(0,75),
-     main='Fitted Holt-Winters Model for Hourly Useage in a Day')
-#axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
-legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
-
-#Forecast
-hofDay_smoothFcast3 <- forecast(hofDay_smooth3, h=150, level=c(90,95))
-hofDay_smoothFcast3
-plot(hofDay_smoothFcast3,
-     include=0,
-     PI=TRUE, showgap=FALSE,
-     shadecols=c('slategray3','slategray'),
-     #xaxt='n',
-     fcol='blue',
-     #xaxp=c(8,9,1),
-     xlab='Hour', ylab = 'Total kWh',
-     # ylim=c(0,100),
-     main='24 hour Forecast Based on Hourly Energy Usage in a Day')
-axis(side=1, at= c(8, 9), labels=c('0', '1'))
-legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
-
-
-
-#################
-# Weekend Hours #
-#################
-#Sub-meter-1
-#-Decompose TS
-Wknd_decomp1 <- decompose(housePWR_wkndTS[,1])
-autoplot(Wknd_decomp1, labels=NULL, range.bars = TRUE) +
-  xlab('Weekend Day') +
-  ylab('kWh') +
-  ggtitle('Decomposed Weekend Time Series- Sub-Meter-1')
-
-#-remove sesonality
-Wknd_seasonAdj1 <- seasadj(Wknd_decomp1)
-plot(Wknd_seasonAdj1, xaxt='n',
-     xaxp=c(0,3,2),
-     col='red',
-     xlab='Weekend Day', ylab = 'Total kWh',
-     main='Seasonally Adjusted Weekend Energy Consumption')
-axis(side = 1, at = c(1,2,3), labels = WkndList)
-minor.tick(nx=24)
-b <- 'Sub-meter-1'
-legend('topleft', b, col='red', lwd=2, bty='n')
-
-#-Fit Holt Winters simple exponetial smoothing model
-Wknd_smooth1 <- HoltWinters(Wknd_seasonAdj1, beta=FALSE, gamma=FALSE)
-plot(Wknd_smooth1)
-
-plot(Wknd_smooth1, xaxt='n', col='black',
-     xaxp=c(1,3,1),
-     xlab='Day of Week', ylab = 'Total kWh',
-     #ylim=c(0,75),
-     main='Fitted Holt-Winters Model for Weekend Time Series')
-axis(side=1, at= c(1, 2,3), labels=WkndList)
-legend('topleft', 'Sub-Meter-1', col='black', lwd=2, bty='n')
-
-#Forecast
-Wknd_smoothFcast1 <- forecast(Wknd_smooth1, h=48)
-Wknd_smoothFcast1
-plot(Wknd_smoothFcast1,
-     include=1,
-     PI=TRUE,
-     xaxt='n',
-     fcol='red',
-     xaxp=c(3,5,1),
-     xlab='Day', ylab = 'Total kWh',
-     ylim=c(0,20),
-     main='Forecast of Weekend Energy Usage on Sub-Meter 1')
-axis(side=1, at= c(3, 4, 5), labels=c('Sat', 'Sun', 'Mon'))
-legend('topleft', 'Sub-Meter-1', col='red', lwd=2, bty='n')
-
-
-
-
-
-
-
-
-
-
-
-
