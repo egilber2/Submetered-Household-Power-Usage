@@ -92,8 +92,8 @@ glimpse(house_pwr_tidy)
 
 write.csv(house_pwr, file='house_pwr.csv')
 
-housePWR_sum <- house_pwr %>%
-  select()
+house_pwrMtrs <- select(house_pwr, DateTime, `Sub-Meter-1`, `Sub-Meter-2`, `Sub-Meter-3`, `Engy_remain`) %>%
+  group_by(year(DateTime), day(DateTime), month(DateTime), hour(DateTime), minute(DateTime))
 
 # Exploratory Data Analysis -----------------------------------------------
 
@@ -317,21 +317,21 @@ ggcorr(house_pwr) +
 
 #-Subset Year
 housePWR_yr <- house_pwr %>%
-  filter(year(DateTime) > 2006) %>%
+  filter(year(DateTime) > 2006 ) %>%
   #filter(year(DateTime)<2010) %>%
   group_by(year(DateTime)) %>%
-  summarise(Sub_Meter_1=mean(`Sub-Meter-1`, na.rm=TRUE),
-            Sub_Meter_2=mean(`Sub-Meter-2`, na.rm=TRUE),
-            Sub_Meter_3=mean(`Sub-Meter-3`, na.rm=TRUE),
+  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000, na.rm=TRUE), 3),
+            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000, na.rm=TRUE), 3),
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000, na.rm=TRUE), 3),
             first_DateTime = first(DateTime))
 
 #-Subset Semester
 housePWR_semstr <- house_pwr %>%
   filter(year(DateTime) > 2006) %>%
   group_by(year(DateTime),semester(DateTime)) %>%
-  summarise(Sub_Meter_1=mean(`Sub-Meter-1`, na.rm=TRUE),
-            Sub_Meter_2=mean(`Sub-Meter-2`, na.rm=TRUE),
-            Sub_Meter_3=mean(`Sub-Meter-3`, na.rm=TRUE),
+  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000, na.rm=TRUE), 3),
+            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000, na.rm=TRUE), 3),
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000, na.rm=TRUE), 3),
             first_DateTime = first(DateTime))
 
 #-Subset Quarter
@@ -339,9 +339,9 @@ housePWR_qtr <- house_pwr %>%
   filter(year(DateTime) > 2006) %>%
   #filter(year(DateTime)<2010) %>%
   group_by(year(DateTime), quarter(DateTime)) %>%
-  summarise(Sub_Meter_1=mean(`Sub-Meter-1`, na.rm=TRUE),
-            Sub_Meter_2=mean(`Sub-Meter-2`, na.rm=TRUE),
-            Sub_Meter_3=mean(`Sub-Meter-3`, na.rm=TRUE),
+  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000, na.rm=TRUE), 3),
+            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000, na.rm=TRUE), 3),
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000, na.rm=TRUE), 3),
             first_DateTime = first(DateTime))
 
 #-Subset Month
@@ -349,9 +349,9 @@ housePWR_mnth <- house_pwr %>%
   #filter(year(DateTime) > 2006) %>%
   #filter(year(DateTime)<2011) %>%
   group_by(year(DateTime), month(DateTime)) %>%
-  summarise(Sub_Meter_1=mean(`Sub-Meter-1`, na.rm=TRUE),
-            Sub_Meter_2=mean(`Sub-Meter-2`, na.rm=TRUE),
-            Sub_Meter_3=mean(`Sub-Meter-3`, na.rm=TRUE),
+  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000, na.rm=TRUE), 3),
+            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000, na.rm=TRUE), 3),
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000, na.rm=TRUE), 3),
             first_DateTime = first(DateTime))
 
 #-Subset Week of year
@@ -360,9 +360,9 @@ housePWR_wkofYr <- house_pwr %>%
   #filter(year(DateTime)<2010) %>%
   mutate(DofWk=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(year(DateTime),week(DateTime)) %>%
-  summarise(Sub_Meter_1=mean(`Sub-Meter-1`, na.rm=TRUE),
-            Sub_Meter_2=mean(`Sub-Meter-2`, na.rm=TRUE),
-            Sub_Meter_3=mean(`Sub-Meter-3`, na.rm=TRUE),
+  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000, na.rm=TRUE), 3),
+            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000, na.rm=TRUE), 3),
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000, na.rm=TRUE), 3),
             first_DateTime = first(DateTime))
 
 #-Subset by day of week
@@ -371,9 +371,9 @@ housePWR_dofWk <- house_pwr %>%
   #filter(year(DateTime)<2010) %>%
   mutate(DofWk=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(week(DateTime),DofWk) %>%
-  summarise(Sub_Meter_1=mean(`Sub-Meter-1`, na.rm=TRUE),
-            Sub_Meter_2=mean(`Sub-Meter-2`, na.rm=TRUE),
-            Sub_Meter_3=mean(`Sub-Meter-3`, na.rm=TRUE),
+  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000, na.rm=TRUE), 3),
+            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000, na.rm=TRUE), 3),
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000, na.rm=TRUE), 3),
             first_DateTime = first(DateTime))
 
 #-Subset hour of day
@@ -381,9 +381,9 @@ housePWR_hofDay <- house_pwr %>%
   filter(year(DateTime)>2006) %>%
   #filter((minute(DateTime) %% 5) == 0) %>%
   group_by(wday(DateTime), hour(DateTime)) %>%
-  summarise(Sub_Meter_1=mean(`Sub-Meter-1`, na.rm=TRUE),
-            Sub_Meter_2=mean(`Sub-Meter-2`, na.rm=TRUE),
-            Sub_Meter_3=mean(`Sub-Meter-3`, na.rm=TRUE),
+  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000, na.rm=TRUE), 3),
+            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000, na.rm=TRUE), 3),
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000, na.rm=TRUE), 3),
             first_DateTime = first(DateTime))
 
 #-Subset by Weekends
@@ -393,9 +393,9 @@ housePWR_wknd <- house_pwr %>%
   mutate(Wknd=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   filter(Wknd == c('Sat', 'Sun')) %>%
   group_by(Wknd, hour(DateTime)) %>%
-  summarise(Sub_Meter_1=mean(`Sub-Meter-1`, na.rm=TRUE),
-            Sub_Meter_2=mean(`Sub-Meter-2`, na.rm=TRUE),
-            Sub_Meter_3=mean(`Sub-Meter-3`, na.rm=TRUE),
+  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000, na.rm=TRUE), 3),
+            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000, na.rm=TRUE), 3),
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000, na.rm=TRUE), 3),
             first_DateTime = first(DateTime)) %>%
  arrange(desc(Wknd))
 
@@ -422,6 +422,8 @@ plot(housePWR_semstrTS, plot.type='s', #xaxt='n',
      xlab='Year', ylab = 'Total kWh')
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
+
+
 
 #Quarter_TS
 housePWR_qtrTS <- ts(housePWR_qtr[,3:5], frequency=4, start=c(2007,1), end=c(2010,4))
@@ -450,7 +452,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 # Week of the year_TS
-housePWR_wkofYrTS <- ts(housePWR_wkofYr[,3:5], frequency =53, start=c(2007,1), end=c(2010,48))
+housePWR_wkofYrTS <- ts(housePWR_wkofYr[,3:5], frequency =53, start=c(2006,51), end=c(2010,47))
 plot(housePWR_wkofYrTS, plot.type='s', #xaxt='n',
      #xaxp = c(1, 13, 12),
      col=c('red', 'green', 'blue'),
@@ -468,7 +470,7 @@ housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency =7, start=c(1,1))
 plot(housePWR_dofWkTS, plot.type='s', #xaxt='n',
      col=c('red', 'green', 'blue'),
      xlab ='Week of Year', ylab = 'Wh',
-     xlim = c(1,53) , ylim=c(0,75),
+     #xlim = c(1,53) , ylim=c(0,75),
      main='Total Energy Consumption by Day of Week')
 minor.tick(nx=70)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
@@ -505,40 +507,53 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 # Forecasting -------------------------------------------------------------
 
 
-# Year_forecast
-fit1 <- tslm(housePWR_yrTS ~ trend + season)
-x <- forecast(fit1, h=2, level = c(90, 95))
-autoplot(x, PI=TRUE, colour=TRUE, showgap=TRUE) +
-  xlab('Year') +
-  ylab('Total kWh') +
-  ggtitle('Forecasted Trend of Yearly Energy Consumption')
-summary(x)
-x
-
 #Quarter_forecast
 fit2 <- tslm(housePWR_qtrTS[,3] ~ trend + season)
-y <- forecast(fit2, h=5, level=c(90,95))
-plot(y, showgap=FALSE,
+y <- forecast(fit2, h=4, level=c(90,95))
+plot(y, showgap=FALSE, include=5,
      shadecols=c('slategray3','slategray'),
-     main='Forecasted Quarterly Energy Consumption')
+     main='4-Quarter Forecast of Quartlerly Energy Consumption for Submeter-3')
+minor.tick(nx=2)
 summary(y)
+#Forecasts:
+#  Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
+#2011 Q1      1034.1412 700.6689 1367.614 625.4471 1442.835
+#2011 Q2       920.7548 587.2824 1254.227 512.0606 1329.449
+#2011 Q3       699.4062 365.9339 1032.879 290.7121 1108.100
+#2011 Q4       926.0188 592.5464 1259.491 517.3246 1334.713
+#2012 Q1      1065.3721 701.2912 1429.453 619.1650 1511.579
 
 # Month_forecast
 fit3 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
 z <- forecast(fit3,h=12, level=c(90,95))
-plot(z, showgap=FALSE,
+plot(z, showgap=FALSE, include=6,
   shadecols=c('slategray3','slategray'),
-  xlab ='Month',
-  ylab='Average Wh',
-  main='Forecasted Monthly Energy Consumption')
+  xlab ='Time',
+  ylab=' kWh',
+  main='12-Month Forecast of Monthly Energy Consumption')
+minor.tick(nx=6)
 summary(z)
-z
+#Forecasts:
+#  Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
+#Dec 2010       358.6505 273.0795 444.2215 255.8066 461.4944
+#Jan 2011       370.8729 286.6495 455.0963 269.6487 472.0971
+#Feb 2011       408.5337 324.3103 492.7570 307.3095 509.7579
+#Mar 2011       375.2337 291.0103 459.4570 274.0095 476.4579
+#Apr 2011       372.4437 288.2203 456.6670 271.2195 473.6679
+#May 2011       348.9937 264.7703 433.2170 247.7695 450.2179
+#Jun 2011       365.6509 281.4275 449.8743 264.4267 466.8751
+#Jul 2011       328.1799 243.9565 412.4033 226.9557 429.4041
+#Aug 2011       257.4384 173.2150 341.6618 156.2142 358.6626
+#Sep 2011       231.0557 146.8323 315.2790 129.8315 332.2799
+#Oct 2011       332.9819 248.7585 417.2053 231.7577 434.2061
+#Nov 2011       360.5009 276.2775 444.7243 259.2767 461.7251
+
 #level =	Confidence level for prediction intervals.
 
 #Week of year_forecast
 fit4 <- tslm(housePWR_wkofYrTS[,3] ~ trend + season)
 xx <- forecast(fit4, level=c(90,95), h=53)
-plot(xx, showgap=FALSE,
+plot(xx, showgap=FALSE, include=5,
      shadecols=c('slategray3','slategray'),
      xlab ='Week',
      ylab='Average Wh',
@@ -547,12 +562,13 @@ summary(xx)
 xx
 
 #day of week_forecast
-fit4a <- tslm(housePWR_dofWkTS ~ trend)
+fit4a <- tslm(housePWR_dofWkTS[,3] ~ trend + season)
 xxa <- forecast(fit4a, level=c(90,95), h=30)
-autoplot(xxa, PI=TRUE, colour=TRUE) +
-  xlab('Week of the Year') +
-  ylab('Total kWh') +
-  ggtitle('Forecasted Trend of Energy Consumption by Day of the Week')
+plot(xxa, showgap=FALSE, include=5,
+     shadecols=c('slategray3','slategray'),
+     xlab ='Week',
+     ylab='Average Wh',
+     main='Forecasted Weekly Energy Consumption')
 summary(fit4a)
 xxa
 
