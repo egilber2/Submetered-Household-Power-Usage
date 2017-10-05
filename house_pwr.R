@@ -418,8 +418,8 @@ housePWR_semstrTS <- ts(housePWR_semstr[,3:5], frequency = 2, start=c(2007,1), e
 plot(housePWR_semstrTS, plot.type='s', #xaxt='n',
      #xaxp = c(2007, 2010, 3),
      col=c('red', 'green', 'blue'),
-     main='Total Yearly kWh Consumption (2007-2010)',
-     xlab='Year', ylab = 'Total kWh')
+     main='Total Energy Consumption by Semester',
+     xlab='Year', ylab = 'kWh')
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
@@ -504,7 +504,7 @@ b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
-# Forecasting -------------------------------------------------------------
+# LM Forecasting -------------------------------------------------------------
 
 
 #Quarter_forecast
@@ -517,7 +517,7 @@ minor.tick(nx=2)
 summary(x)
 #Forecasts:
 #  Forecasts:
-#Point Forecast    Lo 90     Hi 90    Lo 95    Hi 95
+#        Point Forecast    Lo 90     Hi 90    Lo 95    Hi 95
 #2010 Q4       1083.575 893.8830 1273.2680 850.3781 1316.773
 #2011 Q1       1131.790 939.1564 1324.4236 894.9770 1368.603
 #2011 Q2       1018.404 825.7699 1211.0371 781.5905 1255.217
@@ -533,8 +533,9 @@ plot(y, showgap=FALSE, include=12,
   main='12-Month Forecast of Monthly Energy Consumption')
 minor.tick(nx=6)
 summary(y)
+
 #Forecasts:
-#  Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
+#         Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
 #Dec 2010       358.6505 273.0795 444.2215 255.8066 461.4944
 #Jan 2011       370.8729 286.6495 455.0963 269.6487 472.0971
 #Feb 2011       408.5337 324.3103 492.7570 307.3095 509.7579
@@ -548,22 +549,90 @@ summary(y)
 #Oct 2011       332.9819 248.7585 417.2053 231.7577 434.2061
 #Nov 2011       360.5009 276.2775 444.7243 259.2767 461.7251
 
-#level =	Confidence level for prediction intervals.
 
 #Week of year_forecast
 fit3 <- tslm(housePWR_wkofYrTS[,3] ~ trend + season)
-z <- forecast(fit3, level=c(90,95), h=24)
+z <- forecast(fit3, level=c(90,95), h=7)
 plot(z, showgap=FALSE, include=10,
      shadecols=c('slategray3','slategray'),
      xlab ='Week',
      ylab='kWh',
      main='24-Week Forecast of Weekly Energy Consumption on Submeter-3')
 summary(z)
-xx
+
+#Forecasts:
+#  Point Forecast    Lo 90     Hi 90     Lo 95     Hi 95
+#2010.887       88.80317 64.90720 112.69914 60.276829 117.32951
+#2010.906       87.32184 63.42587 111.21780 58.795496 115.84818
+#2010.925       85.38350 61.48754 109.27947 56.857162 113.90984
+#2010.943       93.45354 70.22721 116.67988 65.726597 121.18049
+#2010.962       88.76804 65.54171 111.99438 61.041097 116.49499
+#2010.981       37.39754 14.17121  60.62388  9.670597  65.12449
+#2011.000       65.34304 42.11671  88.56938 37.616097  93.06999
 
 
 # Decompose Time Series / Remove Seasonality/ HW Smoothing' -------------------------------------------------------------
 
+##########
+#Semester#
+##########
+
+##-Sub-Meter-3
+#-Decompose TS
+semstr_decomp3 <- decompose(housePWR_semstrTS[,3])
+autoplot(semstr_decomp3,  range.bars = TRUE) +
+  xlab('Year') +
+  ylab('kWh') +
+  ggtitle('Decomposed Semester Time Series- Sub-Meter-3')
+semstr_decomp3
+
+#-remove seasonality
+smstr_seasonAdj3 <- seasadj(semstr_decomp3)
+acf(smstr_seasonAdj3, na.action=na.omit,lag=30)
+
+plot(smstr_seasonAdj3, #xaxt='n',
+     col='blue',
+     xlab='Year', ylab='kWh',
+     #xlim=c(2007, 2010),
+     #xaxp=c(2006, 2010, 4),
+     main='Seasonally Adjusted Semester Time Series')
+minor.tick(nx=2)
+b <-'Sub-meter-3'
+legend('topleft', b, col='blue', lwd=2, bty='n')
+
+#-Fit Holt Winters simple exponetial smoothing model
+smstr_smooth3 <- HoltWinters(smstr_seasonAdj3, beta=FALSE, gamma=FALSE)
+plot(smstr_smooth3, col='blue', #xaxt='n',
+     xlab='Year', ylab = 'kWh',
+     xlim=c(2007, 2010),
+     #xaxp=c(2006, 2010, 4),
+     main='Simple Exponential Smoothing Holt-Winters Model for Semester Time Series')
+legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
+
+#-Forecast
+smstr_smoothFcast3 <- forecast(smstr_smooth3, h=5,level = c(90,95))
+smstr_smoothFcast3
+summary(smstr_smoothFcast3)
+
+plot(smstr_smoothFcast3, include=1, showgap=TRUE,
+     #xaxt='n',
+     shadecols=c('slategray3','slategray'),
+     col='blue',
+     #xaxp=c(2010.6,2011.5,4),
+     xlab='Year', ylab = 'Wh',
+     #xlim=c(2010,2011),
+     main='5 Semester Forecast of Energy Useage on Sub-Meter 3')
+#minor.tick(nx=4)
+#axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
+legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
+
+#Forecasts:
+#        Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
+#2010.50       2023.736 1827.709 2219.763 1790.156 2257.317
+#2011.00       2023.736 1746.521 2300.951 1693.414 2354.059
+#2011.50       2023.736 1684.221 2363.251 1619.180 2428.293
+#2012.00       2023.736 1631.700 2415.772 1556.597 2490.875
+#2012.50       2023.736 1585.428 2462.044 1501.460 2546.012
 
 ########
 Quarter#
@@ -621,7 +690,7 @@ plot(qtr_smoothFcast3, include=1,
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 #Forecasts:
-#  Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
+#        Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
 #2010 Q4       906.5673 744.7559 1068.379 713.7571 1099.378
 #2011 Q1       906.5673 733.7630 1079.372 700.6583 1112.476
 #2011 Q2       906.5673 723.4288 1089.706 688.3443 1124.790
@@ -669,7 +738,7 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 summary(mnth_smoothFcast3)
 
 #Forecasts:
-#  Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
+#         Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
 #Dec 2010       294.6373 220.1586 369.1161 205.8904 383.3842
 #Jan 2011       294.6373 212.1643 377.1103 196.3647 392.9100
 #Feb 2011       294.6373 204.8793 384.3954 187.6840 401.5906
@@ -716,11 +785,11 @@ plot(wkofYr_smoothFcast3,
      #xaxp=c(8,9,1),
      xlab='Year', ylab = 'kWh',
      # ylim=c(0,100),
-     main='5-Week Forecast of Energy Usage on Sub-Meter 3')
+     main='5-Week Forecast of Weekly Energy Consumption on Sub-Meter 3')
 axis(side=1, at= c(8, 9), labels=c('0', '1'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
-#Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
+#         Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
 #2010.887       63.46413 45.08019 81.84808 41.55831 85.36995
 #2010.906       63.46413 44.57299 82.35528 40.95395 85.97432
 #2010.925       63.46413 44.07905 82.84921 40.36539 86.56288
