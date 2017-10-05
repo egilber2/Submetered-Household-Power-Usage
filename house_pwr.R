@@ -426,7 +426,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 #Quarter_TS
-housePWR_qtrTS <- ts(housePWR_qtr[,3:5], frequency=4, start=c(2007,1), end=c(2010,4))
+housePWR_qtrTS <- ts(housePWR_qtr[,3:5], frequency=4, start=c(2007,1), end=c(2010,3))
 plot(housePWR_qtrTS, plot.type='s',
      #xaxt='n',
      #xlim=c(2007, 2010),
@@ -445,7 +445,7 @@ plot(housePWR_mnthTS, plot.type='s',#xaxt='n',
      #xaxp = c(1,13,12),
      col=c('red', 'green', 'blue'),
      main='Average Monthly Wh Consumption',
-     xlab='Year/Month', ylab = 'Wh')
+     xlab='Year/Month', ylab = 'kWh')
 minor.tick(nx=12)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
@@ -508,31 +508,31 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 #Quarter_forecast
-fit2 <- tslm(housePWR_qtrTS[,3] ~ trend + season)
-y <- forecast(fit2, h=4, level=c(90,95))
+fit1 <- tslm(housePWR_qtrTS[,3] ~ trend + season)
+x <- forecast(fit1, h=4, level=c(90,95))
 plot(y, showgap=FALSE, include=5,
      shadecols=c('slategray3','slategray'),
      main='4-Quarter Forecast of Quartlerly Energy Consumption for Submeter-3')
 minor.tick(nx=2)
-summary(y)
+summary(x)
 #Forecasts:
-#  Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
-#2011 Q1      1034.1412 700.6689 1367.614 625.4471 1442.835
-#2011 Q2       920.7548 587.2824 1254.227 512.0606 1329.449
-#2011 Q3       699.4062 365.9339 1032.879 290.7121 1108.100
-#2011 Q4       926.0188 592.5464 1259.491 517.3246 1334.713
-#2012 Q1      1065.3721 701.2912 1429.453 619.1650 1511.579
+#  Forecasts:
+#Point Forecast    Lo 90     Hi 90    Lo 95    Hi 95
+#2010 Q4       1083.575 893.8830 1273.2680 850.3781 1316.773
+#2011 Q1       1131.790 939.1564 1324.4236 894.9770 1368.603
+#2011 Q2       1018.404 825.7699 1211.0371 781.5905 1255.217
+#2011 Q3        797.055 604.4214  989.6886 560.2420 1033.868
 
 # Month_forecast
-fit3 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
-z <- forecast(fit3,h=12, level=c(90,95))
-plot(z, showgap=FALSE, include=6,
+fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
+y <- forecast(fit2,h=12, level=c(90,95))
+plot(y, showgap=FALSE, include=12,
   shadecols=c('slategray3','slategray'),
-  xlab ='Time',
+  xlab ='Year',
   ylab=' kWh',
   main='12-Month Forecast of Monthly Energy Consumption')
 minor.tick(nx=6)
-summary(z)
+summary(y)
 #Forecasts:
 #  Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
 #Dec 2010       358.6505 273.0795 444.2215 255.8066 461.4944
@@ -551,123 +551,19 @@ summary(z)
 #level =	Confidence level for prediction intervals.
 
 #Week of year_forecast
-fit4 <- tslm(housePWR_wkofYrTS[,3] ~ trend + season)
-xx <- forecast(fit4, level=c(90,95), h=53)
-plot(xx, showgap=FALSE, include=5,
+fit3 <- tslm(housePWR_wkofYrTS[,3] ~ trend + season)
+z <- forecast(fit3, level=c(90,95), h=24)
+plot(z, showgap=FALSE, include=10,
      shadecols=c('slategray3','slategray'),
      xlab ='Week',
-     ylab='Average Wh',
-     main='Forecasted Weekly Energy Consumption')
-summary(xx)
+     ylab='kWh',
+     main='24-Week Forecast of Weekly Energy Consumption on Submeter-3')
+summary(z)
 xx
 
-#day of week_forecast
-fit4a <- tslm(housePWR_dofWkTS[,3] ~ trend + season)
-xxa <- forecast(fit4a, level=c(90,95), h=30)
-plot(xxa, showgap=FALSE, include=5,
-     shadecols=c('slategray3','slategray'),
-     xlab ='Week',
-     ylab='Average Wh',
-     main='Forecasted Weekly Energy Consumption')
-summary(fit4a)
-xxa
-
-# Hour of Day_forecast
-fit5 <- tslm(housePWR_hofDayTS ~ trend)
-yy <- forecast(fit5, h=48)
-autoplot(yy, PI=TRUE, colour=TRUE) +
-  xlab('Day of the Week') +
-  ylab('Total kWh') +
-  ggtitle('Forecasted Trend of Hourly Energy Consumption in a Day')
-summary(yy)
-yy
-
-# Weekend hours_forecast
-fit6 <- tslm(housePWR_wkndTS ~ trend)
-zz <- forecast(fit6, level=c(90,95))
-autoplot(zz, PI=TRUE, colour=TRUE) +
-  xlab('Weekend Day') +
-  ylab('Total kWh') +
-  ggtitle('Forecasted Trend of Weekend Energy Consumption')
-summary(zz)
-zz
 
 # Decompose Time Series / Remove Seasonality/ HW Smoothing' -------------------------------------------------------------
 
-
-##############
-# Year       #
-##############
-
-##-Sub-Meter-1
-#-Decompose TS
-yr_decomp1 <- decompose(housePWR_yrTS[,1])
-autoplot(yr_decomp1, labels=NULL, range.bars = TRUE) +
-  xlab('Year') +
-  ylab('kWh') +
-  ggtitle('Decomposed Monthly Time Series- Sub-Meter-1')
-
-#remove seasonality
-yr_seasonAdj1 <- seasadj(yr_decomp1)
-plot(yr_seasonAdj1)
-
-##-Sub-Meter-2
-#-Decompose TS
-yr_decomp2 <- decompose(housePWR_yrTS[,2])
-autoplot(yr_decomp2, labels=NULL, range.bars = TRUE) +
-  xlab('Year') +
-  ylab('kWh') +
-  ggtitle('Decomposed Yearly Time Series- Sub-Meter-2')
-
-#remove seasonality
-yr_seasonAdj2 <- seasadj(yr_decomp2)
-plot(yr_seasonAdj2)
-
-
-##-Sub-Meter-3
-#-Decompose TS
-yr_decomp3 <- decompose(housePWR_yrTS[,3])
-autoplot(yr_decomp3,  range.bars = TRUE) +
-  xlab('Year') +
-  ylab('kWh') +
-  ggtitle('Decomposed Monthly Time Series- Sub-Meter-3')
-yr_decomp3
-acf(housePWR_yrTS[,3])
-
-#-remove seasonality
-yr_seasonAdj3 <- seasadj(yr_decomp3)
-plot(yr_seasonAdj3, xaxt='n',
-     xaxp = c(2007, 2011, 4),
-     col='blue',
-     xlab='Year', ylab='Total kWh',
-     main='Seasonally Adjusted Yearly Time Series for Sub-Meter-3')
-minor.tick(nx=12)
-b <-'Sub-meter-3'
-legend('topleft', b, col='blue', lwd=2, bty='n')
-
-#-Fit Holt Winters simple exponetial smoothing model
-yr_smooth3 <- HoltWinters(yr_seasonAdj3, beta=FALSE, gamma=FALSE)
-plot(yr_smooth3, col='blue',
-     xaxp=c(2007, 2010, 3),
-     xlab='Year', ylab = 'kWh',
-     main='Fitted Holt-Winters Model for Yearly Time Series')
-minor.tick(nx=12)
-legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
-
-#-Forecast
-yr_smoothFcast3 <- forecast(yr_smooth3, h=5)
-plot(yr_smoothFcast3)
-yr_smoothFcast3
-
-plot(yr_smoothFcast3, include=1,
-     xaxt='n',
-     col='blue',
-     xaxp=c(1,13,12),
-     xlab='Month', ylab = 'Total kWh',
-     #ylim=c(0,250),
-     main='One Month Forecast for Sub-Meter 3')
-#axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
-legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 ########
 Quarter#
@@ -689,10 +585,9 @@ acf(qtr_seasonAdj3, na.action=na.omit,lag=30)
 
 plot(qtr_seasonAdj3, #xaxt='n',
      col='blue',
-     xlab='Year', ylab='Total kWh',
-     xlim=c(2007, 2010),
+     xlab='Year', ylab='kWh',
+     #xlim=c(2007, 2010),
      xaxp=c(2006, 2010, 4),
-     #ylim=c(100,375),
      main='Seasonally Adjusted Quarterly Time Series')
 minor.tick(nx=2)
 b <-'Sub-meter-3'
@@ -702,16 +597,14 @@ legend('topleft', b, col='blue', lwd=2, bty='n')
 qtr_smooth3 <- HoltWinters(qtr_seasonAdj3, beta=FALSE, gamma=FALSE)
 plot(qtr_smooth3, col='blue', #xaxt='n',
      xlab='Year', ylab = 'kWh',
-     xlim=c(2007, 2010),
+     xlim=c(2007, 2011),
      xaxp=c(2006, 2010, 4),
-     #ylim=c(100,400),
-     main='Fitted Holt-Winters Model for Quarterly Time Series')
-minor.tick(nx=2)
+     main='Simple Exponential Smoothing Holt-Winters Model for Quarterly Time Series')
+minor.tick(nx=4)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 #-Forecast
-qtr_smoothFcast3 <- forecast(qtr_smooth3, robust= TRUE,h=5, level=c(85,90))
-plot(qtr_smoothFcast3)
+qtr_smoothFcast3 <- forecast(qtr_smooth3, h=5,level = c(90,95))
 qtr_smoothFcast3
 summary(qtr_smoothFcast3)
 
@@ -719,14 +612,21 @@ plot(qtr_smoothFcast3, include=1,
      #xaxt='n',
      shadecols=c('slategray3','slategray'),
      col='blue',
-     xaxp=c(2010.0,2011.0,4),
+     #xaxp=c(2010.6,2011.5,4),
      xlab='Year', ylab = 'Wh',
-     xlim=c(2010,2011),
-     main='4 Quarter Forecast of Energy Useage on Sub-Meter 3')
+     #xlim=c(2010,2011),
+     main='5 Quarter Forecast of Energy Useage on Sub-Meter 3')
 #minor.tick(nx=4)
 #axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
+#Forecasts:
+#  Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
+#2010 Q4       906.5673 744.7559 1068.379 713.7571 1099.378
+#2011 Q1       906.5673 733.7630 1079.372 700.6583 1112.476
+#2011 Q2       906.5673 723.4288 1089.706 688.3443 1124.790
+#2011 Q3       906.5673 713.6473 1099.487 676.6890 1136.446
+#2011 Q4       906.5673 704.3385 1108.796 665.5968 1147.538
 
 #######################
 # Month / day of month #
@@ -748,8 +648,8 @@ mnth_smooth3 <- HoltWinters(mnth_seasonAdj3, beta=FALSE, gamma=FALSE)
 plot(mnth_smooth3, col='blue',
      #xaxt='n',
      xlab='Month', ylab = 'Total kWh',
-     xlim=c(2007,2011),
-     xaxp=c(2007,2011,4),
+     #xlim=c(2007,2011),
+     #xaxp=c(2007,2011,4),
      main='Fitted Holt-Winters Model for Monthly Time Series')
 minor.tick(nx=12)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
@@ -762,13 +662,19 @@ plot(mnth_smoothFcast3,include=1, showgap=TRUE,
      col='blue',
      shadecols=c('slategray3','slategray'),
      #xaxp=c(2010.9,2011.2,3),
-     xlab='Month', ylab = 'Wh',
-     main='Four Month Forecast of Monthly Energy Useage on Sub-Meter 3')
+     xlab='Month', ylab = 'kWh',
+     main='Five Month Forecast of Monthly Energy Useage on Sub-Meter 3')
 #axis(side=1, at= c(2010.9,  2011.2), labels=c('0', '+4'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 summary(mnth_smoothFcast3)
 
-acf(mnth_smoothFcast3$residuals, na.action = na.omit)
+#Forecasts:
+#  Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
+#Dec 2010       294.6373 220.1586 369.1161 205.8904 383.3842
+#Jan 2011       294.6373 212.1643 377.1103 196.3647 392.9100
+#Feb 2011       294.6373 204.8793 384.3954 187.6840 401.5906
+#Mar 2011       294.6373 198.1427 391.1320 179.6568 409.6178
+#Apr 2011       294.6373 191.8466 397.4280 172.1546 417.1200
 
 
 ##################
@@ -781,7 +687,7 @@ wkofYr_decomp3 <- decompose(housePWR_wkofYrTS[,3])
 autoplot(wkofYr_decomp3, labels=NULL, range.bars = TRUE) +
   xlab('Week of the Year') +
   ylab('kWh') +
-  ggtitle('Decomposed Weekly Time Series- Sub-Meter-2')
+  ggtitle('Decomposed Weekly Time Series- Sub-Meter-3')
 
 #-remove seasonality
 wkofYr_seasonAdj3 <- seasadj(wkofYr_decomp3)
@@ -789,15 +695,14 @@ autoplot(wkofYr_seasonAdj3)
 
 #-Fit Holt Winters simple exponetial smoothing model
 wkofYr_smooth3 <- HoltWinters(wkofYr_seasonAdj3, beta=FALSE, gamma=FALSE)
-plot(wkofYr_smooth3)
-
-plot(wkofYr_smooth3, xaxt='n', col='blue',
-     xaxp=c(1,8,7),
-     xlab='Day of Week', ylab = 'Total kWh',
+plot(wkofYr_smooth3, col='blue',
+     #xaxt='n',
+     #xaxp=c(1,8,7),
+     xlab='Year', ylab = 'kWh',
      #ylim=c(0,75),
-     main='Fitted Holt-Winters Model for Daily Time Series')
-axis(side=1, at= c(1, 2,3,4,5,6,7,8), labels=WkLst)
-legend('topleft', 'Sub-Meter-2', col='green', lwd=2, bty='n')
+     main='Fitted Holt-Winters Model for Week of the Year Time Series')
+minor.tick(nx=52)
+legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 #Forecast
 wkofYr_smoothFcast3 <- forecast(wkofYr_smooth3, h=5, level=c(90, 95))
@@ -809,13 +714,18 @@ plot(wkofYr_smoothFcast3,
      #xaxt='n',
      fcol='blue',
      #xaxp=c(8,9,1),
-     xlab='Day', ylab = 'kWh',
+     xlab='Year', ylab = 'kWh',
      # ylim=c(0,100),
      main='5-Week Forecast of Energy Usage on Sub-Meter 3')
 axis(side=1, at= c(8, 9), labels=c('0', '1'))
-legend('topleft', 'Sub-Meter-2', col='blue', lwd=2, bty='n')
+legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
-
+#Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
+#2010.887       63.46413 45.08019 81.84808 41.55831 85.36995
+#2010.906       63.46413 44.57299 82.35528 40.95395 85.97432
+#2010.925       63.46413 44.07905 82.84921 40.36539 86.56288
+#2010.943       63.46413 43.59740 83.33087 39.79146 87.13681
+#2010.962       63.46413 43.12714 83.80112 39.23112 87.69715
 
 #####################
 # Day of Week
