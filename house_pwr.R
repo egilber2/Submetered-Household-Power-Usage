@@ -92,6 +92,9 @@ glimpse(house_pwr_tidy)
 
 write.csv(house_pwr, file='house_pwr.csv')
 
+housePWR_sum <- house_pwr %>%
+  select()
+
 # Exploratory Data Analysis -----------------------------------------------
 
 # Proportional and Line Plots across sub-metered zones-------------------------
@@ -317,15 +320,15 @@ housePWR_yr <- house_pwr %>%
   filter(year(DateTime) > 2006) %>%
   #filter(year(DateTime)<2010) %>%
   group_by(year(DateTime)) %>%
-  summarise(Sub_Meter_1=(sum(`Sub-Meter-1`)/1000),
-            Sub_Meter_2=(sum(`Sub-Meter-2`)/1000),
-            Sub_Meter_3=(sum(`Sub-Meter-3`)/1000),
+  summarise(Sub_Meter_1=mean(`Sub-Meter-1`, na.rm=TRUE),
+            Sub_Meter_2=mean(`Sub-Meter-2`, na.rm=TRUE),
+            Sub_Meter_3=mean(`Sub-Meter-3`, na.rm=TRUE),
             first_DateTime = first(DateTime))
 
 #-Subset Semester
 housePWR_semstr <- house_pwr %>%
   filter(year(DateTime) > 2006) %>%
-  group_by(year(DateTime), semester(DateTime)) %>%
+  group_by(year(DateTime),semester(DateTime)) %>%
   summarise(Sub_Meter_1=mean(`Sub-Meter-1`, na.rm=TRUE),
             Sub_Meter_2=mean(`Sub-Meter-2`, na.rm=TRUE),
             Sub_Meter_3=mean(`Sub-Meter-3`, na.rm=TRUE),
@@ -421,15 +424,15 @@ b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 #Quarter_TS
-housePWR_qtrTS <- ts(housePWR_qtr[,3:5], frequency=4, start=c(2007,1))
+housePWR_qtrTS <- ts(housePWR_qtr[,3:5], frequency=4, start=c(2007,1), end=c(2010,4))
 plot(housePWR_qtrTS, plot.type='s',
      #xaxt='n',
-     xlim=c(2007, 2010),
-     xaxp=c(2006, 2010, 4),
+     #xlim=c(2007, 2010),
+     #xaxp=c(2006, 2011, 5),
      col=c('red', 'green', 'blue'),
      main='Total Quarterly kWh Consumption (2007-2010)',
      xlab='Year', ylab = 'Total kWh')
-minor.tick(nx=2)
+minor.tick(nx=4)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
@@ -447,13 +450,13 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 # Week of the year_TS
-housePWR_wkofYrTS <- ts(housePWR_wkofYr[,3:5], frequency =53, start=c(2006,51), end=c(2010,48))
+housePWR_wkofYrTS <- ts(housePWR_wkofYr[,3:5], frequency =53, start=c(2007,1), end=c(2010,48))
 plot(housePWR_wkofYrTS, plot.type='s', #xaxt='n',
      #xaxp = c(1, 13, 12),
      col=c('red', 'green', 'blue'),
-     xlab ='Year', ylab = 'kWh',
-     ylim=c(0,120),
-     main='Total Energy Consumption by Week of the Year')
+     xlab ='Year', ylab = 'Wh',
+     #ylim=c(0,120),
+     main='Average Energy Consumption by Week of the Year')
 #axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12,13), labels=MonthLst)
 minor.tick(nx=52)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
@@ -503,7 +506,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 
 # Year_forecast
-fit1 <- tslm(housePWR_yrTS ~ trend)
+fit1 <- tslm(housePWR_yrTS ~ trend + season)
 x <- forecast(fit1, h=2, level = c(90, 95))
 autoplot(x, PI=TRUE, colour=TRUE, showgap=TRUE) +
   xlab('Year') +
@@ -513,12 +516,11 @@ summary(x)
 x
 
 #Quarter_forecast
-fit2 <- tslm(housePWR_qtrTS ~ trend)
+fit2 <- tslm(housePWR_qtrTS[,3] ~ trend + season)
 y <- forecast(fit2, h=5, level=c(90,95))
-autoplot(qr, PI=TRUE, colour=TRUE) +
-  xlab('Year') +
-  ylab('Total kWh') +
-  ggtitle('Forecast Quarterly Energy Consumption')
+plot(y, showgap=FALSE,
+     shadecols=c('slategray3','slategray'),
+     main='Forecasted Quarterly Energy Consumption')
 summary(y)
 
 # Month_forecast
@@ -534,12 +536,13 @@ z
 #level =	Confidence level for prediction intervals.
 
 #Week of year_forecast
-fit4 <- tslm(housePWR_wkofYrTS ~ trend)
-xx <- forecast(fit4, level=c(90,95), h=14)
-autoplot(xx, PI=TRUE, colour=TRUE) +
-  xlab('Year') +
-  ylab('Total kWh') +
-  ggtitle('Forecasted Trend of Energy Consumption by Week of the Year')
+fit4 <- tslm(housePWR_wkofYrTS[,3] ~ trend + season)
+xx <- forecast(fit4, level=c(90,95), h=53)
+plot(xx, showgap=FALSE,
+     shadecols=c('slategray3','slategray'),
+     xlab ='Week',
+     ylab='Average Wh',
+     main='Forecasted Weekly Energy Consumption')
 summary(xx)
 xx
 
