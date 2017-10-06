@@ -23,7 +23,7 @@ library(Hmisc)      #for descriptive statistics
 library(GGally)     #ggcorr provides pretty cor plot
 library(scales)
 library(forecast)   #forcasting package
-
+library(stargazer)
 # Load Data ---------------------------------------------------------------
 
 
@@ -515,6 +515,7 @@ plot(y, showgap=FALSE, include=5,
      main='4-Quarter Forecast of Quartlerly Energy Consumption for Submeter-3')
 minor.tick(nx=2)
 summary(x)
+summary(fit1)
 #Forecasts:
 #  Forecasts:
 #        Point Forecast    Lo 90     Hi 90    Lo 95    Hi 95
@@ -533,6 +534,7 @@ plot(y, showgap=FALSE, include=12,
   main='12-Month Forecast of Monthly Energy Consumption')
 minor.tick(nx=6)
 summary(y)
+summary(fit2)
 
 #Forecasts:
 #         Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
@@ -559,6 +561,7 @@ plot(z, showgap=FALSE, include=10,
      ylab='kWh',
      main='24-Week Forecast of Weekly Energy Consumption on Submeter-3')
 summary(z)
+summary(fit3)
 
 #Forecasts:
 #  Point Forecast    Lo 90     Hi 90     Lo 95     Hi 95
@@ -571,7 +574,12 @@ summary(z)
 #2011.000       65.34304 42.11671  88.56938 37.616097  93.06999
 
 
+
 # Decompose Time Series/ Remove Seasonality/ HW Smoothing/Predict -------------------------------------------------------------
+
+# Remove Seasonality ------------------------------------------------------
+
+
 
 
 ##########
@@ -586,6 +594,9 @@ autoplot(semstr_decomp3,  range.bars = TRUE) +
   ylab('kWh') +
   ggtitle('Decomposed Semester Time Series- Sub-Meter-3')
 semstr_decomp3
+summary(semstr_decomp3$seasonal)
+summary(semstr_decomp3$trend)
+summary(semstr_decomp3$random)
 
 #-remove seasonality
 smstr_seasonAdj3 <- seasadj(semstr_decomp3)
@@ -635,6 +646,7 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 #2012.00       2023.736 1631.700 2415.772 1556.597 2490.875
 #2012.50       2023.736 1585.428 2462.044 1501.460 2546.012
 
+
 ########
 #Quarter#
 ########
@@ -647,7 +659,9 @@ autoplot(qtr_decomp3,  range.bars = TRUE) +
   ylab('kWh') +
   ggtitle('Decomposed Quarterly Time Series- Sub-Meter-3')
 qtr_decomp3
-
+summary(qtr_decomp3$seasonal)
+summary(qtr_decomp3$trend)
+summary(qtr_decomp3$random)
 
 #-remove seasonality
 qtr_seasonAdj3 <- seasadj(qtr_decomp3)
@@ -711,6 +725,11 @@ autoplot(mnth_decomp3, labels=NULL, range.bars = TRUE) +
   ylab('kWh') +
   ggtitle('Decomposed Monthly Time Series- Sub-Meter-3')
 
+summary(mnth_decomp3$seasonal)
+summary(mnth_decomp3$trend)
+summary(mnth_decomp3$random)
+
+
 #-remove seasonality
 mnth_seasonAdj3 <- seasadj(mnth_decomp3)
 
@@ -760,9 +779,16 @@ autoplot(wkofYr_decomp3, labels=NULL, range.bars = TRUE) +
   ylab('kWh') +
   ggtitle('Decomposed Weekly Time Series- Sub-Meter-3')
 
+summary(wkofYr_decomp3$seasonal)
+summary(wkofYr_decomp3$trend)
+summary(wkofYr_decomp3$random)
+
+
+
 #-remove seasonality
 wkofYr_seasonAdj3 <- seasadj(wkofYr_decomp3)
 autoplot(wkofYr_seasonAdj3)
+
 
 #-Fit Holt Winters simple exponetial smoothing model
 wkofYr_smooth3 <- HoltWinters(wkofYr_seasonAdj3, beta=FALSE, gamma=FALSE)
