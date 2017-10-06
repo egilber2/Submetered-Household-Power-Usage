@@ -431,7 +431,7 @@ plot(housePWR_qtrTS, plot.type='s',
      #xlim=c(2007, 2010),
      #xaxp=c(2006, 2011, 5),
      col=c('red', 'green', 'blue'),
-     main='Total Quarterly kWh Consumption (2007-2010)',
+     main='Total Quarterly kWh Consumption',
      xlab='Year', ylab = 'kWh')
 minor.tick(nx=4)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
