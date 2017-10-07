@@ -524,10 +524,16 @@ summary(fit1)
 #2011 Q2       1018.404 825.7699 1211.0371 781.5905 1255.217
 #2011 Q3        797.055 604.4214  989.6886 560.2420 1033.868
 
+res1 <- residuals(fit1)
+checkresiduals(fit1)
+plot(fitted(fit1), residuals(fit1))
+plot(residuals(fit1, type='response'))
+hist(res1, breaks=10)
+Acf(res1)
 # Month_forecast
 fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
 y <- forecast(fit2,h=12, level=c(90,95))
-plot(y, showgap=FALSE, include=12,
+plot(y, showgap=FALSE, include=1,
   shadecols=c('slategray3','slategray'),
   xlab ='Year',
   ylab=' kWh',
@@ -535,7 +541,7 @@ plot(y, showgap=FALSE, include=12,
 minor.tick(nx=6)
 summary(y)
 summary(fit2)
-
+checkresiduals(fit2)
 #Forecasts:
 #         Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
 #Dec 2010       358.6505 273.0795 444.2215 255.8066 461.4944
@@ -562,7 +568,7 @@ plot(z, showgap=FALSE, include=10,
      main='24-Week Forecast of Weekly Energy Consumption on Submeter-3')
 summary(z)
 summary(fit3)
-
+checkresiduals(fit3)
 #Forecasts:
 #  Point Forecast    Lo 90     Hi 90     Lo 95     Hi 95
 #2010.887       88.80317 64.90720 112.69914 60.276829 117.32951
