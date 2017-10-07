@@ -23,7 +23,7 @@ library(Hmisc)      #for descriptive statistics
 library(GGally)     #ggcorr provides pretty cor plot
 library(scales)
 library(forecast)   #forcasting package
-library(stargazer)
+
 # Load Data ---------------------------------------------------------------
 
 
@@ -509,7 +509,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 #Quarter_forecast
 fit1 <- tslm(housePWR_qtrTS[,3] ~ trend + season)
 x <- forecast(fit1, h=4, level=c(90,95))
-plot(y, showgap=FALSE, include=5,
+plot(x, showgap=FALSE, include=3,
      shadecols=c('slategray3','slategray'),
      xlab='Year', ylab='kWh',
      main='4-Quarter Forecast of Quartlerly Energy Consumption for Submeter-3')
