@@ -515,10 +515,13 @@ plot(x, showgap=FALSE, include=3,
      main='4-Quarter Forecast of Quartlerly Energy Consumption for Submeter-3')
 minor.tick(nx=2)
 
+#scatterplot of predicted vs. actual
 plot.ts(x=fit1$fitted.values, y=housePWR_qtrTS[,3], xy.lines = FALSE,
-        xy.labels = FALSE)
-abline
-
+        xy.labels = FALSE,
+        xlab='Fitted Value',
+        ylab='Actual',
+        main='Scatterplot for Quarterly Predicted vs. Actual Values')
+abline(0,1, col='blue')
 
 summary(x)
 summary(fit1)
@@ -536,6 +539,8 @@ plot(fitted(fit1), residuals(fit1))
 plot(residuals(fit1, type='response'))
 hist(res1, breaks=10)
 Acf(res1)
+
+
 # Month_forecast
 fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
 y <- forecast(fit2,h=12, level=c(90,95))
@@ -545,10 +550,19 @@ plot(y, showgap=FALSE, include=1,
   ylab=' kWh',
   main='12-Month Forecast of Monthly Energy Consumption')
 minor.tick(nx=6)
+
+#scatterplot of predicted vs actual
+plot.ts(x=fit2$fitted.values, y=housePWR_mnthTS[,3], xy.lines = FALSE,
+        xy.labels = FALSE,
+        xlab='Fitted Value',
+        ylab='Actual',
+        main='Scatterplot for Monthly Predicted vs. Actual Values')
+abline(0,1, col='blue')
+
 summary(y)
-accuracy(y)
 summary(fit2)
 checkresiduals(fit2)
+
 #Forecasts:
 #         Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
 #Dec 2010       358.6505 273.0795 444.2215 255.8066 461.4944
@@ -576,6 +590,15 @@ plot(z, showgap=FALSE, include=10,
 summary(z)
 summary(fit3)
 checkresiduals(fit3)
+accuracy(fit3)
+#-scatterplot of predicted vs. actual values
+plot.ts(x=fit3$fitted.values, y=housePWR_wkofYrTS[,3], xy.lines = FALSE,
+        xy.labels = FALSE,
+        xlab='Fitted Value',
+        ylab='Actual',
+        main='Scatterplot for Monthly Predicted vs. Actual Values')
+abline(0,1, col='blue')
+
 #Forecasts:
 #  Point Forecast    Lo 90     Hi 90     Lo 95     Hi 95
 #2010.887       88.80317 64.90720 112.69914 60.276829 117.32951
@@ -650,6 +673,8 @@ plot(smstr_smoothFcast3, include=1, showgap=TRUE,
 #minor.tick(nx=4)
 #axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
+
+
 
 #Forecasts:
 #        Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
@@ -756,6 +781,7 @@ plot(mnth_smooth3, col='blue',
      main='Fitted Holt-Winters Model for Monthly Time Series')
 minor.tick(nx=12)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
+
 
 #Forecast
 mnth_smoothFcast3 <- forecast(mnth_smooth3, h=6, level=c(90,95))
