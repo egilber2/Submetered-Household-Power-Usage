@@ -514,6 +514,12 @@ plot(x, showgap=FALSE, include=3,
      xlab='Year', ylab='kWh',
      main='4-Quarter Forecast of Quartlerly Energy Consumption for Submeter-3')
 minor.tick(nx=2)
+
+plot.ts(x=fit1$fitted.values, y=housePWR_qtrTS[,3], xy.lines = FALSE,
+        xy.labels = FALSE)
+abline
+
+
 summary(x)
 summary(fit1)
 #Forecasts:
@@ -540,6 +546,7 @@ plot(y, showgap=FALSE, include=1,
   main='12-Month Forecast of Monthly Energy Consumption')
 minor.tick(nx=6)
 summary(y)
+accuracy(y)
 summary(fit2)
 checkresiduals(fit2)
 #Forecasts:
@@ -697,7 +704,7 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 qtr_smoothFcast3 <- forecast(qtr_smooth3, h=5,level = c(90,95))
 qtr_smoothFcast3
 summary(qtr_smoothFcast3)
-
+checkresiduals(qtr_smoothFcast3)
 plot(qtr_smoothFcast3, include=1,
      #xaxt='n',
      shadecols=c('slategray3','slategray'),
@@ -763,7 +770,7 @@ plot(mnth_smoothFcast3,include=1, showgap=TRUE,
 #axis(side=1, at= c(2010.9,  2011.2), labels=c('0', '+4'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 summary(mnth_smoothFcast3)
-
+checkresiduals(mnth_smoothFcast3)
 #Forecasts:
 #         Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
 #Dec 2010       294.6373 220.1586 369.1161 205.8904 383.3842
@@ -822,6 +829,7 @@ plot(wkofYr_smoothFcast3,
      main='5-Week Forecast of Weekly Energy Consumption on Sub-Meter 3')
 axis(side=1, at= c(8, 9), labels=c('0', '1'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
+checkresiduals(wkofYr_smoothFcast3)
 
 #         Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
 #2010.887       63.46413 45.08019 81.84808 41.55831 85.36995
