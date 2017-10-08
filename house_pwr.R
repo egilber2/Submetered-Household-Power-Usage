@@ -15,8 +15,7 @@
 
 
 library(caret)      #R modeling workhorse
-library(tidyverse)  #Package for tidying data
-library(magrittr)   #Enables piping
+library(tidyverse)  #Package for tidying datalibrary(magrittr)   #Enables piping
 library(lubridate)  #Simplifies working with dates/times of a time series
 library(VIM)        #Aids visualization and imputing of missing values
 library(Hmisc)      #for descriptive statistics
@@ -515,30 +514,27 @@ plot(x, showgap=FALSE, include=3,
      main='4-Quarter Forecast of Quartlerly Energy Consumption for Submeter-3')
 minor.tick(nx=2)
 
+summary(x)
+summary(fit1)
+
 #scatterplot of predicted vs. actual
 plot.ts(x=fit1$fitted.values, y=housePWR_qtrTS[,3], xy.lines = FALSE,
         xy.labels = FALSE,
         xlab='Fitted Value',
         ylab='Actual',
-        main='Scatterplot for Quarterly Predicted vs. Actual Values')
+        main='Quarterly Predicted vs. Actual Values')
 abline(0,1, col='blue')
 
-summary(x)
-summary(fit1)
-#Forecasts:
-#  Forecasts:
-#        Point Forecast    Lo 90     Hi 90    Lo 95    Hi 95
-#2010 Q4       1083.575 893.8830 1273.2680 850.3781 1316.773
-#2011 Q1       1131.790 939.1564 1324.4236 894.9770 1368.603
-#2011 Q2       1018.404 825.7699 1211.0371 781.5905 1255.217
-#2011 Q3        797.055 604.4214  989.6886 560.2420 1033.868
+#plot of residuals vs. predicted value
+plot.ts(x=fit1$fitted.values, y=fit1$residuals, xy.lines=FALSE,
+        xy.labels = FALSE,
+        xlab='Predicted Value',
+        ylab='Residuals',
+        main='Quarterly Predicted vs. Residuals')
+abline(0,0, col='grey')
 
-res1 <- residuals(fit1)
+#summary residuals plots
 checkresiduals(fit1)
-plot(fitted(fit1), residuals(fit1))
-plot(residuals(fit1, type='response'))
-hist(res1, breaks=10)
-Acf(res1)
 
 
 # Month_forecast
@@ -551,32 +547,28 @@ plot(y, showgap=FALSE, include=1,
   main='12-Month Forecast of Monthly Energy Consumption')
 minor.tick(nx=6)
 
+summary(y)
+summary(fit2)
+
 #scatterplot of predicted vs actual
 plot.ts(x=fit2$fitted.values, y=housePWR_mnthTS[,3], xy.lines = FALSE,
         xy.labels = FALSE,
         xlab='Fitted Value',
         ylab='Actual',
-        main='Scatterplot for Monthly Predicted vs. Actual Values')
+        main='Monthly Predicted vs. Actual Values')
 abline(0,1, col='blue')
 
-summary(y)
-summary(fit2)
+#plot of residuals vs. predicted value
+plot.ts(x=fit2$fitted.values, y=fit2$residuals, xy.lines=FALSE,
+        xy.labels = FALSE,
+        xlab='Predicted Value',
+        ylab='Residuals',
+        main='Monthly Predicted vs. Residuals')
+abline(0,0, col='grey')
+
+#summary residuals plots
 checkresiduals(fit2)
 
-#Forecasts:
-#         Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
-#Dec 2010       358.6505 273.0795 444.2215 255.8066 461.4944
-#Jan 2011       370.8729 286.6495 455.0963 269.6487 472.0971
-#Feb 2011       408.5337 324.3103 492.7570 307.3095 509.7579
-#Mar 2011       375.2337 291.0103 459.4570 274.0095 476.4579
-#Apr 2011       372.4437 288.2203 456.6670 271.2195 473.6679
-#May 2011       348.9937 264.7703 433.2170 247.7695 450.2179
-#Jun 2011       365.6509 281.4275 449.8743 264.4267 466.8751
-#Jul 2011       328.1799 243.9565 412.4033 226.9557 429.4041
-#Aug 2011       257.4384 173.2150 341.6618 156.2142 358.6626
-#Sep 2011       231.0557 146.8323 315.2790 129.8315 332.2799
-#Oct 2011       332.9819 248.7585 417.2053 231.7577 434.2061
-#Nov 2011       360.5009 276.2775 444.7243 259.2767 461.7251
 
 
 #Week of year_forecast
@@ -589,26 +581,25 @@ plot(z, showgap=FALSE, include=10,
      main='24-Week Forecast of Weekly Energy Consumption on Submeter-3')
 summary(z)
 summary(fit3)
-checkresiduals(fit3)
-accuracy(fit3)
+
 #-scatterplot of predicted vs. actual values
 plot.ts(x=fit3$fitted.values, y=housePWR_wkofYrTS[,3], xy.lines = FALSE,
         xy.labels = FALSE,
         xlab='Fitted Value',
         ylab='Actual',
-        main='Scatterplot for Monthly Predicted vs. Actual Values')
+        main='Week of Year Predicted vs. Actual Values')
 abline(0,1, col='blue')
 
-#Forecasts:
-#  Point Forecast    Lo 90     Hi 90     Lo 95     Hi 95
-#2010.887       88.80317 64.90720 112.69914 60.276829 117.32951
-#2010.906       87.32184 63.42587 111.21780 58.795496 115.84818
-#2010.925       85.38350 61.48754 109.27947 56.857162 113.90984
-#2010.943       93.45354 70.22721 116.67988 65.726597 121.18049
-#2010.962       88.76804 65.54171 111.99438 61.041097 116.49499
-#2010.981       37.39754 14.17121  60.62388  9.670597  65.12449
-#2011.000       65.34304 42.11671  88.56938 37.616097  93.06999
+#plot of residuals vs. predicted value
+plot.ts(x=fit3$fitted.values, y=fit3$residuals, xy.lines=FALSE,
+        xy.labels = FALSE,
+        xlab='Predicted Values',
+        ylab='Residuals',
+        main='Week of Year Predicted vs. Residuals')
+abline(0,0, col='grey')
 
+#summary residuals plots
+checkresiduals(fit3, main='Residuals from Week of Year Linear Regression Model')
 
 
 # Decompose Time Series/ Remove Seasonality/ HW Smoothing/Predict -------------------------------------------------------------
@@ -630,6 +621,7 @@ autoplot(semstr_decomp3,  range.bars = TRUE) +
   ylab('kWh') +
   ggtitle('Decomposed Semester Time Series- Sub-Meter-3')
 semstr_decomp3
+
 summary(semstr_decomp3$seasonal)
 summary(semstr_decomp3$trend)
 summary(semstr_decomp3$random)
@@ -742,14 +734,6 @@ plot(qtr_smoothFcast3, include=1,
 #axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
-#Forecasts:
-#        Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
-#2010 Q4       906.5673 744.7559 1068.379 713.7571 1099.378
-#2011 Q1       906.5673 733.7630 1079.372 700.6583 1112.476
-#2011 Q2       906.5673 723.4288 1089.706 688.3443 1124.790
-#2011 Q3       906.5673 713.6473 1099.487 676.6890 1136.446
-#2011 Q4       906.5673 704.3385 1108.796 665.5968 1147.538
-
 
 #######################
 # Month / day of month #
@@ -797,13 +781,6 @@ plot(mnth_smoothFcast3,include=1, showgap=TRUE,
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 summary(mnth_smoothFcast3)
 checkresiduals(mnth_smoothFcast3)
-#Forecasts:
-#         Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
-#Dec 2010       294.6373 220.1586 369.1161 205.8904 383.3842
-#Jan 2011       294.6373 212.1643 377.1103 196.3647 392.9100
-#Feb 2011       294.6373 204.8793 384.3954 187.6840 401.5906
-#Mar 2011       294.6373 198.1427 391.1320 179.6568 409.6178
-#Apr 2011       294.6373 191.8466 397.4280 172.1546 417.1200
 
 
 ##################
@@ -821,7 +798,6 @@ autoplot(wkofYr_decomp3, labels=NULL, range.bars = TRUE) +
 summary(wkofYr_decomp3$seasonal)
 summary(wkofYr_decomp3$trend)
 summary(wkofYr_decomp3$random)
-
 
 
 #-remove seasonality
@@ -857,9 +833,4 @@ axis(side=1, at= c(8, 9), labels=c('0', '1'))
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 checkresiduals(wkofYr_smoothFcast3)
 
-#         Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
-#2010.887       63.46413 45.08019 81.84808 41.55831 85.36995
-#2010.906       63.46413 44.57299 82.35528 40.95395 85.97432
-#2010.925       63.46413 44.07905 82.84921 40.36539 86.56288
-#2010.943       63.46413 43.59740 83.33087 39.79146 87.13681
-#2010.962       63.46413 43.12714 83.80112 39.23112 87.69715
+
