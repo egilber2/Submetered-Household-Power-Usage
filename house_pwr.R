@@ -649,6 +649,8 @@ plot(smstr_smooth3, col='blue', #xaxt='n',
      main='Simple Exponential Smoothing Holt-Winters Model for Semester Time Series')
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
+
+
 #-Forecast
 smstr_smoothFcast3 <- forecast(smstr_smooth3, h=5,level = c(90,95))
 smstr_smoothFcast3
@@ -665,16 +667,6 @@ plot(smstr_smoothFcast3, include=1, showgap=TRUE,
 #minor.tick(nx=4)
 #axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
-
-
-
-#Forecasts:
-#        Point Forecast    Lo 90    Hi 90    Lo 95    Hi 95
-#2010.50       2023.736 1827.709 2219.763 1790.156 2257.317
-#2011.00       2023.736 1746.521 2300.951 1693.414 2354.059
-#2011.50       2023.736 1684.221 2363.251 1619.180 2428.293
-#2012.00       2023.736 1631.700 2415.772 1556.597 2490.875
-#2012.50       2023.736 1585.428 2462.044 1501.460 2546.012
 
 
 ########
