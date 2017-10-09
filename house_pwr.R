@@ -507,13 +507,13 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 
 #Quarter_forecast
 fit1 <- tslm(housePWR_qtrTS[,3] ~ trend + season)
-x <- forecast(fit1, h=4, level=c(90,95))
+x <- forecast(fit1, h=4, level=c(80,95))
 plot(x, showgap=FALSE, include=3,
      shadecols=c('slategray3','slategray'),
      xlab='Year', ylab='kWh',
      main='4-Quarter Forecast of Quartlerly Energy Consumption for Submeter-3')
 minor.tick(nx=2)
-
+fit1
 summary(x)
 summary(fit1)
 
@@ -533,13 +533,17 @@ plot.ts(x=fit1$fitted.values, y=fit1$residuals, xy.lines=FALSE,
         main='Quarterly Predicted vs. Residuals')
 abline(0,0, col='grey')
 
+#QQ plot of residuals
+qqnorm(fit1$residuals)
+qqline(fit1$residuals)
+
 #summary residuals plots
 checkresiduals(fit1)
 
 
 # Month_forecast
 fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
-y <- forecast(fit2,h=12, level=c(90,95))
+y <- forecast(fit2,h=12, level=c(80,95))
 plot(y, showgap=FALSE, include=1,
   shadecols=c('slategray3','slategray'),
   xlab ='Year',
@@ -566,6 +570,9 @@ plot.ts(x=fit2$fitted.values, y=fit2$residuals, xy.lines=FALSE,
         main='Monthly Predicted vs. Residuals')
 abline(0,0, col='grey')
 
+qqnorm(fit2$residuals)
+qqline(fit2$residuals)
+
 #summary residuals plots
 checkresiduals(fit2)
 
@@ -573,8 +580,8 @@ checkresiduals(fit2)
 
 #Week of year_forecast
 fit3 <- tslm(housePWR_wkofYrTS[,3] ~ trend + season)
-z <- forecast(fit3, level=c(90,95), h=24)
-plot(z, showgap=FALSE, include=10,
+z <- forecast(fit3, level=c(80,95), h=24)
+plot(z, showgap=FALSE, include=5,
      shadecols=c('slategray3','slategray'),
      xlab ='Year',
      ylab='kWh',
@@ -597,6 +604,10 @@ plot.ts(x=fit3$fitted.values, y=fit3$residuals, xy.lines=FALSE,
         ylab='Residuals',
         main='Week of Year Predicted vs. Residuals')
 abline(0,0, col='grey')
+
+#-QQ plot of residuals
+qqnorm(fit3$residuals)
+qqline(fit3$residuals)
 
 #summary residuals plots
 checkresiduals(fit3, main='Residuals from Week of Year Linear Regression Model')
