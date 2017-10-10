@@ -531,10 +531,10 @@ plot.ts(x=fit1$fitted.values, y=fit1$residuals, xy.lines=FALSE,
         xlab='Predicted Value',
         ylab='Residuals',
         main='Quarterly Predicted vs. Residuals')
-abline(0,0, col='grey')
+abline(0,0, lty=2, col='grey')
 
 #QQ plot of residuals
-qqnorm(fit1$residuals)
+qqnorm(fit1$residuals, main='Quarterly Q-Q Plot')
 qqline(fit1$residuals)
 
 #summary residuals plots
@@ -544,7 +544,7 @@ checkresiduals(fit1)
 # Month_forecast
 fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
 y <- forecast(fit2,h=12, level=c(80,95))
-plot(y, showgap=FALSE, include=1,
+plot(y, showgap=FALSE, include=5,
   shadecols=c('slategray3','slategray'),
   xlab ='Year',
   ylab=' kWh',
@@ -568,9 +568,9 @@ plot.ts(x=fit2$fitted.values, y=fit2$residuals, xy.lines=FALSE,
         xlab='Predicted Value',
         ylab='Residuals',
         main='Monthly Predicted vs. Residuals')
-abline(0,0, col='grey')
+abline(0,0, lty=2, col='grey')
 
-qqnorm(fit2$residuals)
+qqnorm(fit2$residuals, main='Monthly Q-Q Plot')
 qqline(fit2$residuals)
 
 #summary residuals plots
@@ -581,7 +581,7 @@ checkresiduals(fit2)
 #Week of year_forecast
 fit3 <- tslm(housePWR_wkofYrTS[,3] ~ trend + season)
 z <- forecast(fit3, level=c(80,95), h=24)
-plot(z, showgap=FALSE, include=5,
+plot(z, showgap=FALSE, include=8,
      shadecols=c('slategray3','slategray'),
      xlab ='Year',
      ylab='kWh',
@@ -603,10 +603,10 @@ plot.ts(x=fit3$fitted.values, y=fit3$residuals, xy.lines=FALSE,
         xlab='Predicted Values',
         ylab='Residuals',
         main='Week of Year Predicted vs. Residuals')
-abline(0,0, col='grey')
+abline(0,0, lty=2, col='grey')
 
 #-QQ plot of residuals
-qqnorm(fit3$residuals)
+qqnorm(fit3$residuals, main='Weekly Q-Q Plot')
 qqline(fit3$residuals)
 
 #summary residuals plots
@@ -721,7 +721,7 @@ minor.tick(nx=4)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 #-Forecast
-qtr_smoothFcast3 <- forecast(qtr_smooth3, h=5,level = c(90,95))
+qtr_smoothFcast3 <- forecast(qtr_smooth3, h=5,level = c(80,95))
 qtr_smoothFcast3
 summary(qtr_smoothFcast3)
 checkresiduals(qtr_smoothFcast3)
@@ -737,6 +737,14 @@ plot(qtr_smoothFcast3, include=1,
 #axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
+
+#Plot Predicted vs Residuals
+plot.ts(x=qtr_smoothFcast3$fitted, y=qtr_smoothFcast3$residuals, xy.lines=FALSE,
+        xy.labels = FALSE,
+        xlab='Predicted Values',
+        ylab='Residuals',
+        main='Week of Year Predicted vs. Residuals')
+abline(0,0, lty=2, col='grey')
 
 #######################
 # Month / day of month #
@@ -771,7 +779,7 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 
 #Forecast
-mnth_smoothFcast3 <- forecast(mnth_smooth3, h=6, level=c(90,95))
+mnth_smoothFcast3 <- forecast(mnth_smooth3, h=6, level=c(80,95))
 mnth_smoothFcast3
 plot(mnth_smoothFcast3,include=1, showgap=TRUE,
      #xaxt='n',
@@ -820,7 +828,7 @@ minor.tick(nx=52)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 #Forecast
-wkofYr_smoothFcast3 <- forecast(wkofYr_smooth3, h=5, level=c(90, 95))
+wkofYr_smoothFcast3 <- forecast(wkofYr_smooth3, h=5, level=c(80, 95))
 wkofYr_smoothFcast3
 plot(wkofYr_smoothFcast3,
      include=1, showgap=TRUE,
