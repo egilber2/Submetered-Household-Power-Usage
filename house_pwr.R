@@ -6,7 +6,16 @@
 
 
 # Summary -----------------------------------------------------------------
-
+#--Analyzed electrical sub-metering data from data set found at the UCI
+#  repository.  Did extensive EDA by plotting the data across different
+#  time periods while looking at total energy consumption.
+#  Subset the data covering several time periods of interest and converted
+#  the resulting data into time series'.
+#  Used a linear model to make predictions while incorporating the trend and
+#  seasonality of the data.
+#  Decomposed the various time series' and then used used Holt-Winters
+#  simple exponential smoothing to fit a model on seasonally-adjusted data.
+#  Finally, maded forecasts using the HW models.
 
 
 
@@ -14,7 +23,7 @@
 # Load Packages -----------------------------------------------------------
 
 
-library(caret)      #R modeling workhorse
+library(caret)      #R modeling workhorse & ggplot2
 library(tidyverse)  #Package for tidying datalibrary(magrittr)   #Enables piping
 library(lubridate)  #Simplifies working with dates/times of a time series
 library(VIM)        #Aids visualization and imputing of missing values
@@ -140,7 +149,7 @@ house_pwr_tidy %>%
   summarise(sum=round(sum(Watt_hr/1000),3)) %>%
   ggplot(aes(x=factor(`quarter(DateTime)`), y=sum)) +
   labs(x='Quarter of the Year', y='Wh') +
-  ggtitle('Average Quarterly Energy Consumption') +
+  ggtitle('Total Quarterly Energy Consumption') +
   geom_bar(stat='identity', aes(fill = Meter), color='black')
 
 #Quarter Proportion plot
@@ -148,10 +157,10 @@ house_pwr_tidy %>%
   filter(year(DateTime)>2006) %>%
   group_by(quarter(DateTime), Meter) %>%
   #filter(quarter(DateTime)<3) %>%
-  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  summarise(sum=round(sum(Watt_hr)/1000),3, na.rm=TRUE) %>%
   ggplot(aes(x=factor(`quarter(DateTime)`), sum, group = Meter, fill=Meter)) +
   labs(x='Quarter of the Year', y='kWh') +
-  ggtitle('Total Quarterly Energy Consumption') +
+  ggtitle('Proportion of Total Quarterly Energy Consumption') +
   geom_bar(stat='identity', position='fill', color='black')
 
 ###-Month- Proportional Plot
@@ -162,7 +171,7 @@ house_pwr_tidy %>%
   summarise(sum=sum(Watt_hr/1000)) %>%
   ggplot(aes(x=factor(Month), sum, group=Meter,fill=Meter)) +
   labs(x='Month of the Year', y='Proportion of Monthly Energy Useage') +
-  ggtitle('Proportion of Average Monthly Energy Useage') +
+  ggtitle('Proportion of Total Monthly Energy Useage') +
   geom_bar(stat='identity', position='fill', color='black')
 
 ###-Month- Line Plot
@@ -234,7 +243,7 @@ house_pwr_tidy %>%
   summarise(sum=sum(Watt_hr/1000)) %>%
   ggplot(aes(x=factor(Day), sum, group=Meter,fill=Meter)) +
   labs(x='Day of the Week', y='Proportion of Energy Useage') +
-  ggtitle('Proportion of Average Daily Energy Consumption') +
+  ggtitle('Proportion of Total Daily Energy Consumption') +
   geom_bar(stat='identity', position='fill', color='black')
 
 ###-Day of Week- Line Plot
@@ -442,7 +451,7 @@ housePWR_mnthTS <- ts(housePWR_mnth[,3:5], frequency = 12, start=c(2007,1), end=
 plot(housePWR_mnthTS, plot.type='s',#xaxt='n',
      #xaxp = c(1,13,12),
      col=c('red', 'green', 'blue'),
-     main='Average Monthly Wh Consumption',
+     main='Total Monthly kWh Consumption',
      xlab='Year/Month', ylab = 'kWh')
 minor.tick(nx=12)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
@@ -456,7 +465,7 @@ plot(housePWR_wkofYrTS, plot.type='s', #xaxt='n',
      col=c('red', 'green', 'blue'),
      xlab ='Year', ylab = 'kWh',
      #ylim=c(0,120),
-     main='Average Energy Consumption by Week of the Year')
+     main='Total Energy Consumption by Week of the Year')
 #axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12,13), labels=MonthLst)
 minor.tick(nx=52)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
@@ -468,7 +477,7 @@ housePWR_dofWkTS <- ts(housePWR_dofWk[,3:5], frequency =7, start=c(1,1))
 plot(housePWR_dofWkTS, plot.type='s', #xaxt='n',
      col=c('red', 'green', 'blue'),
      xlab ='Week of Year', ylab = 'kWh',
-     #xlim = c(1,53) , ylim=c(0,75),
+     xlim = c(1,53) , ylim=c(0,75),
      main='Total Energy Consumption by Day of Week')
 minor.tick(nx=70)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
@@ -516,6 +525,7 @@ minor.tick(nx=2)
 fit1
 summary(x)
 summary(fit1)
+fit1
 
 #scatterplot of predicted vs. actual
 plot.ts(x=fit1$fitted.values, y=housePWR_qtrTS[,3], xy.lines = FALSE,
@@ -637,6 +647,7 @@ summary(semstr_decomp3$seasonal)
 summary(semstr_decomp3$trend)
 summary(semstr_decomp3$random)
 
+
 #-remove seasonality
 smstr_seasonAdj3 <- seasadj(semstr_decomp3)
 acf(smstr_seasonAdj3, na.action=na.omit,lag=30)
@@ -659,11 +670,11 @@ plot(smstr_smooth3, col='blue', #xaxt='n',
      #xaxp=c(2006, 2010, 4),
      main='Simple Exponential Smoothing Holt-Winters Model for Semester Time Series')
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
-
+summary(smstr_smooth3)
 
 
 #-Forecast
-smstr_smoothFcast3 <- forecast(smstr_smooth3, h=5,level = c(90,95))
+smstr_smoothFcast3 <- forecast(smstr_smooth3, h=5,level = c(80,95))
 smstr_smoothFcast3
 summary(smstr_smoothFcast3)
 
@@ -711,7 +722,9 @@ b <-'Sub-meter-3'
 legend('topleft', b, col='blue', lwd=2, bty='n')
 
 #-Fit Holt Winters simple exponetial smoothing model
-qtr_smooth3 <- HoltWinters(qtr_seasonAdj3, beta=FALSE, gamma=FALSE)
+qtr_smooth3 <- HoltWinters(qtr_seasonAdj3,
+                           beta=FALSE,
+                           gamma=FALSE)
 plot(qtr_smooth3, col='blue', #xaxt='n',
      xlab='Year', ylab = 'kWh',
      xlim=c(2007, 2011),
@@ -738,13 +751,6 @@ plot(qtr_smoothFcast3, include=1,
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 
-#Plot Predicted vs Residuals
-plot.ts(x=qtr_smoothFcast3$fitted, y=qtr_smoothFcast3$residuals, xy.lines=FALSE,
-        xy.labels = FALSE,
-        xlab='Predicted Values',
-        ylab='Residuals',
-        main='Week of Year Predicted vs. Residuals')
-abline(0,0, lty=2, col='grey')
 
 #######################
 # Month / day of month #
