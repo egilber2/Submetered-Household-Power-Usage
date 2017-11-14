@@ -81,7 +81,7 @@ house_pwr_tidy$Meter <- factor(house_pwr_tidy$Meter)
 glimpse(house_pwr_tidy)
 ```
 
-##4 Exploratore the Data
+##4 Explore the Data
 ###4.1 Visualizations of Energy Usage Across Sub-Meters and Time Periods
 ####4.1.1 Yearly Time Period
 ```{r cache=TRUE}
@@ -211,5 +211,114 @@ house_pwr_tidy %>%
   theme(axis.text.x = element_text(angle=90)) +
   geom_bar(stat='identity', aes(fill=Meter), colour='black')
 
+```
+```{r cached = TRUE}
+### Day of the Month- Line Plot
+#Not informative
+house_pwr_tidy %>%
+  group_by(day(DateTime), Meter) %>%
+  summarise(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(`day(DateTime)`), sum, group=Meter,colour=Meter)) +
+  labs(x='Day of the Month', y='Avg Watt Hour Useage') +
+  ggtitle('Average Daily Watt Hour Useage') +
+  geom_line(size=1) +
+  geom_line()
+```
+```{r cached = TRUE}
+###-Day of Week- Porportional Plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Day, Meter) %>%
+  summarise(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(Day), sum, group=Meter,fill=Meter)) +
+  labs(x='Day of the Week', y='Proportion of Energy Useage') +
+  ggtitle('Proportion of Total Daily Energy Consumption') +
+  geom_bar(stat='identity', position='fill', color='black')
+```
+```{r cached=TRUE}
+###-Day of Week- Line Plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Day, Meter) %>%
+  summarise(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(Day), sum, group=Meter, colour=Meter)) +
+  labs(x='Day of the Week', y='Wh') +
+  ggtitle('Average Daily Energy Consumption') +
+  geom_line(size=1) +
+  geom_line()
+
+```
+
+```{r cached=TRUE}
+###-Day of Week bar chart
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Day, Meter) %>%
+  summarise(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(Day), y=sum)) +
+  labs(x='Day of the Week', y='kWh') +
+  ggtitle('Total Energy Useage by Day of Week') +
+  geom_bar(stat='identity', aes(fill = Meter), colour='black')
+
+```
+
+```{r cached=TRUE}
+#Weekend bar chart
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(weekend=lubridate::wday(DateTime, label=TRUE, abbr=FALSE)) %>%
+  filter(weekend==c('Saturday','Sunday')) %>%
+  group_by(weekend, Meter) %>%
+  summarise(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(weekend), sum, group=Meter,fill=Meter)) +
+  labs(x='Weekend Day', y='Proportion of Energy Useage') +
+  ggtitle('Proportion of Average Energy Consumption by Weekend Day') +
+  geom_bar(stat='identity', position='fill', color='black')
+```
+
+```{r cached=TRUE}
+###-Hour of the Day- Proportional Plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(hour(DateTime), Meter) %>%
+  summarise(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(`hour(DateTime)`), sum, group=Meter,fill=Meter)) +
+  labs(x='Hour of the Day', y='Proportion of Energy Useage') +
+  ggtitle('Proportion of Average Hourly Energy Consumption') +
+  geom_bar(stat='identity', position='fill', color='black')
+
+```
+```{r cached=TRUE}
+###-Hour of the Day-Line Plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(hour(DateTime), Meter) %>%
+  summarise(sum=round(mean(Watt_hr), 3)) %>%
+  ggplot(aes(x=factor(`hour(DateTime)`), sum, group=Meter,colour=Meter)) +
+  labs(x='Hour of the Day', y='Wh') +
+  ggtitle('Average Hourly Energy Consumption') +
+  geom_line(size=1) +
+  geom_line()
+```
+
+```{r cached=TRUE}
+#Hour of day bar chart
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(hour(DateTime), Meter) %>%
+  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  ggplot(aes(x=factor(`hour(DateTime)`), y=sum)) +
+  labs(x='Hour of the Day', y='kWh') +
+  ggtitle('Total Energy Useage by Hour of the Day') +
+  geom_bar(stat='identity', aes(fill = Meter), colour='black')
+```
+
+```{r cached=TRUE, warning=FALSE}
+# Correlation plot
+ggcorr(house_pwr) +
+  ggtitle('Correlation Plot of Energy Consumption Dataset')
 ```
 
