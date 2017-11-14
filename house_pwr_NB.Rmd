@@ -1,0 +1,215 @@
+---
+title: "Household Electric Power Consumption"
+output: 
+  html_notebook:
+    highlight: tango
+    theme: spacelab
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE }
+knitr::opts_chunk$set(echo = TRUE, tidy=TRUE)
+```
+##1 Frame the Problem
+
+
+```{r message=FALSE, warning=FALSE}
+
+library(caret)      #R modeling workhorse & ggplot2
+library(tidyverse)  #Package for tidying datalibrary(magrittr)   #Enables piping
+library(lubridate)  #Simplifies working with dates/times of a time series
+library(VIM)        #Aids visualization and imputing of missing values
+library(Hmisc)      #for descriptive statistics
+library(GGally)     #ggcorr provides pretty cor plot
+library(scales)
+library(forecast)   #forcasting package
+
+```
+##2. Collect/Load Raw Data
+
+```{r message=FALSE, cache=TRUE, results='hide'}
+
+house_pwr <- read_delim('household_power_consumption.txt', col_names = TRUE, col_types = cols(Global_active_power='d', Global_reactive_power='d',
+Voltage='d', Global_intensity='d', Sub_metering_1='d', Sub_metering_2='d', Sub_metering_3='d'), delim=';',  na='?')
+```
+
+```{r}
+# Convert to a tibble
+head(as_tibble(house_pwr))
+```
+##3 Process the Data
+
+###3.1 Process Date and Time Features
+
+```{r cache=TRUE}
+house_pwr <- unite(house_pwr,Date, Time, col='DateTime', sep=' ')
+
+house_pwr$DateTime <- as.POSIXct(house_pwr$DateTime, format="%d/%m/%Y %H:%M:%S", tz='America/New_York')
+class(house_pwr$DateTime)
+tz(house_pwr$DateTime)
+```
+###3.2 Rename Independent Variables
+```{r}
+colnames(house_pwr)[2] <- 'Glbl_actvPwr'
+colnames(house_pwr)[3] <- 'Glbl_ractvPwr'
+colnames(house_pwr)[6] <- 'Sub-Meter-1'
+colnames(house_pwr)[7] <- 'Sub-Meter-2'
+colnames(house_pwr)[8] <- 'Sub-Meter-3'
+
+```
+###3.3 Assess Missing Values
+```{r cache=TRUE}
+aggr_plot <- aggr(house_pwr, col=c('navyblue','red'), numbers=TRUE, sortVars=TRUE, labels=names(house_pwr),cex.axis=.7,
+  gap=3, ylab=c("Histogram of missing data","Pattern"), digits=2)
+
+housePWR_NA <- house_pwr[rowSums(is.na(house_pwr))>0,]
+```
+```{r}
+# Remove rows with NA's
+house_pwr <- na.omit(house_pwr)
+sum(is.na(house_pwr))
+```
+###3.4 Create a Long Form of Data Set
+```{r}
+house_pwr_tidy <- house_pwr %>%
+  gather(Meter, Watt_hr, `Sub-Meter-1`, `Sub-Meter-2`, `Sub-Meter-3`)  
+```
+
+```{r}
+house_pwr_tidy$Meter <- factor(house_pwr_tidy$Meter)
+glimpse(house_pwr_tidy)
+```
+
+##4 Exploratore the Data
+###4.1 Visualizations of Energy Usage Across Sub-Meters and Time Periods
+####4.1.1 Yearly Time Period
+```{r cache=TRUE}
+##-Year_Proportional Plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(year(DateTime), Meter) %>%
+  summarise(sum=sum(Watt_hr)) %>%
+  ggplot(aes(x=factor(`year(DateTime)`), sum, group=Meter,fill=Meter)) +
+  labs(x='Year', y='Proportion of Energy Useage') +
+  ggtitle('Proportion of Total Yearly Energy Consumption') +
+  geom_bar(stat='identity', position='fill', color='black')
+```
+```{r cache=TRUE}
+##-Year_Line Plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(year(DateTime), Meter) %>%
+  summarise(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(`year(DateTime)`), sum, group=Meter, colour=Meter)) +
+  labs(x='Year', y='kWh') +
+  ggtitle('Total Yearly Energy Consumption') +
+  geom_line(size=1)
+```
+```{r cached=TRUE}
+##-Year Bar Chart
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  #mutate(year=year(DateTime)) %>%
+  group_by(year(DateTime), Meter) %>%
+  summarise(sum=round(sum(Watt_hr/1000),3)) %>%
+  ggplot(aes(x=factor(`year(DateTime)`), y=sum)) +
+  labs(x='Year', y='kWh') +
+  ggtitle('Total Energy Useage by Year') +
+  geom_bar(stat='identity', aes(fill = Meter), colour='black')
+```
+```{r cached = TRUE}
+#Quarter bar  plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  #filter(year(DateTime)<2010) %>%
+  #mutate(quarter=quarter(DateTime)) %>%
+  group_by(quarter(DateTime), Meter) %>%
+  summarise(sum=round(sum(Watt_hr/1000),3)) %>%
+  ggplot(aes(x=factor(`quarter(DateTime)`), y=sum)) +
+  labs(x='Quarter of the Year', y='Wh') +
+  ggtitle('Total Quarterly Energy Consumption') +
+  geom_bar(stat='identity', aes(fill = Meter), color='black')
+```
+```{r cached=TRUE}
+#Quarter Proportion plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(quarter(DateTime), Meter) %>%
+  #filter(quarter(DateTime)<3) %>%
+  summarise(sum=round(sum(Watt_hr)/1000),3, na.rm=TRUE) %>%
+  ggplot(aes(x=factor(`quarter(DateTime)`), sum, group = Meter, fill=Meter)) +
+  labs(x='Quarter of the Year', y='kWh') +
+  ggtitle('Proportion of Total Quarterly Energy Consumption') +
+  geom_bar(stat='identity', position='fill', color='black')
+```
+
+```{r cached=TRUE}
+###-Month- Proportional Plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Month, Meter) %>%
+  summarise(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(Month), sum, group=Meter,fill=Meter)) +
+  labs(x='Month of the Year', y='Proportion of Monthly Energy Useage') +
+  ggtitle('Proportion of Total Monthly Energy Useage') +
+  geom_bar(stat='identity', position='fill', color='black')
+```
+
+```{r cached=TRUE}
+###-Month- Line Plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Month, Meter) %>%
+  summarise(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(Month), sum, group=Meter, colour=Meter)) +
+  labs(x='Month of the Year', y='Wh') +
+  ggtitle('Average Monthly Energy Useage') +
+  geom_line(size=1) +
+  geom_line()
+```
+
+```{r echo=TRUE, cached=TRUE}
+###-Month bar chart
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  #filter(year(DateTime)<2010) %>%
+  mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Month, Meter) %>%
+  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  ggplot(aes(x=factor(Month), y=sum)) +
+  labs(x='Month of the Year', y='kWh') +
+  ggtitle('Total Energy Useage by Month of the Year') +
+  geom_bar(stat='identity', aes(fill = Meter), colour='black')
+```
+
+```{r cached=TRUE}
+#Week of the year- line plot
+house_pwr_tidy %>%
+  filter(year(DateTime)>2006) %>%
+  group_by(week(DateTime), Meter) %>%
+  summarise(sum=round(sum(Watt_hr)/1000),3) %>%
+  ggplot(aes(x=factor(`week(DateTime)`), sum, group=Meter,colour=Meter)) +
+  labs(x='Week of the Year', y='kWh') +
+  ggtitle('Total Energy Usage by Week of the Year') +
+  theme(axis.text.x = element_text(angle=90)) +
+  geom_line(size=1) +
+  geom_line()
+```
+
+```{r cached=TRUE}
+#Week of the year- bar plot
+house_pwr_tidy %>%
+  #filter(year(DateTime)>2006) %>%
+  group_by(week(DateTime), Meter) %>%
+  summarise(sum=sum(Watt_hr/1000)) %>%
+  ggplot(aes(x=factor(`week(DateTime)`), y=sum)) +
+  labs(x='Week of the Year', y='kWh') +
+  ggtitle('Total Energy Usage by Week of the Year') +
+  theme(axis.text.x = element_text(angle=90)) +
+  geom_bar(stat='identity', aes(fill=Meter), colour='black')
+
+```
+
