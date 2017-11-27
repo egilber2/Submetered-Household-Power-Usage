@@ -12,9 +12,26 @@ output:
 ```{r setup, include=FALSE }
 knitr::opts_chunk$set(echo = TRUE, tidy=TRUE)
 ```
+## Introduction
+This project was done as part of a data science program that utilized a story-centered curriculum.  For this project, the student assumes the role of a data scientist working for a data analytics consulting firm whose client is a home developer.  The client would like to know if insights can be found in the sub-metered energy consumption data set that could be used as an incentive to potential home buyers that may be interested in a "smart home."  
+The initial task for this project is to frame the problem.  The client's request is purposefully vague so much thought needs to go into defining the busisness problem and converting it into a data science problem.  This is followed by a clear explanation of the data science process to be followed for this project so the client what the deliverables are and how they were arrived at.  
+
 ##1 Frame the Problem
+The high level business objective is:
+
+Determine if the installation of sub-metering devicese that measure power consumption can translate into economic incentive recommendations for homeowners.  
+
+Information that could be potentially valuable to a homeowner would include:
+
+I.  Sub-metered energy consumption data that provides enough granularity to uncover trends in behavior.  
+
+II. Longer-term patterns of energy usage that can be used to predict future usage with the potential to flag appliance degradation or unusual energy consumption.
+
+III. Identification of peak energy usage can be identified allowing for the potential to modify behavior to take advantage of off-peak electricity rates. 
 
 
+##2. Collect/Load Raw Data
+Load packages.
 ```{r message=FALSE, warning=FALSE}
 
 library(caret)      #R modeling workhorse & ggplot2
@@ -27,28 +44,29 @@ library(scales)
 library(forecast)   #forcasting package
 
 ```
-##2. Collect/Load Raw Data
 
+Import the data.
 ```{r message=FALSE, cache=TRUE, results='hide'}
-
 house_pwr <- read_delim('household_power_consumption.txt', col_names = TRUE, col_types = cols(Global_active_power='d', Global_reactive_power='d',
 Voltage='d', Global_intensity='d', Sub_metering_1='d', Sub_metering_2='d', Sub_metering_3='d'), delim=';',  na='?')
 ```
 
 ```{r}
 # Convert to a tibble
+summary(house_pwr)
 head(as_tibble(house_pwr))
+
 ```
+A quick inspection of the data tells us that there are over 2 million observations taken at 1 minute intervals. The 9 variables include the 3 sub-meters, a date feature, and a time feature. The date and time will be combined into a date-time format that's amendable to time series analysis.   
 ##3 Process the Data
 
 ###3.1 Process Date and Time Features
-
+A new column called DateTime is created by uniting the Date and Time columns.  This is then converted to a POSIXct data type.  The time zone was identified in the data repository so EST was chosen by the tz argument.
 ```{r cache=TRUE}
 house_pwr <- unite(house_pwr,Date, Time, col='DateTime', sep=' ')
 
-house_pwr$DateTime <- as.POSIXct(house_pwr$DateTime, format="%d/%m/%Y %H:%M:%S", tz='America/New_York')
+house_pwr$DateTime <- as.POSIXct(house_pwr$DateTime, format="%d/%m/%Y %H:%M:%S", tz="GMT")
 class(house_pwr$DateTime)
-tz(house_pwr$DateTime)
 ```
 ###3.2 Rename Independent Variables
 ```{r}
@@ -60,12 +78,14 @@ colnames(house_pwr)[8] <- 'Sub-Meter-3'
 
 ```
 ###3.3 Assess Missing Values
+The aggr function of the VIM package is used to visualize the extent of missing values in the data set.  
 ```{r cache=TRUE}
 aggr_plot <- aggr(house_pwr, col=c('navyblue','red'), numbers=TRUE, sortVars=TRUE, labels=names(house_pwr),cex.axis=.7,
   gap=3, ylab=c("Histogram of missing data","Pattern"), digits=2)
 
 housePWR_NA <- house_pwr[rowSums(is.na(house_pwr))>0,]
 ```
+Approximately 1.25% of the observations are missing all data except for the DateTime 
 ```{r}
 # Remove rows with NA's
 house_pwr <- na.omit(house_pwr)
