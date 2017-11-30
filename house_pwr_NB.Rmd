@@ -349,10 +349,6 @@ b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ```
 
-
-###6.3 Day of the Week Time Series
-
-
 ##7 Forecasts of Energy Consumption_Linear Model
 ###7.1 Quarterly Forecast
 ```{r}
