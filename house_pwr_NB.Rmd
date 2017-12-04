@@ -31,32 +31,37 @@ III. Identification of peak energy usage can be identified allowing for the pote
 
 
 ##2. Collect/Load Raw Data
-Load packages.
+To interrogate this large times series data set, we'll take advantage of several packages availabe in R.  The tidyverse package bundles very useful packages that are used extensively in this analysis.  More information on the tidyverse library can be found in Garret Grolemund's and Hadley Wickham's [R for Data Science](http://r4ds.had.co.nz/)
+
 ```{r message=FALSE, warning=FALSE}
 
-library(caret)      #R modeling workhorse & ggplot2
+#library(caret)      #R modeling workhorse & ggplot2
 library(tidyverse)  #Package for tidying datalibrary(magrittr)   #Enables piping
 library(lubridate)  #Simplifies working with dates/times of a time series
 library(VIM)        #Aids visualization and imputing of missing values
 library(Hmisc)      #for descriptive statistics
 library(GGally)     #ggcorr provides pretty cor plot
 library(scales)
-library(forecast)   #forcasting package
+#library(forecast)   #forcasting package
 
 ```
+We'll use the read_delim() function contained in the readr package to import the data set.  This results in the creation of a tibble which is a data frame that's designed to work with other tidyverse packages.  Here the col_types argument has been used to define column data types as double or numeric by setting the column names to 'd'.
 
-Import the data.
 ```{r message=FALSE, cache=TRUE, results='hide'}
 house_pwr <- read_delim('household_power_consumption.txt', col_names = TRUE, col_types = cols(Global_active_power='d', Global_reactive_power='d',
 Voltage='d', Global_intensity='d', Sub_metering_1='d', Sub_metering_2='d', Sub_metering_3='d'), delim=';',  na='?')
 ```
 
+With the data loaded, we can now have a look at it with the summary() and head() functions.
 ```{r}
 summary(house_pwr)
-head(house_pwr)
-
 ```
-A quick inspection of the data tells us that there are 2,075,259 observations taken at 1 minute intervals. The 9 variables include the 3 sub-meters, a date feature, and a time feature. The features are defined in the table below. 
+From the output of the summary function we can see that there are 2,075,259 observations.  We can also see from the summary statistics of the features that there are 25,979 missing values (NA's). 
+
+```{r}
+head(house_pwr)
+```
+The table from the output of the head() function on the house_pwr tibble shows the first several rows of the data set along with the data type.  The definitions of the features are provided below for reference.  The table also shows what appliances are on the electrical circuits that are monitored by each of the sub-meters.
 
 ```{r echo=FALSE}
 def_table <- read.csv('Energy_submeter_defs.csv')
@@ -65,15 +70,17 @@ knitr::kable(def_table, col.names=c('Feature', 'Definition', 'Sub-Meter-Coverage
 ##3 Process the Data
 
 ###3.1 Process Date and Time Features
-A new column called DateTime is created by uniting the Date and Time columns.  This is then converted to a POSIXct data type.  
+There are many packages and functions in R that facilitate analyzing and plotting time series objects.  To take advantage of these, we'll start by combining the Date and Time features to create a Date-Time feature using the unite() function from tidyr.  By default, the original features are removed leaving the newly-created column.  
+The next step is to address the data type of the new 'DateTime' feature.  After uniting the columns, the DateTime feature is of the character class.  We'll use the as.POSIXct() function to convert it into the proper class using the format argument to describe the format of the date-time feature prior to conversion.  
 
 ```{r cache=TRUE}
 house_pwr <- unite(house_pwr,Date, Time, col='DateTime', sep=' ')
 
-house_pwr$DateTime <- as.POSIXct(house_pwr$DateTime, format="%d/%m/%Y %H:%M:%S", tz="GMT")
+house_pwr$DateTime <- as.POSIXct(house_pwr$DateTime, format="%d/%m/%Y %T", tz="GMT")
 class(house_pwr$DateTime)
 ```
-Now that the DateTime feature has been created in the proper format, we can assess the timeframe that the data set covers
+Now that the DateTime feature has been converted to the proper format, we can assess the timeframe that the data set covers.
+
 ```{r}
 range(house_pwr$DateTime)
 ```
@@ -86,6 +93,8 @@ house_pwr <- filter(house_pwr, year(DateTime) != 2006)
 
 
 ###3.2 Rename Independent Variables
+We can truncate/rename some of the features by selecting columns by their index and assigning new names.
+
 ```{r}
 colnames(house_pwr)[2] <- 'Glbl_actvPwr'
 colnames(house_pwr)[3] <- 'Glbl_ractvPwr'
@@ -95,21 +104,25 @@ colnames(house_pwr)[8] <- 'Sub-Meter-3'
 
 ```
 ###3.3 Assess Missing Values
-The aggr function of the VIM package is used to visualize the extent of missing values in the data set.  
+We noticed in the summary of the data set that there were missing values.  To get a sense of how these missing values are distributed in the data, we'll use the aggr() function of the VIM package to generate a visualization.
+
 ```{r cache=TRUE}
 aggr_plot <- aggr(house_pwr, col=c('navyblue','red'), numbers=TRUE, sortVars=TRUE, labels=names(house_pwr),cex.axis=.7,
   gap=3, ylab=c("Histogram of missing data","Pattern"), digits=2)
 
 housePWR_NA <- house_pwr[rowSums(is.na(house_pwr))>0,]
 ```
-Approximately 1.25% of the observations are missing all data except for the DateTime.  These will be removed from the data set.
+We can quickly determine by looking at the charts that the missing values aren't scatterd randomly throughout the data. Rather, entire rows are missing data.  Thus the decision to remove the rows is an easy one since no information is lost.  The na.omit() function takes care of that by removing entire rows with missing values.  
+
 ```{r}
 # Remove rows with NA's
 house_pwr <- na.omit(house_pwr)
 sum(is.na(house_pwr))
 ```
+A quick check of our work by summing the NA count confirms that the missing values were removed.
+
 ###3.4 Create a Long Form of Data Set
-To aid visualizations in the exploratory data analysis, the gather function is used to create a new feature named Meter which combines the 3 sub-meters.  The values for the sub-meters are put in the newly-created Watt_hr feature.
+In the data set's current form, each observation or row contains data for each of the sub-meters.  To aid the visualization of the submeter data on the same chart, the gather() function is used to create a new column 'Meter' which contains the names of the submeters.  The observed values for the submeters are placed in the newly-creacted 'Watt_hr' column.  
 
 ```{r}
 house_pwr_tidy <- house_pwr %>%
@@ -126,10 +139,11 @@ glimpse(house_pwr_tidy)
 ###4.1 Visualizations of Energy Usage Across Sub-Meters and Time Periods
 Keeping the business objective in mind, the initial exploratory analysis should look for any trends or patterns in the data.  Without trends or patterns in the data, it would be unlikely that any actionalble insights could be delivered to the client.  Insights gained from this initial analysis would be shared with the client to better define or expand the business objective for the project.  
 
-Since this is a large data set and there are quite a few visualizations to generate, the data will be subset and visualized without saving to a dataframe.  This is accomplished using the pipe operator (%>%).  Once the more informative time periods are identified, dataframes of subset time periods can be generated for the more in-depth time series analysis.
+Since this is a large data set and there are quite a few visualizations to generate, the data will be subset and visualized without saving to a dataframe or tibble object.  This is accomplished using the pipe operator (%>%).  Once the more informative time periods are identified, dataframes or tibbles of subset time periods can be generated for the more in-depth time series analysis.
 
 ####4.1.1 Yearly Time Period
-Having observed earlier that only the final two weeks of data were available for 2006, the data will be subset for data from 2007-2010. Also, since data from year 2010 stopped in November, a proportion plot will be used to allow for fairer comparisons between years. 
+We'll start by visualizing the least granular of time periods (yearly) and drill down from there. Since data from year 2010 stopped in November, a proportion plot will be used to allow for fairer comparisons between years.  Note the advantage of using the long form of the data set where the 'fill=Meter' agrument in the ggplot() function makes easy work of coloring the stacked bar plot by submeter. 
+
 ```{r cache=TRUE}
 ##-Year_Proportional Plot
 house_pwr_tidy %>%
@@ -199,42 +213,40 @@ house_pwr_tidy %>%
 
 ```
 
-####4.1.5 Day of the Week for Low consumption Time Period
-Insights gleaned from energy consumption by day of the week could be of value to a homeowner as it can readily be related to homeowner energy consumption behaviors.  This in turn provides potential opportunities for behavior modification.
+####4.1.5 Day of the Week for High Consumption Time Period
+Insights gleaned from energy consumption by day of the week could be of value to a homeowner as it can readily be related to homeowner energy consumption behaviors.  This in turn provides potential opportunities for behavior modification.  We'll compare high energy consumption periods in the winter months and summer months.
 
 ```{r cached=TRUE}
 ###-Day of Week bar chart
 house_pwr_tidy %>%
   #filter(year(DateTime)>2006) %>%
-  filter(week(DateTime) == c(1:8)) %>%
+  filter(week(DateTime) == c(2:8)) %>%
   mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Day, Meter) %>%
   summarise(sum=sum(Watt_hr/1000)) %>%
   ggplot(aes(x=factor(Day), y=sum)) +
   labs(x='Day of the Week', y='kWh') +
   ylim(0,85) +
-  ggtitle('Total Energy Useage by Day for Weeks of High Consumption') +
+  ggtitle('Total Energy Useage by Day for Weeks of High Consumption \n in Winter Months') +
   geom_bar(stat='identity', aes(fill = Meter), colour='black')
 
 ```
+There appears to be a trend of increasing energy usage on sub-meter 3 as the week progresses.  Peak kitchen usage seems to happen on the weekends (sub-meter 1) while peak laundry days appears to be on Saturday, Sunday and Wednesday (sub-meter 2).  Of note is that energy usage of submeter 3 is driven by the electric water heater and not the air conditioner as the data is from the winter months.  Let's see how this compares to consumption trends during peak consumption during warmer months.
+
 ```{r}
 house_pwr_tidy %>%
   #filter(year(DateTime)>2006) %>%
-  filter(week(DateTime) == c(27:35)) %>%
+  filter(week(DateTime) == c(20:27)) %>%
   mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Day, Meter) %>%
   summarise(sum=sum(Watt_hr/1000)) %>%
   ggplot(aes(x=factor(Day), y=sum)) +
   labs(x='Day of the Week', y='kWh') +
   ylim(0,85) +
-  ggtitle('Total Energy Useage by Day for Weeks of Low Consumption') +
+  ggtitle('Total Energy Useage by Day for Weeks of High Consumption\nin Summer Months') +
   geom_bar(stat='identity', aes(fill = Meter), colour='black')
 ```
-
-There appears to be a trend of increasing energy usage on sub-meter 3 as the week progresses.  Peak laundry days appears to be on Sunday and Wednesday (sub-meter 2), while peak kitchen usage seems to happen on the weekends (sub-meter 1).  
-This data is a summary of all years through all weather seasons.  A homeowner may find the information more actionable if the data was subset say,  by seasons.  As an example, trends in energy consumption by day of the week in the winter months will be analyzed.
-
-
+Interestingly total consumption on submeter 3 is less in the summer months than in the winter months.  As a reminder, the air conditioner and the electric water heater are on the circuit monitored by submeter 3.  This suggests that the increase in consumption in the winter as measured by submeter 3 may be due to a poorly insulated water heater or a water heater in a poorly insulated space.  This type of actionalble insight would 
 
 ####4.1.7 Hour of the Day Time Period
 Finally, drilling down to the hour of the day shows clear trends in energy consumption.  The lowest energy usage is not suprisingly in the early morning hours where all sub-meters reach their minimum.  If it is determined that the local electricity provider offers off-peak rates, this chart would identify opportunities for the homeowner to shift energy consumption to off-peak hours.  For example, a timer on the washer machine and/or the dishwasher could be set to run after midnight.
@@ -427,39 +439,7 @@ qqline(fit2$residuals)
 checkresiduals(fit2)
 
 ```
-```{r}
-fit3 <- tslm(housePWR_wkofYrTS[,3] ~ trend + season)
-z <- forecast(fit3, level=c(80,95), h=24)
-plot(z, showgap=FALSE, include=4,
-     shadecols=c('slategray3','slategray'),
-     xlab ='Day of Week',
-     ylab='kWh',
-     main='Forecast of Weekly Energy Consumption on Submeter-3')
-```
-```{r}
-plot.ts(x=fit3$fitted.values, y=housePWR_wkofYrTS[,3], xy.lines = FALSE,
-        xy.labels = FALSE,
-        xlab='Fitted Value',
-        ylab='Actual',
-        main='Week of Year Predicted vs. Actual Values')
-abline(0,1, col='blue')
-```
-```{r}
-plot.ts(x=fit3$fitted.values, y=fit3$residuals, xy.lines=FALSE,
-        xy.labels = FALSE,
-        xlab='Predicted Values',
-        ylab='Residuals',
-        main='Week of Year Predicted vs. Residuals')
-abline(0,0, lty=2, col='grey')
-```
-```{r}
-qqnorm(fit3$residuals, main='Weekly Q-Q Plot')
-qqline(fit3$residuals)
-```
-```{r}
-checkresiduals(fit3, main='Residuals from Week of Year Linear Regression Model')
 
-```
 ##8 Holt-Winters Simple Exponential Smoothing Model
 ###8.1 Quarterly Time Series
 ```{r}
