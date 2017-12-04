@@ -246,7 +246,7 @@ house_pwr_tidy %>%
   ggtitle('Total Energy Useage by Day for Weeks of High Consumption\nin Summer Months') +
   geom_bar(stat='identity', aes(fill = Meter), colour='black')
 ```
-Interestingly total consumption on submeter 3 is less in the summer months than in the winter months.  As a reminder, the air conditioner and the electric water heater are on the circuit monitored by submeter 3.  This suggests that the increase in consumption in the winter as measured by submeter 3 may be due to a poorly insulated water heater or a water heater in a poorly insulated space.  This type of actionalble insight would 
+Interestingly total consumption on submeter 3 is less in the summer months than in the winter months.  As a reminder, the air conditioner and the electric water heater are on the circuit monitored by submeter 3.  This suggests that the increase in consumption in the winter as measured by submeter 3 may be due to a poorly insulated water heater or a water heater in a poorly insulated space.  This type of actionalble insight would certainly be included in 
 
 ####4.1.7 Hour of the Day Time Period
 Finally, drilling down to the hour of the day shows clear trends in energy consumption.  The lowest energy usage is not suprisingly in the early morning hours where all sub-meters reach their minimum.  If it is determined that the local electricity provider offers off-peak rates, this chart would identify opportunities for the homeowner to shift energy consumption to off-peak hours.  For example, a timer on the washer machine and/or the dishwasher could be set to run after midnight.
