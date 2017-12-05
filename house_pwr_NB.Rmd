@@ -42,7 +42,7 @@ library(VIM)        #Aids visualization and imputing of missing values
 library(Hmisc)      #for descriptive statistics
 library(GGally)     #ggcorr provides pretty cor plot
 library(scales)
-#library(forecast)   #forcasting package
+library(forecast)   #forcasting package
 
 ```
 We'll use the read_delim() function contained in the readr package to import the data set.  This results in the creation of a tibble which is a data frame that's designed to work with other tidyverse packages.  Here the col_types argument has been used to define column data types as double or numeric by setting the column names to 'd'.
@@ -246,10 +246,10 @@ house_pwr_tidy %>%
   ggtitle('Total Energy Useage by Day for Weeks of High Consumption\nin Summer Months') +
   geom_bar(stat='identity', aes(fill = Meter), colour='black')
 ```
-Interestingly total consumption on submeter 3 is less in the summer months than in the winter months.  As a reminder, the air conditioner and the electric water heater are on the circuit monitored by submeter 3.  This suggests that the increase in consumption in the winter as measured by submeter 3 may be due to a poorly insulated water heater or a water heater in a poorly insulated space.  This type of actionalble insight would certainly be included in 
+Interestingly total consumption on submeter 3 is less in the summer months than in the winter months.  As a reminder, the air conditioner and the electric water heater are on the circuit monitored by submeter 3.  This suggests that the increase in consumption in the winter as measured by submeter 3 may be due to a poorly insulated water heater or a water heater in a poorly insulated space.  
 
 ####4.1.7 Hour of the Day Time Period
-Finally, drilling down to the hour of the day shows clear trends in energy consumption.  The lowest energy usage is not suprisingly in the early morning hours where all sub-meters reach their minimum.  If it is determined that the local electricity provider offers off-peak rates, this chart would identify opportunities for the homeowner to shift energy consumption to off-peak hours.  For example, a timer on the washer machine and/or the dishwasher could be set to run after midnight.
+Finally, drilling down to the hour of the day shows clear trends in energy consumption.  The lowest energy usage is, not suprisingly, in the early morning hours where all sub-meters reach their minimum.  If it is determined that the local electricity provider offers off-peak rates, this chart would identify opportunities for the homeowner to shift energy consumption to off-peak hours.  For example, a timer on the washer machine and/or the dishwasher could be set to run after midnight.
 
 
 ```{r cached=TRUE}
@@ -264,13 +264,16 @@ house_pwr_tidy %>%
   geom_bar(stat='identity', aes(fill = Meter), colour='black')
 ```
 ##5 Subset Data Set by Time Periods of Interest
-The initial exploratory data analysis uncovered some interesting energy consumption trends that a homeowner and thus the client would find of value.  To determine how these trends recur over time, the data set will be subset by time frames of interest, converted to a time series, and visualized.
+Through exploratory data analysis, we were able to identify trends in energy consumption leading to insights that had the potential to save money for a homeowner through behavior modification or by flagging an inefficient appliance.  An additional opportunity to monitor the health of an appliance would be to compare actual energy consumption to projected consumption.  If actual consumption fell out of the projected range, the homeowner could be alerted that maintenance may be required and thereby avoiding a costly and disruptive failure of an appliance.
+To do this, we'll convert a subset of the data to a time series object and use the forecast() function to predict energy consumption.
+
+
 
 ###5.1 Quarterly 
 Subset by Quarter
 ```{r}
 housePWR_qtr <- house_pwr %>%
-  filter(year(DateTime) > 2006) %>%
+  #filter(year(DateTime) > 2006) %>%
   #filter(year(DateTime)<2010) %>%
   group_by(year(DateTime), quarter(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
@@ -289,42 +292,16 @@ housePWR_mnth <- house_pwr %>%
             Sub_Meter_3=round(sum(`Sub-Meter-3`/1000), 3),
             first_DateTime = first(DateTime))
 ```
-###5.3 Weekly
-```{r}
-housePWR_wkofYr <- house_pwr %>%
-  #filter(year(DateTime)>2006) %>%
-  #filter(year(DateTime)<2010) %>%
-  mutate(DofWk=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
-  group_by(year(DateTime),week(DateTime)) %>%
-  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
-            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
-            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000), 3),
-            first_DateTime = first(DateTime))
 
-```
-###5.4 Week of the Year- Summer Months
-```{r}
-housePWR_smrWk <- house_pwr %>%
-  filter(year(DateTime)== c(2007, 2008, 2009, 2010)) %>%
-  filter(month(DateTime) == c(5,6,7,8)) %>%
-  #filter(year(DateTime) == 2009) %>%
-  #filter(year(DateTime)<2010) %>%
-  #mutate(DofWk=lubridate::week(DateTime, label=TRUE, abbr=TRUE)) %>%
-  group_by(year(DateTime),week(DateTime),day(DateTime)) %>%
-  summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
-            Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
-            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000), 3),
-            first_DateTime = first(DateTime))
-```
-
-##6 Convert to Time Series and Plot TS
+##6 Convert to Time Series and Plot
+To convert our data to a time series object, we'll use R's ts() function on our subset time series data.  It's important to set the frequency argument to the correct value.  For a quarterly time series the value is set to 4 and it is set to 12 for a monthly time series.
 ###6.1 Quarterly Time Series
 
 ```{r}
 housePWR_qtrTS <- ts(housePWR_qtr[,3:5], frequency=4, start=c(2007,1), end=c(2010,3))
 plot(housePWR_qtrTS, plot.type='s',
      #xaxt='n',
-     #xlim=c(2007, 2010),
+     #xlim=c(2007, 2010.5),
      #xaxp=c(2006, 2011, 5),
      col=c('red', 'green', 'blue'),
      main='Total Quarterly kWh Consumption',
@@ -333,13 +310,16 @@ minor.tick(nx=4)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ```
-We can see that the mid-year trough of energy consumption observed in the quarterly bar chart does indeed repeat over the time as shown in the time series plot.  This trend is most-pronounced for sub-meter 3.
+We can see that the mid-year trough of energy consumption observed in the quarterly bar chart does indeed repeat over time.  
 
 ###6.2 Monthly Time Series
+Now we'll convert our data subset by month into a time series object by setting the frequency to 12.
+
 ```{r}
 housePWR_mnthTS <- ts(housePWR_mnth[,3:5], frequency = 12, start=c(2007,1), end=c(2010,11))
 plot(housePWR_mnthTS, plot.type='s',#xaxt='n',
      #xaxp = c(1,13,12),
+     xlim=c(2007, 2011),
      col=c('red', 'green', 'blue'),
      main='Total Monthly kWh Consumption',
      xlab='Year/Month', ylab = 'kWh')
@@ -347,63 +327,64 @@ minor.tick(nx=12)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ```
-###6.3 Week of Year Time Series
-
-```{r}
-housePWR_wkofYrTS <- ts(housePWR_wkofYr[,3:5], frequency = 53, start=c(2007,2), end=c(2010,48))
-plot(housePWR_wkofYrTS, plot.type='s',#xaxt='n',
-     #xaxp = c(1,13,12),
-     col=c('red', 'green', 'blue'),
-     main='Total Monthly kWh Consumption',
-     xlab='Year/Month', ylab = 'kWh')
-minor.tick(nx=52)
-b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
-legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
-```
+Again, we see a patternt that repeats rather consistently over the years.
 
 ##7 Forecasts of Energy Consumption_Linear Model
+We'll now fit a linear model to our time series data that incorportes trend and seasonal componets.
+
 ###7.1 Quarterly Forecast
+After we have fit our model to the data, we'll use the forecast() function to predict future consumption. A couple of arguments in the forecast() function are worth noting. The confidence level for the prediction interval is set with the level agrguement.  The h argument sets the number of periods to forecast.  As this is a quarterly time series, the h=4 equates to a 4-quarter forecast.
+
 ```{r}
 fit1 <- tslm(housePWR_qtrTS[,3] ~ trend + season)
+```
+There are several elements in the fit1 object that can help us evaluate how well our linear regression model fits the data.  For instance, we can plot the fitted values vs. the actual values to visualize the relationship.  
+
+```{r}
+ggplot(fit1, aes(x=fit1$fitted.values, y=housePWR_qtrTS[,3])) +
+  geom_point(color='blue', size=4) +
+  labs(x='Fitted Value', y='Actual') +
+  geom_abline(intercept = 0, slope=1,  linetype='dashed') +
+  ggtitle('Fitted vs. Actual Values for Linear Model')
+
+```
+The closer a point is to the dashed line, the more accurately the model predicted the fitted value.  The distance the fitted value is from the blue line is the error or residual.  For a model that fits the data well, one would expect the distribution of the residuals to be normal and centered around zero.  One way to assess this is with a residual plot where the fitted vs. residuals are plotted.  
+
+```{r, error=FALSE}
+ggplot(fit1, aes(x=fit1$fitted.values, y=fit1$residuals)) +
+  geom_point(color='blue', size=4) +
+  labs(x='Fitted Values', y='Residuals') +
+  geom_hline(yintercept = 0, linetype='dashed') +
+  ggtitle('Residual Plot of Linear Model')
+```
+Any patterns in the residual plot would suggest a non-linear relationship.  However, the random scatterplot appearance of the residual plot suggests that the linear model fits our data well.
+
+Finally, one can use the checkresiduals() function
+```{r}
+checkresiduals(fit1)
+
+```
+
+```{r}
 x <- forecast(fit1, h=4, level=c(80,95))
 plot(x, showgap=FALSE, include=3,
      shadecols=c('slategray3','slategray'),
      xlab='Year', ylab='kWh',
      main='4-Quarter Forecast of Quartlerly Energy Consumption for Submeter-3')
 minor.tick(nx=2)
+```
+The plot of the resulting forecast shows a line plot of the predicted values with the 80 and 95% prediction intervals.  Using the summary() function on the forecast object provides information including the error measures and the point foreacasts.
+
+```{r}
 summary(x)
-```
-```{r}
-plot.ts(x=fit1$fitted.values, y=housePWR_qtrTS[,3], xy.lines = FALSE,
-        xy.labels = FALSE,
-        xlab='Fitted Value',
-        ylab='Actual',
-        main='Quarterly Predicted vs. Actual Values')
-abline(0,1, col='blue')
 
 ```
 
-```{r}
-plot.ts(x=fit1$fitted.values, y=fit1$residuals, xy.lines=FALSE,
-        xy.labels = FALSE,
-        xlab='Predicted Value',
-        ylab='Residuals',
-        main='Quarterly Predicted vs. Residuals')
-abline(0,0, lty=2, col='grey')
-```
-
-```{r}
-qqnorm(fit1$residuals, main='Quarterly Q-Q Plot')
-qqline(fit1$residuals)
-```
- 
-```{r}
-checkresiduals(fit1)
-
-```
 ###7.2 Monthly Forecast
 ```{r}
 fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
+
+
 y <- forecast(fit2,h=12, level=c(80,95))
 plot(y, showgap=FALSE, include=5,
   shadecols=c('slategray3','slategray'),
@@ -482,11 +463,11 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 ```{r}
 #-Forecast
-qtr_smoothFcast3 <- forecast(qtr_smooth3, h=5,level = c(80,95))
+qtr_smoothFcast3 <- forecast(qtr_smooth3, h=1,level = c(80,95))
 
 summary(qtr_smoothFcast3)
 checkresiduals(qtr_smoothFcast3)
-plot(qtr_smoothFcast3, include=1,
+plot(qtr_smoothFcast3, include=10,
      #xaxt='n',
      shadecols=c('slategray3','slategray'),
      col='blue',
