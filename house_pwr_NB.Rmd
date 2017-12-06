@@ -41,7 +41,7 @@ library(lubridate)  #Simplifies working with dates/times of a time series
 library(VIM)        #Aids visualization and imputing of missing values
 library(Hmisc)      #for descriptive statistics
 library(GGally)     #ggcorr provides pretty cor plot
-library(scales)
+#library(scales)
 library(forecast)   #forcasting package
 
 ```
@@ -295,6 +295,7 @@ housePWR_mnth <- house_pwr %>%
 
 ##6 Convert to Time Series and Plot
 To convert our data to a time series object, we'll use R's ts() function on our subset time series data.  It's important to set the frequency argument to the correct value.  For a quarterly time series the value is set to 4 and it is set to 12 for a monthly time series.
+
 ###6.1 Quarterly Time Series
 
 ```{r}

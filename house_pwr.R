@@ -15,7 +15,7 @@
 #  seasonality of the data.
 #  Decomposed the various time series' and then used used Holt-Winters
 #  simple exponential smoothing to fit a model on seasonally-adjusted data.
-#  Finally, maded forecasts using the HW models.
+#  Finally, made forecasts using the HW models.
 
 
 
