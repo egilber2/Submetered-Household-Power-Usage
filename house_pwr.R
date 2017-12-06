@@ -628,14 +628,13 @@ checkresiduals(fit3, main='Residuals from Week of Year Linear Regression Model')
 # Remove Seasonality ------------------------------------------------------
 
 
-
+#-Decompose TS_Sub-Meter-3
 
 ##########
-#Semester#
+#-Semester#
 ##########
 
-##-Sub-Meter-3
-#-Decompose TS
+
 semstr_decomp3 <- decompose(housePWR_semstrTS[,3])
 autoplot(semstr_decomp3,  range.bars = TRUE) +
   xlab('Year') +
@@ -648,7 +647,7 @@ summary(semstr_decomp3$trend)
 summary(semstr_decomp3$random)
 
 
-#-remove seasonality
+#-Remove seasonality_semester
 smstr_seasonAdj3 <- seasadj(semstr_decomp3)
 acf(smstr_seasonAdj3, na.action=na.omit,lag=30)
 
@@ -662,7 +661,7 @@ minor.tick(nx=2)
 b <-'Sub-meter-3'
 legend('topleft', b, col='blue', lwd=2, bty='n')
 
-#-Fit Holt Winters simple exponetial smoothing model
+#-Fit Holt Winters simple exponetial smoothing model_semester
 smstr_smooth3 <- HoltWinters(smstr_seasonAdj3, beta=FALSE, gamma=FALSE)
 plot(smstr_smooth3, col='blue', #xaxt='n',
      xlab='Year', ylab = 'kWh',
@@ -673,7 +672,7 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 summary(smstr_smooth3)
 
 
-#-Forecast
+#-Forecast_semester
 smstr_smoothFcast3 <- forecast(smstr_smooth3, h=5,level = c(80,95))
 smstr_smoothFcast3
 summary(smstr_smoothFcast3)
@@ -692,11 +691,10 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 
 ########
-#Quarter#
+#-Quarter#
 ########
 
-##-Sub-Meter-3
-#-Decompose TS
+
 qtr_decomp3 <- decompose(housePWR_qtrTS[,3])
 autoplot(qtr_decomp3,  range.bars = TRUE) +
   xlab('Year') +
@@ -707,7 +705,7 @@ summary(qtr_decomp3$seasonal)
 summary(qtr_decomp3$trend)
 summary(qtr_decomp3$random)
 
-#-remove seasonality
+#-Remove seasonality_quarter
 qtr_seasonAdj3 <- seasadj(qtr_decomp3)
 acf(qtr_seasonAdj3, na.action=na.omit,lag=30)
 
@@ -721,7 +719,7 @@ minor.tick(nx=2)
 b <-'Sub-meter-3'
 legend('topleft', b, col='blue', lwd=2, bty='n')
 
-#-Fit Holt Winters simple exponetial smoothing model
+#-Fit Holt Winters simple exponetial smoothing model_quarter
 qtr_smooth3 <- HoltWinters(qtr_seasonAdj3,
                            beta=FALSE,
                            gamma=FALSE)
@@ -733,7 +731,7 @@ plot(qtr_smooth3, col='blue', #xaxt='n',
 minor.tick(nx=4)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
-#-Forecast
+#-Forecast_quarter
 qtr_smoothFcast3 <- forecast(qtr_smooth3, h=5,level = c(80,95))
 qtr_smoothFcast3
 summary(qtr_smoothFcast3)
@@ -753,11 +751,9 @@ legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 
 #######################
-# Month / day of month #
+#-Month / day of month #
 #######################
 
-##-Sub-Meter-3
-#-Decompose TS
 mnth_decomp3 <- decompose(housePWR_mnthTS[,3])
 autoplot(mnth_decomp3, labels=NULL, range.bars = TRUE) +
   xlab('Month') +
@@ -769,7 +765,7 @@ summary(mnth_decomp3$trend)
 summary(mnth_decomp3$random)
 
 
-#-remove seasonality
+#-Remove seasonality_dofMonth
 mnth_seasonAdj3 <- seasadj(mnth_decomp3)
 
 #-Fit Holt Winters simple exponetial smoothing model
@@ -784,7 +780,7 @@ minor.tick(nx=12)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
 
-#Forecast
+#Forecast_dofMonth
 mnth_smoothFcast3 <- forecast(mnth_smooth3, h=6, level=c(80,95))
 mnth_smoothFcast3
 plot(mnth_smoothFcast3,include=1, showgap=TRUE,
@@ -801,11 +797,9 @@ checkresiduals(mnth_smoothFcast3)
 
 
 ##################
-#Week of the Year#
+#-Week of the Year#
 ##################
 
-##-Sub-Meter-3
-#-Decompose TS
 wkofYr_decomp3 <- decompose(housePWR_wkofYrTS[,3])
 autoplot(wkofYr_decomp3, labels=NULL, range.bars = TRUE) +
   xlab('Week of the Year') +
@@ -817,12 +811,12 @@ summary(wkofYr_decomp3$trend)
 summary(wkofYr_decomp3$random)
 
 
-#-remove seasonality
+#-Remove seasonality_wkofYr
 wkofYr_seasonAdj3 <- seasadj(wkofYr_decomp3)
 autoplot(wkofYr_seasonAdj3)
 
 
-#-Fit Holt Winters simple exponetial smoothing model
+#-Fit Holt Winters simple exponetial smoothing model_wkofYr
 wkofYr_smooth3 <- HoltWinters(wkofYr_seasonAdj3, beta=FALSE, gamma=FALSE)
 plot(wkofYr_smooth3, col='blue',
      #xaxt='n',
@@ -833,7 +827,7 @@ plot(wkofYr_smooth3, col='blue',
 minor.tick(nx=52)
 legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
 
-#Forecast
+#Forecast_wkofYr
 wkofYr_smoothFcast3 <- forecast(wkofYr_smooth3, h=5, level=c(80, 95))
 wkofYr_smoothFcast3
 plot(wkofYr_smoothFcast3,
