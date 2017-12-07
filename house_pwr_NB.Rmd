@@ -67,7 +67,7 @@ The table from the output of the head() function on the house_pwr tibble shows t
 def_table <- read.csv('Energy_submeter_defs.csv')
 knitr::kable(def_table, col.names=c('Feature', 'Definition', 'Sub-Meter-Coverage'), caption='Data Set Feature Definitions')
 ```  
-##3 Process the Data
+##3 Process the Data {.tabset .tabset-pills}
 
 ###3.1 Process Date and Time Features
 There are many packages and functions in R that facilitate analyzing and plotting time series objects.  To take advantage of these, we'll start by combining the Date and Time features to create a Date-Time feature using the unite() function from tidyr.  By default, the original features are removed leaving the newly-created column.  
@@ -136,7 +136,7 @@ glimpse(house_pwr_tidy)
 ```
 
 ##4 Explore the Data
-###4.1 Visualizations of Energy Usage Across Sub-Meters and Time Periods
+###4.1 Visualizations of Energy Usage Across Sub-Meters and Time Periods {.tabset}
 Keeping the business objective in mind, the initial exploratory analysis should look for any trends or patterns in the data.  Without trends or patterns in the data, it would be unlikely that any actionalble insights could be delivered to the client.  Insights gained from this initial analysis would be shared with the client to better define or expand the business objective for the project.  
 
 Since this is a large data set and there are quite a few visualizations to generate, the data will be subset and visualized without saving to a dataframe or tibble object.  This is accomplished using the pipe operator (%>%).  Once the more informative time periods are identified, dataframes or tibbles of subset time periods can be generated for the more in-depth time series analysis.
@@ -263,7 +263,7 @@ house_pwr_tidy %>%
   ggtitle('Total Energy Useage by Hour of the Day') +
   geom_bar(stat='identity', aes(fill = Meter), colour='black')
 ```
-##5 Subset Data Set by Time Periods of Interest
+##5 Subset Data Set by Time Periods of Interest {.tabset}
 Through exploratory data analysis, we were able to identify trends in energy consumption leading to insights that had the potential to save money for a homeowner through behavior modification or by flagging an inefficient appliance.  An additional opportunity to monitor the health of an appliance would be to compare actual energy consumption to projected consumption.  If actual consumption fell out of the projected range, the homeowner could be alerted that maintenance may be required and thereby avoiding a costly and disruptive failure of an appliance.
 To do this, we'll convert a subset of the data to a time series object and use the forecast() function to predict energy consumption.
 
@@ -293,7 +293,7 @@ housePWR_mnth <- house_pwr %>%
             first_DateTime = first(DateTime))
 ```
 
-##6 Convert to Time Series and Plot
+##6 Convert to Time Series and Plot {.tabset}
 To convert our data to a time series object, we'll use R's ts() function on our subset time series data.  It's important to set the frequency argument to the correct value.  For a quarterly time series the value is set to 4 and it is set to 12 for a monthly time series.
 
 ###6.1 Quarterly Time Series
@@ -330,11 +330,13 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ```
 We can see a seasonal pattern over the years with trough of energy usage in the summer that is most-pronounced with submeter 3.
 
-##7 Forecasts of Energy Consumption_Linear Model
+##7 Forecasts of Energy Consumption_Linear Model {.tabset}
 For this section the focus will be on submeter 3 which accounts for a majority of the total submetered energy consumption.  We will first fit a linear model to our quarterly and monthly data.  Before using these models to forecast future energy usage, we'll investigate some of the assumptions of a linear regression model to determine if use of a linear model is appropriate for our subset time series data sets.
 
-###7.1 Quarterly Forecast
+###7.1 Quarterly Linear Model {.tabset} 
+
 We'll start by fitting a linear model to our quarterly times series including the trend and seasonal components.  We can get a quick assessment of the model by looking at the summary.
+
 
 ```{r}
 fit1 <- tslm(housePWR_qtrTS[,3] ~ trend + season)
@@ -387,9 +389,13 @@ summary(x)
 
 ###7.2 Monthly Forecast
 
+As we did with the quarterly time series, we'll fit a linear model to the monthly time series and assess whether it is an appropriate model for our data prior to doing any forecasting.
+
 ```{r}
 fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
+summary(fit2)
 ```
+The model is significant as judged by the p-value of the F-statistic with a multiple r-squared of 0.73.  Next we'll look at the plot of the fitte vs. actual values.
 
 ```{r}
 ggplot(fit2, aes(x=fit2$fitted.values, y=housePWR_mnthTS[,3])) +
@@ -398,6 +404,7 @@ ggplot(fit2, aes(x=fit2$fitted.values, y=housePWR_mnthTS[,3])) +
   geom_abline(intercept = 0, slope=1,  linetype='dashed') +
   ggtitle('Fitted vs. Actual Values for Linear Model')
 ```
+The fitted values appear to regression line reasonably well.  Next we'll look for any patterns in the fitted vs. residuals plot that may cause concern.
 
 
 ```{r}
@@ -407,7 +414,7 @@ ggplot(fit2, aes(x=fit2$fitted.values, y=fit2$residuals)) +
   geom_hline(yintercept = 0, linetype='dashed') +
   ggtitle('Residual Plot of Linear Model')
 ```
-
+There don't appear to be any patterns in tih
 
 ```{r}
 checkresiduals(fit2)
