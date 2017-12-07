@@ -328,18 +328,19 @@ minor.tick(nx=12)
 b <- c('Sub-meter-1', 'Sub-meter-2', 'Sub-meter-3')
 legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ```
-Again, we see a patternt that repeats rather consistently over the years.
+We can see a seasonal pattern over the years with trough of energy usage in the summer that is most-pronounced with submeter 3.
 
 ##7 Forecasts of Energy Consumption_Linear Model
-We'll now fit a linear model to our time series data that incorportes trend and seasonal componets.
+For this section the focus will be on submeter 3 which accounts for a majority of the total submetered energy consumption.  We will first fit a linear model to our quarterly and monthly data.  Before using these models to forecast future energy usage, we'll investigate some of the assumptions of a linear regression model to determine if use of a linear model is appropriate for our subset time series data sets.
 
 ###7.1 Quarterly Forecast
-After we have fit our model to the data, we'll use the forecast() function to predict future consumption. A couple of arguments in the forecast() function are worth noting. The confidence level for the prediction interval is set with the level agrguement.  The h argument sets the number of periods to forecast.  As this is a quarterly time series, the h=4 equates to a 4-quarter forecast.
+We'll start by fitting a linear model to our quarterly times series including the trend and seasonal components.  We can get a quick assessment of the model by looking at the summary.
 
 ```{r}
 fit1 <- tslm(housePWR_qtrTS[,3] ~ trend + season)
+summary(fit1)
 ```
-There are several elements in the fit1 object that can help us evaluate how well our linear regression model fits the data.  For instance, we can plot the fitted values vs. the actual values to visualize the relationship.  
+One of the first things to look at it is the p-value for the F-statistic.  A significant p-value for the F-statistic tells us that at least one of the predictors or the predictors jointly are statisctically significant.  The multiple r-squared tells how much of the variance is explained by the model which is ~84%.  There are several elements in the fit1 object that can help us evaluate how well our linear regression model fits the data.  For instance, we can plot the fitted values vs. the actual values to visualize the relationship.  
 
 ```{r}
 ggplot(fit1, aes(x=fit1$fitted.values, y=housePWR_qtrTS[,3])) +
@@ -349,7 +350,7 @@ ggplot(fit1, aes(x=fit1$fitted.values, y=housePWR_qtrTS[,3])) +
   ggtitle('Fitted vs. Actual Values for Linear Model')
 
 ```
-The closer a point is to the dashed line, the more accurately the model predicted the fitted value.  The distance the fitted value is from the blue line is the error or residual.  For a model that fits the data well, one would expect the distribution of the residuals to be normal and centered around zero.  One way to assess this is with a residual plot where the fitted vs. residuals are plotted.  
+The dashed line represents a theoretical 1:1 realationship between fitted and actual values.  The closer a point is to the dashed line, the more accurately the model predicted the fitted value.  In this case, the fitted values appear to follow the line reasonably well.  The distance the fitted value is above or below the line is the error or residual.  One way to assess this is with a residual plot where the fitted vs. residuals are plotted.  
 
 ```{r, error=FALSE}
 ggplot(fit1, aes(x=fit1$fitted.values, y=fit1$residuals)) +
@@ -359,12 +360,15 @@ ggplot(fit1, aes(x=fit1$fitted.values, y=fit1$residuals)) +
   ggtitle('Residual Plot of Linear Model')
 ```
 Any patterns in the residual plot would suggest a non-linear relationship.  However, the random scatterplot appearance of the residual plot suggests that the linear model fits our data well.
+Finally, we'll use the checkresiduals() function to check several of the assumptions that are made with a time series linear regression model.  Namely, the distribution of the residuals is normal and centered around zero, there is homoscedasticity or constant variance of error over time, and there is no correaltion between errors.
 
-Finally, one can use the checkresiduals() function
 ```{r}
 checkresiduals(fit1)
 
 ```
+The top chart from the output of the checkresiduals() function shows the residuals over time.  The line plot shows a pattern that is roughly constant over time which supports the assumption of homoscedasticity.  The distribution of residuals is shown in the bottom right with an overlayed normal distribution density in red.  The distribution doesn't stray too far from normal so no obvious probles there.  The chart on the bottom left is the result of the autocorrelation function which tests for correlation between errors at different time periods or lags.  The dashed blue lines represent the level for statistical significance and we can see that none of the lags reach that level.  Finally, the function also does a Breusch-Godfrey test which is a hypothesis test for the corrrelation of errors.  The null hypothesis is that the errors are not autocorrelated.  The p-value for the result of this test is 0.097 which is above the typical 0.05 threshold.  Thus, there is not enough evidence to reject the null hypothesis that there is no autocorrelation in the errors.\  
+
+With the above analysis supporting the legitamacy of our linear model we can feel more confident using it to make predictions.  We'll do this with the forecast() function where we've supplied the model, the number of time periods to forecast (h=4), and the confidence levels of our prediction interval.
 
 ```{r}
 x <- forecast(fit1, h=4, level=c(80,95))
@@ -382,45 +386,49 @@ summary(x)
 ```
 
 ###7.2 Monthly Forecast
+
 ```{r}
 fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
-
-
-y <- forecast(fit2,h=12, level=c(80,95))
-plot(y, showgap=FALSE, include=5,
-  shadecols=c('slategray3','slategray'),
-  xlab ='Year',
-  ylab=' kWh',
-  main='12-Month Forecast of Monthly Energy Consumption')
-minor.tick(nx=6)
-summary(y)
-```
-```{r}
-plot.ts(x=fit2$fitted.values, y=housePWR_mnthTS[,3], xy.lines = FALSE,
-        xy.labels = FALSE,
-        xlab='Fitted Value',
-        ylab='Actual',
-        main='Monthly Predicted vs. Actual Values')
-abline(0,1, col='blue')
 ```
 
 ```{r}
-plot.ts(x=fit2$fitted.values, y=fit2$residuals, xy.lines=FALSE,
-        xy.labels = FALSE,
-        xlab='Predicted Value',
-        ylab='Residuals',
-        main='Monthly Predicted vs. Residuals')
-abline(0,0, lty=2, col='grey')
+ggplot(fit2, aes(x=fit2$fitted.values, y=housePWR_mnthTS[,3])) +
+  geom_point(color='blue', size=4) +
+  labs(x='Fitted Value', y='Actual') +
+  geom_abline(intercept = 0, slope=1,  linetype='dashed') +
+  ggtitle('Fitted vs. Actual Values for Linear Model')
 ```
-```{r}
-qqnorm(fit2$residuals, main='Monthly Q-Q Plot')
-qqline(fit2$residuals)
 
+
+```{r}
+ggplot(fit2, aes(x=fit2$fitted.values, y=fit2$residuals)) +
+  geom_point(color='blue', size=4) +
+  labs(x='Fitted Values', y='Residuals') +
+  geom_hline(yintercept = 0, linetype='dashed') +
+  ggtitle('Residual Plot of Linear Model')
 ```
+
+
 ```{r}
 checkresiduals(fit2)
 
 ```
+
+
+```{r}
+
+y <- forecast(fit2,h=6, level=c(80,95))
+plot(y, showgap=FALSE, include=4,
+  shadecols=c('slategray3','slategray'),
+  xlab ='Year',
+  ylab=' kWh',
+  main='6-Month Forecast of Monthly Energy Consumption')
+minor.tick(nx=6)
+summary(y)
+```
+
+
+
 
 ##8 Holt-Winters Simple Exponential Smoothing Model
 ###8.1 Quarterly Time Series
