@@ -67,7 +67,7 @@ The table from the output of the head() function on the house_pwr tibble shows t
 def_table <- read.csv('Energy_submeter_defs.csv')
 knitr::kable(def_table, col.names=c('Feature', 'Definition', 'Sub-Meter-Coverage'), caption='Data Set Feature Definitions')
 ```  
-##3 Process the Data {.tabset .tabset-pills}
+##3 Process the Data {.tabset}
 
 ###3.1 Process Date and Time Features
 There are many packages and functions in R that facilitate analyzing and plotting time series objects.  To take advantage of these, we'll start by combining the Date and Time features to create a Date-Time feature using the unite() function from tidyr.  By default, the original features are removed leaving the newly-created column.  
@@ -213,7 +213,7 @@ house_pwr_tidy %>%
 
 ```
 
-####4.1.5 Day of the Week for High Consumption Time Period
+####4.1.5 Day of the Week During High/Low Consumption
 Insights gleaned from energy consumption by day of the week could be of value to a homeowner as it can readily be related to homeowner energy consumption behaviors.  This in turn provides potential opportunities for behavior modification.  We'll compare high energy consumption periods in the winter months and summer months.
 
 ```{r cached=TRUE}
@@ -330,10 +330,12 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ```
 We can see a seasonal pattern over the years with trough of energy usage in the summer that is most-pronounced with submeter 3.
 
-##7 Forecasts of Energy Consumption_Linear Model {.tabset}
+##7 Fit Linear Regression Model to Data {.tabset}
 For this section the focus will be on submeter 3 which accounts for a majority of the total submetered energy consumption.  We will first fit a linear model to our quarterly and monthly data.  Before using these models to forecast future energy usage, we'll investigate some of the assumptions of a linear regression model to determine if use of a linear model is appropriate for our subset time series data sets.
 
-###7.1 Quarterly Linear Model {.tabset} 
+
+
+###7.1 Quarterly Linear Model 
 
 We'll start by fitting a linear model to our quarterly times series including the trend and seasonal components.  We can get a quick assessment of the model by looking at the summary.
 
@@ -343,6 +345,20 @@ fit1 <- tslm(housePWR_qtrTS[,3] ~ trend + season)
 summary(fit1)
 ```
 One of the first things to look at it is the p-value for the F-statistic.  A significant p-value for the F-statistic tells us that at least one of the predictors or the predictors jointly are statisctically significant.  The multiple r-squared tells how much of the variance is explained by the model which is ~84%.  There are several elements in the fit1 object that can help us evaluate how well our linear regression model fits the data.  For instance, we can plot the fitted values vs. the actual values to visualize the relationship.  
+
+###7.2 Monthl Linear Model
+As we did with the quarterly time series, we'll fit a linear model to the monthly time series and assess whether it is an appropriate model for our data prior to doing any forecasting.
+
+```{r}
+fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
+summary(fit2)
+```
+
+
+##8 Assess Model Fit{.tabset}
+
+
+###8.1 Quartlerly LM
 
 ```{r}
 ggplot(fit1, aes(x=fit1$fitted.values, y=housePWR_qtrTS[,3])) +
@@ -370,32 +386,17 @@ checkresiduals(fit1)
 ```
 The top chart from the output of the checkresiduals() function shows the residuals over time.  The line plot shows a pattern that is roughly constant over time which supports the assumption of homoscedasticity.  The distribution of residuals is shown in the bottom right with an overlayed normal distribution density in red.  The distribution doesn't stray too far from normal so no obvious probles there.  The chart on the bottom left is the result of the autocorrelation function which tests for correlation between errors at different time periods or lags.  The dashed blue lines represent the level for statistical significance and we can see that none of the lags reach that level.  Finally, the function also does a Breusch-Godfrey test which is a hypothesis test for the corrrelation of errors.  The null hypothesis is that the errors are not autocorrelated.  The p-value for the result of this test is 0.097 which is above the typical 0.05 threshold.  Thus, there is not enough evidence to reject the null hypothesis that there is no autocorrelation in the errors.\  
 
-With the above analysis supporting the legitamacy of our linear model we can feel more confident using it to make predictions.  We'll do this with the forecast() function where we've supplied the model, the number of time periods to forecast (h=4), and the confidence levels of our prediction interval.
 
-```{r}
-x <- forecast(fit1, h=4, level=c(80,95))
-plot(x, showgap=FALSE, include=3,
-     shadecols=c('slategray3','slategray'),
-     xlab='Year', ylab='kWh',
-     main='4-Quarter Forecast of Quartlerly Energy Consumption for Submeter-3')
-minor.tick(nx=2)
-```
+
 The plot of the resulting forecast shows a line plot of the predicted values with the 80 and 95% prediction intervals.  Using the summary() function on the forecast object provides information including the error measures and the point foreacasts.
 
-```{r}
-summary(x)
 
-```
 
-###7.2 Monthly Forecast
 
-As we did with the quarterly time series, we'll fit a linear model to the monthly time series and assess whether it is an appropriate model for our data prior to doing any forecasting.
 
-```{r}
-fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
-summary(fit2)
-```
 The model is significant as judged by the p-value of the F-statistic with a multiple r-squared of 0.73.  Next we'll look at the plot of the fitte vs. actual values.
+
+###8.2 Monthly LM
 
 ```{r}
 ggplot(fit2, aes(x=fit2$fitted.values, y=housePWR_mnthTS[,3])) +
@@ -420,8 +421,22 @@ There don't appear to be any patterns in tih
 checkresiduals(fit2)
 
 ```
+##9 Forecast of Energy Consumption {.tabset}
+With the above analysis supporting the legitamacy of our linear model we can feel more confident using it to make predictions.  We'll do this with the forecast() function where we've supplied the model, the number of time periods to forecast (h=4), and the confidence levels of our prediction interval.
+
+###9.1 Quarterly Forecast
+```{r}
+x <- forecast(fit1, h=4, level=c(80,95))
+plot(x, showgap=FALSE, include=3,
+     shadecols=c('slategray3','slategray'),
+     xlab='Year', ylab='kWh',
+     main='4-Quarter Forecast of Quartlerly Energy Consumption for Submeter-3')
+minor.tick(nx=2)
+```
 
 
+
+###9.2 Montly Forecast
 ```{r}
 
 y <- forecast(fit2,h=6, level=c(80,95))
@@ -437,8 +452,8 @@ summary(y)
 
 
 
-##8 Holt-Winters Simple Exponential Smoothing Model
-###8.1 Quarterly Time Series
+##10 Holt-Winters Simple Exponential Smoothing Model
+###10.1 Quarterly Time Series
 ```{r}
 ##-Sub-Meter-3
 #-Decompose TS
