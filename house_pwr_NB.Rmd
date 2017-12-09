@@ -35,7 +35,7 @@ To interrogate this large times series data set, we'll take advantage of several
 
 ```{r message=FALSE, warning=FALSE}
 
-#library(caret)      #R modeling workhorse & ggplot2
+library(caret)      #R modeling workhorse & ggplot2
 library(tidyverse)  #Package for tidying datalibrary(magrittr)   #Enables piping
 library(lubridate)  #Simplifies working with dates/times of a time series
 library(VIM)        #Aids visualization and imputing of missing values
@@ -220,7 +220,7 @@ Insights gleaned from energy consumption by day of the week could be of value to
 ###-Day of Week bar chart
 house_pwr_tidy %>%
   #filter(year(DateTime)>2006) %>%
-  filter(week(DateTime) == c(2:8)) %>%
+  filter(week(DateTime) == c(1:8)) %>%
   mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Day, Meter) %>%
   summarise(sum=sum(Watt_hr/1000)) %>%
@@ -236,7 +236,7 @@ There appears to be a trend of increasing energy usage on sub-meter 3 as the wee
 ```{r}
 house_pwr_tidy %>%
   #filter(year(DateTime)>2006) %>%
-  filter(week(DateTime) == c(20:27)) %>%
+  filter(week(DateTime) == c(18:25)) %>%
   mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Day, Meter) %>%
   summarise(sum=sum(Watt_hr/1000)) %>%
@@ -247,6 +247,38 @@ house_pwr_tidy %>%
   geom_bar(stat='identity', aes(fill = Meter), colour='black')
 ```
 Interestingly total consumption on submeter 3 is less in the summer months than in the winter months.  As a reminder, the air conditioner and the electric water heater are on the circuit monitored by submeter 3.  This suggests that the increase in consumption in the winter as measured by submeter 3 may be due to a poorly insulated water heater or a water heater in a poorly insulated space.  
+
+To highlight this insight to the client, we'll make a single chart that compares energy consumption on submeter 3 in both the winter and summer 
+
+
+```{r echo=FALSE}
+w <- house_pwr_tidy %>%
+  #filter(year(DateTime)>2006) %>%
+  filter(week(DateTime) == c(1:8)) %>%
+  filter(Meter == 'Sub-Meter-3') %>% 
+  mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Day, Meter) %>%
+  summarise(sum=sum(Watt_hr/1000))
+
+ww <- house_pwr_tidy %>%
+  #filter(year(DateTime)>2006) %>%
+  filter(week(DateTime) == c(22:25)) %>%
+  filter(Meter == 'Sub-Meter-3') %>% 
+  mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
+  group_by(Day, Meter) %>%
+  summarise(sum=sum(Watt_hr/1000))
+
+ggplot(w) +
+  labs(x='Day of the Week', y='kWh') +
+  ylim(0,65) +
+  ggtitle('Total Energy Useage on Submeter 3 by Day for Weeks of High\n Consumption in Winter and Summer Months') +
+  geom_line(aes(x=Day, y=sum, group=1,colour='winter')) +
+  geom_line(data = ww, aes(x=Day, y=sum, group=1, color='summer')) +
+  scale_colour_manual(values=c('winter'='blue', 'summer'='red')) +
+  labs(colour='Season') +
+  guides(colour=guide_legend(reverse=TRUE))
+
+```
 
 ####**4.1.7 Hour of the Day Time Period**
 Finally, drilling down to the hour of the day shows clear trends in energy consumption.  The lowest energy usage is, not suprisingly, in the early morning hours where all sub-meters reach their minimum.  If it is determined that the local electricity provider offers off-peak rates, this chart would identify opportunities for the homeowner to shift energy consumption to off-peak hours.  For example, a timer on the washer machine and/or the dishwasher could be set to run after midnight.
@@ -270,7 +302,7 @@ To do this, we'll convert a subset of the data to a time series object and use t
 
 
 ###**5.1 Quarterly** 
-Subset by Quarter
+Subset data by quarterly time frame.
 ```{r}
 housePWR_qtr <- house_pwr %>%
   #filter(year(DateTime) > 2006) %>%
@@ -282,6 +314,8 @@ housePWR_qtr <- house_pwr %>%
             first_DateTime = first(DateTime))
 ```
 ###**5.2 Monthly** 
+Subset data by monthly time frame.
+
 ```{r}
 housePWR_mnth <- house_pwr %>%
   #filter(year(DateTime) > 2006) %>%
@@ -383,17 +417,6 @@ fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
 summary(fit2)
 ```
 
-
-
-
-
-
-
-
-
-
-
-
 ###**8.2 Assess Model Fit**
 
 ```{r}
@@ -454,68 +477,4 @@ summary(y)
 ```
 
 
-
-
-##10 Holt-Winters Simple Exponential Smoothing Model
-###10.1 Quarterly Time Series
-```{r}
-##-Sub-Meter-3
-#-Decompose TS
-qtr_decomp3 <- decompose(housePWR_qtrTS[,3])
-autoplot(qtr_decomp3,  range.bars = TRUE) +
-  xlab('Year') +
-  ylab('kWh') +
-  ggtitle('Decomposed Quarterly Time Series- Sub-Meter-3')
-```
-```{r}
-#-remove seasonality
-qtr_seasonAdj3 <- seasadj(qtr_decomp3)
-
-plot(qtr_seasonAdj3, #xaxt='n',
-     col='blue',
-     xlab='Year', ylab='kWh',
-     #xlim=c(2007, 2010),
-     xaxp=c(2006, 2010, 4),
-     main='Seasonally Adjusted Quarterly Time Series')
-minor.tick(nx=2)
-b <-'Sub-meter-3'
-legend('topleft', b, col='blue', lwd=2, bty='n')
-```
-
-```{r}
-#-Fit Holt Winters simple exponetial smoothing model
-qtr_smooth3 <- HoltWinters(qtr_seasonAdj3,
-                           beta=FALSE,
-                           gamma=FALSE)
-plot(qtr_smooth3, col='blue', #xaxt='n',
-     xlab='Year', ylab = 'kWh',
-     xlim=c(2007, 2011),
-     xaxp=c(2006, 2010, 4),
-     main='Simple Exponential Smoothing Holt-Winters Model for Quarterly Time Series')
-minor.tick(nx=4)
-legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
-```
-
-```{r}
-#-Forecast
-qtr_smoothFcast3 <- forecast(qtr_smooth3, h=1,level = c(80,95))
-
-summary(qtr_smoothFcast3)
-checkresiduals(qtr_smoothFcast3)
-plot(qtr_smoothFcast3, include=10,
-     #xaxt='n',
-     shadecols=c('slategray3','slategray'),
-     col='blue',
-     #xaxp=c(2010.6,2011.5,4),
-     xlab='Year', ylab = 'Wh',
-     #xlim=c(2010,2011),
-     main='5 Quarter Forecast of Energy Useage on Sub-Meter 3')
-#minor.tick(nx=4)
-#axis(side=1, at= c(1, 2,3,4,5,6,7,8,9,10,11,12, 13), labels=MonthLst)
-legend('topleft', 'Sub-Meter-3', col='blue', lwd=2, bty='n')
-```
-
-
-
-
-
+##10 Summary
