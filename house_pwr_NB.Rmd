@@ -16,18 +16,18 @@ knitr::opts_chunk$set(echo = TRUE, tidy=TRUE)
 This project was done as part of a data science program that utilized a story-centered curriculum.  For this project, the student assumes the role of a data scientist working for a data analytics consulting firm whose client is a home developer.  The client would like to know if insights can be found in the sub-metered energy consumption data set that could be used as an incentive to potential home buyers that may be interested in a "smart home."  
 The initial task for this project is to frame the problem.  The client's request is purposefully vague so much thought needs to go into defining the busisness problem and converting it into a data science problem.  This is followed by a clear explanation of the data science process to be followed for this project so the client what the deliverables are and how they were arrived at.  
 
-##1 Frame the Problem
+##1. Frame the Problem
 The high level business objective is:
 
 Determine if the installation of sub-metering devicese that measure power consumption can translate into economic incentive recommendations for homeowners.  
 
 Information that could be potentially valuable to a homeowner would include:
 
-I.  Sub-metered energy consumption data that provides enough granularity to uncover trends in behavior.  
+I.  *Sub-metered energy consumption data that provides enough granularity to uncover trends in behavior or appliance performance.*  
 
-II. Longer-term patterns of energy usage that can be used to predict future usage with the potential to flag appliance degradation or unusual energy consumption.
+II. *Longer-term patterns of energy usage that can be used to predict future usage with the potential to flag appliance degradation or unusual energy consumption.*
 
-III. Identification of peak energy usage can be identified allowing for the potential to modify behavior to take advantage of off-peak electricity rates. 
+III. *Identification of peak energy usage can be identified allowing for the potential to modify behavior to take advantage of off-peak electricity rates.*
 
 
 ##2. Collect/Load Raw Data
@@ -67,7 +67,7 @@ The table from the output of the head() function on the house_pwr tibble shows t
 def_table <- read.csv('Energy_submeter_defs.csv')
 knitr::kable(def_table, col.names=c('Feature', 'Definition', 'Sub-Meter-Coverage'), caption='Data Set Feature Definitions')
 ```  
-##3 Process the Data {.tabset .tabset-pills}
+##3. Process the Data {.tabset .tabset-pills}
 
 ###**3.1 Process Date and Time Features**
 There are many packages and functions in R that facilitate analyzing and plotting time series objects.  To take advantage of these, we'll start by combining the Date and Time features to create a Date-Time feature using the unite() function from tidyr.  By default, the original features are removed leaving the newly-created column.  
@@ -135,7 +135,7 @@ house_pwr_tidy$Meter <- factor(house_pwr_tidy$Meter)
 glimpse(house_pwr_tidy)
 ```
 
-##4 Explore the Data
+##4. Explore the Data
 ###4.1 Visualizations of Energy Usage Across Sub-Meters and Time Periods {.tabset .tabset-pills}
 Keeping the business objective in mind, the initial exploratory analysis will be looking for any trends or patterns in the data.  Without trends or patterns in the data, it would be unlikely that any actionalble insights could be delivered to the client.  Insights gained from this initial analysis would be shared with the client to better define or expand the business objective for the project.  
 
@@ -213,7 +213,7 @@ house_pwr_tidy %>%
 
 ```
 
-####**4.1.5 Day of the During High/Low Consumption**
+####**4.1.5 Compare High/Low Consumption Periods**
 Insights gleaned from energy consumption by day of the week could be of value to a homeowner as it can readily be related to homeowner energy consumption behaviors.  This in turn provides potential opportunities for behavior modification.  We'll compare high energy consumption periods in the winter months and summer months.
 
 ```{r cached=TRUE}
@@ -295,7 +295,7 @@ house_pwr_tidy %>%
   ggtitle('Total Energy Useage by Hour of the Day') +
   geom_bar(stat='identity', aes(fill = Meter), colour='black')
 ```
-##5 Subset Data Set by Time Periods of Interest {.tabset .tabset-pills}
+##5. Subset Data Set by Time Periods of Interest {.tabset .tabset-pills}
 Through exploratory data analysis, we were able to identify trends in energy consumption leading to insights that had the potential to save money for a homeowner through behavior modification or by flagging an inefficient appliance.  An additional opportunity to monitor the health of an appliance would be to compare actual energy consumption to projected consumption.  If actual consumption fell out of the projected range, the homeowner could be alerted that maintenance may be required and thereby avoiding a costly and disruptive failure of an appliance.
 To do this, we'll convert a subset of the data to a time series object and use the forecast() function to predict energy consumption.
 
@@ -327,7 +327,7 @@ housePWR_mnth <- house_pwr %>%
             first_DateTime = first(DateTime))
 ```
 
-##6 Convert to Time Series and Plot {.tabset .tabset-pills}
+##6. Convert to Time Series and Plot {.tabset .tabset-pills}
 To convert our data to a time series object, we'll use R's ts() function on our subset time series data.  It's important to set the frequency argument to the correct value.  For a quarterly time series the value is set to 4 and it is set to 12 for a monthly time series.
 
 ###**6.1 Quarterly Time Series**
@@ -364,7 +364,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ```
 We can see a seasonal pattern over the years with trough of energy usage in the summer that is most-pronounced with submeter 3.
 
-##7 Fit Linear Regression Model to *Quarterly* Time Series {.tabset .tabset-pills}
+##7. Fit Linear Regression Model to *Quarterly* Time Series {.tabset .tabset-pills}
 For this section the focus will be on submeter 3 which accounts for a majority of the total submetered energy consumption.  We will first fit a linear model to our quarterly and monthly data.  Before using these models to forecast future energy usage, we'll investigate some of the assumptions of a linear regression model to determine if use of a linear model is appropriate for our subset time series data sets.
 
 ###**7.1 Fit Model**
@@ -381,7 +381,7 @@ One of the first things to look at it is the p-value for the F-statistic.  A sig
 ###**7.2 Assess Model Fit**
 There are several elements in the fit1 object that can help us evaluate how well our linear regression model fits the data.  For instance, we can plot the fitted values vs. the actual values to visualize the relationship. 
 
-As we did with the quarterly time series, we'll fit a linear model to the monthly time series and assess whether it is an appropriate model for our data prior to doing any forecasting.
+
 
 ```{r}
 ggplot(fit1, aes(x=fit1$fitted.values, y=housePWR_qtrTS[,3])) +
@@ -406,16 +406,17 @@ Finally, we'll use the checkresiduals() function to check several of the assumpt
 checkresiduals(fit1)
 
 ```
-The top chart from the output of the checkresiduals() function shows the residuals over time.  The line plot shows a pattern that is roughly constant over time which supports the assumption of homoscedasticity.  The distribution of residuals is shown in the bottom right with an overlayed normal distribution density in red.  The distribution doesn't stray too far from normal so no obvious probles there.  The chart on the bottom left is the result of the autocorrelation function which tests for correlation between errors at different time periods or lags.  The dashed blue lines represent the level for statistical significance and we can see that none of the lags reach that level.  Finally, the function also does a Breusch-Godfrey test which is a hypothesis test for the corrrelation of errors.  The null hypothesis is that the errors are not autocorrelated.  The p-value for the result of this test is 0.097 which is above the typical 0.05 threshold.  Thus, there is not enough evidence to reject the null hypothesis that there is no autocorrelation in the errors.
+The top chart from the output of the checkresiduals() function shows the residuals over time.  The line plot shows a pattern that is roughly constant over time which supports the assumption of homoscedasticity.  The distribution of residuals is shown in the bottom right with an overlayed normal distribution density in red.  The distribution doesn't stray too far from normal so no obvious problems there.  The chart on the bottom left is the result of the autocorrelation function which tests for correlation between errors at different time periods or lags.  The dashed blue lines represent the level for statistical significance and we can see that none of the lags reach that level.  Finally, the function also does a Breusch-Godfrey test which is a hypothesis test for the corrrelation of errors.  The null hypothesis is that the errors are not autocorrelated.  The p-value for the result of this test is 0.097 which is above the typical 0.05 threshold.  Thus, there is not enough evidence to reject the null hypothesis that states there is no autocorrelation in the errors.
 
-##8 Fit Linear Regression Model to *Monthly* Time Series{.tabset .tabset-pills}
-
+##8. Fit Linear Regression Model to *Monthly* Time Series{.tabset .tabset-pills}
+As we did with the quarterly time series, we'll fit a linear model to the monthly time series and assess whether it is an appropriate model for our data prior to doing any forecasting.
 
 ###**8.1 Fit Model**
 ```{r}
 fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
 summary(fit2)
 ```
+The p-value for the F-statistic is statistically significant which tells us that at least one of the predictors or the predictors jointly are statistically significant.
 
 ###**8.2 Assess Model Fit**
 
@@ -442,7 +443,7 @@ There don't appear to be any patterns in tih
 checkresiduals(fit2)
 
 ```
-##9 Forecast of Energy Consumption {.tabset .tabset-pills}
+##9. Forecast of Energy Consumption {.tabset .tabset-pills}
 With the above analysis supporting the legitamacy of our linear model we can feel more confident using it to make predictions.  We'll do this with the forecast() function where we've supplied the model, the number of time periods to forecast (h=4), and the confidence levels of our prediction interval.
 
 ###**9.1 Quarterly Forecast**
@@ -477,4 +478,18 @@ summary(y)
 ```
 
 
-##10 Summary
+##10. Summary
+
+In summary, this analysis was approached from the perspective of an analytics consultant working with a home-building client.  The business objective was to determine if submetered energy data could provide insights that would incentivize homeowners to install submeters.  We'll go over the results of the three objectives that were identified as having potential value to homeowners.
+
+I.  *Sub-metered energy consumption data that provides enough granularity to uncover trends in behavior or appliance performance.*  
+We demonstrated several time periods that highlighted trends in behavior.  For instance, looking at energy consumption on days of the week during winter months, we were able to determine that the kitchen was used the most on weekends while laundry days were most commonly Sunday and Wednesday.  On a less granular level, the quarterly and monthly plots of energy usage showed a noticeable trough in the summer months.  Finally, an interesting insight was uncovered with regards to trends of usage and appliance performance when comparing high energy usage on submeter 3 (air conditioner/electric water heater) during winter and summer time periods.  Energy consumption was higher during the winter months which is counterintuitive as the air conditioner would not be used in the winter.  That leaves the electric water heater which may have to work overtime to maintain the temperature set point if it's in a poorly insulated space.  This insight could be highlighted to a homeowner as an opportunity for cost savings by simply insulating the water heater.
+
+II. *Longer-term patterns of energy usage that can be used to predict future usage with the potential to flag appliance degradation or unusual energy consumption.*
+While looking at historical trends in energy consumption can flag unusual behavior of an appliance, deviations from predicted energy usage would be a more proactive way to identify unusual behavior of an appliance.  Regression models were fit to quarterly and monthly time series data and future energy consumption was predicted.  Actual energy consumption that fell outside of a predicted interval could alert the homeowner to a potential issue with an appliance.
+
+III. *Identification of peak energy usage can be identified allowing for the potential to modify behavior to take advantage of off-peak electricity rates.*
+Drilling down to energy consumption by hour of the day showed noticeable peiods of peak and low usage.  This insight provides an opportunity for cost savings if the electric company offers peak and off-peak rates.  For intance, timers on the washer machine and/or the dishwasher could be used take advantage of off-peak rates.
+
+
+
