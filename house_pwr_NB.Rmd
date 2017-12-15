@@ -1,9 +1,9 @@
 ---
-title: "Household Electric Power Consumption"
+title: "**Household Electric Power Consumption**"
 output: 
   html_notebook:
     highlight: pygments
-    theme: yeti
+    theme: paper
     toc: yes
     toc_float: yes
     toc_depth: 4
@@ -17,7 +17,7 @@ This project was done as part of a data science program that utilized a story-ce
 
 The initial task for this project is to frame the problem.  The client's request is purposefully vague so much thought needs to go into defining the busisness problem and converting it into a data science problem.  It's a good idea to revisit the objective of a project to ensure your evolving analysis supports the business objective.  
 
-##1. **Framing the Problem**
+##**1. Framing the Problem**
 While we don't have a client with which to discuss and fine-tune the busisness objective, we can imagine what information or insights a homeowner may find valuable.  These insights would need to offset the cost of installing submeters so we'll focus on uncovering potential opportunities for cost-savings.  
 
 
@@ -70,7 +70,7 @@ The table from the output of the head() function on the house_pwr tibble shows t
 def_table <- read.csv('Energy_submeter_defs.csv')
 knitr::kable(def_table, col.names=c('Feature', 'Definition', 'Sub-Meter-Coverage'), caption='Data Set Feature Definitions')
 ```  
-##**3. Process the Data** {.tabset .tabset-pills}
+##**3. Process the Data** {.tabset}
 In this section, we'll go over the data processing steps used to get the data ready for exploratory data analysis and modeling.
 
 ###**3.1 Process Date and Time Features**
@@ -140,7 +140,7 @@ glimpse(house_pwr_tidy)
 ```
 
 ##**4. Explore the Data**
-###4.1 Visualizations of Energy Usage Across Sub-Meters and Time Periods {.tabset .tabset-pills}
+###4.1 Visualizations of Energy Usage Across Sub-Meters and Time Periods {.tabset}
 Keeping the business objective in mind, the initial exploratory analysis will be looking for any trends or patterns in the data that would be of value to a homeowner.  Since this is a large data set and there are quite a few visualizations to generate, the data will be subset and visualized without saving to a dataframe or tibble object.  This is accomplished using the pipe operator (%>%) which allows us to chain together a sequence of coded operations.  Once the more informative time periods are identified, data sets of subset time periods can be generated for the more in-depth time series analysis.
 
 ####**4.1.1 Yearly Time Period**
@@ -230,7 +230,7 @@ house_pwr_tidy %>%
   geom_bar(stat='identity', aes(fill = Meter), colour='black') +
   theme(panel.border=element_rect(colour='black', fill=NA))
 ```
-###4.2 Compare High Energy Consumption for Day of Week (Summer & Winter) {.tabset .tabset-pills}
+###4.2 Compare High Energy Consumption for Day of Week (Summer & Winter) {.tabset}
 Insights gleaned from energy consumption by day of the week could be of value to a homeowner as it can readily be related to homeowner energy consumption behaviors.  This in turn provides potential opportunities for behavior modification.  We'll compare 8-week periods of high energy consumption during the winter and summer seasons.
 
 #### **Winter**
@@ -306,7 +306,7 @@ ggplot(w) +
 ```
 The fact that there may be a reasonable explanation for this pattern of energy consumption shouldn't concern us.  The primary concern is to demonstrate to the client that potentially actionable insights *can* be uncovered in submetered energy data.
 
-##**5. Subset Data Set by Time Periods of Interest** {.tabset .tabset-pills}
+##**5. Subset Data Set by Time Periods of Interest** {.tabset}
 Through exploratory data analysis, we were able to identify trends in energy consumption leading to insights that had the potential to save money for a homeowner through behavior modification or by flagging an inefficient appliance.  An additional opportunity to monitor the health of an appliance would be to compare actual energy consumption to projected consumption.  If actual consumption fell out of the projected range, the homeowner could be alerted that maintenance may be required and thereby avoiding a costly and disruptive failure of an appliance.
 To do this, we'll convert a subset of the data to a time series object and then use the forecast() function to predict energy consumption.
 
@@ -333,7 +333,7 @@ housePWR_mnth <- house_pwr %>%
 head(housePWR_mnth)
 ```
 
-##**6. Convert to Time Series and Plot** {.tabset .tabset-pills}
+##**6. Convert to Time Series and Plot** {.tabset}
 To convert our data to a time series object, we'll use R's ts() function on our subset time series data.
 
 ###**6.1 Quarterly Time Series**
@@ -405,7 +405,7 @@ ggplot(fit1, aes(x=fit1$fitted.values, y=fit1$residuals)) +
   geom_point(color='blue', size=4) +
   labs(x='Fitted Values', y='Residuals') +
   geom_hline(yintercept = 0, linetype='dashed') +
-  ggtitle('Residual Plot of Linear Model') +
+  ggtitle('Residuals Plot of Linear Model') +
   theme(panel.border=element_rect(colour='black', fill=NA))
 ```
 Any patterns in the residual plot would suggest a non-linear relationship.  However, the random scatterplot appearance of the residual plot suggests that the linear model fits our data well.
@@ -467,7 +467,7 @@ checkresiduals(fit2)
 ```
 We get a sense of the variance of the residuals over time in the top plot.  The variance appears constant for the most part although it does seem to be less from 2009-2010 relative to other time periods.  The distribution of the residuals is shown in the bottom right histogram.  This is a nice example of a normal distribution that's centered around zero which is what we would expect for a linear regression model that fits the data well.  The result of the autocorrelation function in the bottom left chart does show a siginificant correlation at lag 12. We can follow that up with the Breusch-Godfrey test which tests for autocorrelation.  The resulting *p*-value is above the 0.05 threshold so we can not reject the null hypothesis which states that there is no autocorrelation.
 
-##**9. Forecast of Energy Consumption** {.tabset .tabset-pills}
+##**9. Forecast of Energy Consumption** {.tabset }
 With the above analysis supporting the legitamacy of our linear models, we can feel more confident using it to make predictions for quarterly and monthly energy consumption on submeter 3.  We can accomplish this the forecast() function.
 
 ###**9.1 Quarterly Forecast**{.tabset }
@@ -487,6 +487,7 @@ The plot of the resulting forecast shows a line plot of the predicted values wit
 ```{r}
 summary(x)
 ```
+The point forecasts are found at the bottom of the summary along with the prediction intervals at the 80 and 95% confidence level. 
 
 ###**9.2 Monthly Forecast**
 Passing the monthly linear model, the number of periods to forecast, and the confidence level of the prediction interval to the forecast() function provides an object that we can plot directly.
@@ -499,9 +500,13 @@ plot(y, showgap=FALSE, include=4,
   ylab=' kWh',
   main='6-Month Forecast of Monthly Energy Consumption')
 minor.tick(nx=6)
-summary(y)
 ```
 
+
+```{r}
+summary(y)
+```
+Again, the point forecasts are found at the bottom of the summary along with the prediction intervals at the 80 and 95% confidence levels.
 
 ##**10. Summary**
 
