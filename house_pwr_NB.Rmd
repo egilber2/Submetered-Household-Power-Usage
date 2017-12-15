@@ -3,7 +3,7 @@ title: "Household Electric Power Consumption"
 output: 
   html_notebook:
     highlight: pygments
-    theme: readable
+    theme: yeti
     toc: yes
     toc_float: yes
     toc_depth: 4
@@ -12,12 +12,12 @@ output:
 ```{r setup, include=FALSE }
 knitr::opts_chunk$set(echo = TRUE, tidy=TRUE)
 ```
-## Introduction
+## **Introduction**
 This project was done as part of a data science program that utilized a story-centered curriculum.  For this project, the student assumes the role of a data scientist working for a data analytics consulting firm whose client is a home developer.  The client would like to know if insights can be found in the sub-metered energy consumption data set that could be used as an incentive to potential home buyers that may be interested in a "smart home."  
 
 The initial task for this project is to frame the problem.  The client's request is purposefully vague so much thought needs to go into defining the busisness problem and converting it into a data science problem.  It's a good idea to revisit the objective of a project to ensure your evolving analysis supports the business objective.  
 
-##1. Framing the Problem
+##1. **Framing the Problem**
 While we don't have a client with which to discuss and fine-tune the busisness objective, we can imagine what information or insights a homeowner may find valuable.  These insights would need to offset the cost of installing submeters so we'll focus on uncovering potential opportunities for cost-savings.  
 
 
@@ -35,8 +35,8 @@ III. *Longer-term patterns of energy usage that can be used to predict future us
 
 
 
-##2. Collect/Load Raw Data
-To interrogate this large time series data set, we'll take advantage of several packages availabe in R.  The tidyverse package bundles very useful packages that are used extensively in this analysis.  More information on the tidyverse library can be found in Garret Grolemund's and Hadley Wickham's [R for Data Science](http://r4ds.had.co.nz/)
+##**2. Collect/Load Raw Data**
+To interrogate this large time series data set, we'll take advantage of several packages available in R.  The tidyverse package bundles very useful packages that are used extensively in this analysis.  More information on the tidyverse library can be found in Garret Grolemund's and Hadley Wickham's [R for Data Science](http://r4ds.had.co.nz/)
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -48,7 +48,7 @@ library(Hmisc)      #for descriptive statistics
 library(forecast)   #forcasting package
 
 ```
-We'll use the read_delim() function contained in the readr package to import the data set.  This results in the creation of a tibble which is a data frame that's designed to work with other tidyverse packages.  Here the col_types argument has been used to define column data types as floats or double by setting the column names to 'd'.  Missing values will be assigned to '?' for now as a place holder.
+We'll use the read_delim() function contained in the readr package to import the data set.  This results in the creation of a tibble which is a data frame that's designed to work with other tidyverse packages.  Here the col_types argument has been used to define column data types as floats or double by setting the column types to 'd'.  Missing values will be assigned to '?' for now as a place holder.
 
 ```{r message=FALSE, cache=TRUE, results='hide'}
 house_pwr <- read_delim('household_power_consumption.txt', col_names = TRUE, col_types = cols(Global_active_power='d', Global_reactive_power='d',
@@ -70,11 +70,11 @@ The table from the output of the head() function on the house_pwr tibble shows t
 def_table <- read.csv('Energy_submeter_defs.csv')
 knitr::kable(def_table, col.names=c('Feature', 'Definition', 'Sub-Meter-Coverage'), caption='Data Set Feature Definitions')
 ```  
-##3. Process the Data {.tabset .tabset-pills}
-In this section, we'll go over  data munging steps
+##**3. Process the Data** {.tabset .tabset-pills}
+In this section, we'll go over the data processing steps used to get the data ready for exploratory data analysis and modeling.
 
 ###**3.1 Process Date and Time Features**
-There are many packages and functions in R that facilitate analyzing and plotting time series objects.  To take advantage of these, we'll start by combining the Date and Time features to create a Date-Time feature using the unite() function from tidyr.  By default, the original features are removed leaving the newly-created column.  
+There are many packages and functions in R that facilitate analyzing and plotting time series objects.  To take advantage of these, we'll start by combining the Date and Time features to create a 'DateTime' feature using the unite() function from tidyr.  By default, the original features are removed leaving the newly-created column.  
 The next step is to address the data type of the new 'DateTime' feature.  After uniting the columns, the DateTime feature is of the character class.  We'll use the as.POSIXct() function to convert it into the proper class using the format argument to describe the format of the date-time feature. The cryptic coding used for the format is explained in R's help section (type ?strptime).
 
 ```{r cache=TRUE}
@@ -83,12 +83,12 @@ house_pwr <- unite(house_pwr,Date, Time, col='DateTime', sep=' ')
 house_pwr$DateTime <- as.POSIXct(house_pwr$DateTime, format="%d/%m/%Y %T", tz="GMT")
 class(house_pwr$DateTime)
 ```
-Now that the DateTime feature has been converted to the proper format, we can use the range() function to understand the timeframe that the data set covers.
+Now that the DateTime feature has been converted to the proper format, we can use the range() function to understand the timeframe that's covered by the data.
 
 ```{r}
 range(house_pwr$DateTime)
 ```
-So the data set contains energy measurements starting on Dec 16, 2006 and ending on Nov.26, 2010. 
+The output tells us that the data set contains energy measurements starting on Dec 16, 2006 and ending on Nov.26, 2010. 
 Since 2006 contains only two weeks of data, the data set is filtered to remove data for 2006.
 
 ```{r}
@@ -139,11 +139,9 @@ house_pwr_tidy$Meter <- factor(house_pwr_tidy$Meter)
 glimpse(house_pwr_tidy)
 ```
 
-##4. Explore the Data
+##**4. Explore the Data**
 ###4.1 Visualizations of Energy Usage Across Sub-Meters and Time Periods {.tabset .tabset-pills}
-Keeping the business objective in mind, the initial exploratory analysis will be looking for any trends or patterns in the data.  Without trends or patterns in the data, it would be unlikely that any actionalble insights could be delivered to the client.  Insights gained from this initial analysis would be shared with the client to better define or expand the business objective for the project.  
-
-Since this is a large data set and there are quite a few visualizations to generate, the data will be subset and visualized without saving to a dataframe or tibble object.  This is accomplished using the pipe operator (%>%).  Once the more informative time periods are identified, dataframes or tibbles of subset time periods can be generated for the more in-depth time series analysis.
+Keeping the business objective in mind, the initial exploratory analysis will be looking for any trends or patterns in the data that would be of value to a homeowner.  Since this is a large data set and there are quite a few visualizations to generate, the data will be subset and visualized without saving to a dataframe or tibble object.  This is accomplished using the pipe operator (%>%) which allows us to chain together a sequence of coded operations.  Once the more informative time periods are identified, data sets of subset time periods can be generated for the more in-depth time series analysis.
 
 ####**4.1.1 Yearly Time Period**
 We'll start by visualizing the least granular of time periods (yearly) and drill down from there. Since data from year 2010 stopped in November, a proportion plot will be used to allow for fairer comparisons between years.  Note the advantage of using the long form of the data set where the 'fill=Meter' agrument in the ggplot() function makes easy work of coloring the stacked bar plot by submeter. 
@@ -151,7 +149,6 @@ We'll start by visualizing the least granular of time periods (yearly) and drill
 ```{r cache=TRUE}
 ##-Year_Proportional Plot
 house_pwr_tidy %>%
-  #filter(year(DateTime)>2006) %>%
   group_by(year(DateTime), Meter) %>%
   summarise(sum=sum(Watt_hr)) %>%
   ggplot(aes(x=factor(`year(DateTime)`), sum, group=Meter,fill=Meter)) +
@@ -160,7 +157,7 @@ house_pwr_tidy %>%
   geom_bar(stat='identity', position='fill', color='black') +
   theme(panel.border=element_rect(colour='black', fill=NA))
 ```
-Of note from the yearly proportion plot is that there is a clear trend of increasing energy consumption on sub-meter-3 (electric water heater/ air conditioner).  A trend such as this could indicate erosion of performance of the air conditioner which would have to run longer and/or more frequently to maintain a termperature set point.  A high level recommendation to the client would be to provide the ability to overlay an average temperature line plot to help the homeowner put heating/cooling energy consumption in context.  In addtion, since sub-meter 3 accounts for the majority of the sub-metered energy consumption, a homeowner would likely find value in knowing how the water heater and air conditioner contribute to that total.  This would require a separate sub-meter for high energy consuming appliances.
+Of note from the yearly proportion plot is that there is a clear trend of increasing energy consumption on sub-meter-3 (electric water heater/ air conditioner).  A trend such as this could indicate erosion of performance of an appliance which would have to run longer and/or more frequently to maintain a termperature set point.  A high level recommendation to the client would be to provide the ability to overlay an average temperature line plot to help the homeowner put heating/cooling energy consumption in context.  In addtion, since sub-meter 3 accounts for the majority of the sub-metered energy consumption, a homeowner would likely find value in knowing how the water heater and air conditioner contribute to that total.  This would require a separate sub-meter for high energy consuming appliances.
 
 ####**4.1.2 Quarterly Time Period**
 Looking at total energy consumption by quarter over the 2007-2009 timeframe shows a clear trend of decreasing energy usage with a trough in Q3 and rebounding in Q4. 
@@ -169,9 +166,7 @@ Looking at total energy consumption by quarter over the 2007-2009 timeframe show
 ```{r cached = TRUE}
 #Quarter bar  plot
 house_pwr_tidy %>%
-  #filter(year(DateTime)>2006) %>%
   filter(year(DateTime)<2010) %>%
-  #mutate(quarter=quarter(DateTime)) %>%
   group_by(quarter(DateTime), Meter) %>%
   summarise(sum=round(sum(Watt_hr/1000),3)) %>%
   ggplot(aes(x=factor(`quarter(DateTime)`), y=sum)) +
@@ -189,7 +184,6 @@ The same trough of energy consumption observed in the quarterly data is observed
 ```{r echo=TRUE, cached=TRUE}
 ###-Month bar chart
 house_pwr_tidy %>%
-  #filter(year(DateTime)>2006) %>%
   filter(year(DateTime)<2010) %>%
   mutate(Month=lubridate::month(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Month, Meter) %>%
@@ -208,8 +202,6 @@ Additional patterns of energy consumption become apparent when looking at energy
 ```{r cached=TRUE}
 #Week of the year- bar plot
 house_pwr_tidy %>%
-  #filter(year(DateTime)>2006) %>%
-  #filter(year(DateTime)<2010) %>%
   group_by(week(DateTime), Meter) %>%
   summarise(sum=sum(Watt_hr/1000)) %>%
   ggplot(aes(x=factor(`week(DateTime)`), y=sum)) +
@@ -222,7 +214,7 @@ house_pwr_tidy %>%
 ```
 
 
-####**4.1.6 Hour of the Day Time Period**
+####**4.1.5 Hour of the Day Time Period**
 Finally, drilling down to the hour of the day shows clear trends in energy consumption.  The lowest energy usage is, not suprisingly, in the early morning hours where all sub-meters reach their minimum.  If it is determined that the local electricity provider offers off-peak rates, this chart would identify opportunities for the homeowner to shift energy consumption to off-peak hours.  For example, a timer on the washer machine and/or the dishwasher could be set to run after midnight.
 
 
@@ -239,13 +231,12 @@ house_pwr_tidy %>%
   theme(panel.border=element_rect(colour='black', fill=NA))
 ```
 ###4.2 Compare High Energy Consumption for Day of Week (Summer & Winter) {.tabset .tabset-pills}
-Insights gleaned from energy consumption by day of the week could be of value to a homeowner as it can readily be related to homeowner energy consumption behaviors.  This in turn provides potential opportunities for behavior modification.  We'll compare high energy consumption periods in the winter months and summer months.
+Insights gleaned from energy consumption by day of the week could be of value to a homeowner as it can readily be related to homeowner energy consumption behaviors.  This in turn provides potential opportunities for behavior modification.  We'll compare 8-week periods of high energy consumption during the winter and summer seasons.
 
 #### **Winter**
 ```{r cached=TRUE}
 ###-Day of Week bar chart
 house_pwr_tidy %>%
-  #filter(year(DateTime)>2006) %>%
   filter(week(DateTime) == c(1:8)) %>%
   mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Day, Meter) %>%
@@ -263,7 +254,6 @@ There appears to be a trend of increasing energy usage on sub-meter 3 as the wee
 ####**Summer**
 ```{r}
 house_pwr_tidy %>%
-  #filter(year(DateTime)>2006) %>%
   filter(week(DateTime) == c(18:25)) %>%
   mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Day, Meter) %>%
@@ -280,23 +270,28 @@ Interestingly total consumption on submeter 3 is less in the summer months than 
 ####**Summary Plot**
 In order to highlight and more readily compare energy consumption on submeter 3 in summer and winter seasons, we'll prepare a line chart.
 
+For the winter time frame, we'll subset the data for the first 8 weeks of a year and only include data for submeter 3.
 ```{r echo=TRUE}
 w <- house_pwr_tidy %>%
-  #filter(year(DateTime)>2006) %>%
   filter(week(DateTime) == c(1:8)) %>%
   filter(Meter == 'Sub-Meter-3') %>% 
   mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Day, Meter) %>%
   summarise(sum=sum(Watt_hr/1000))
+```
+Next we'll subset the data to include data for submeter 3 during an 8-week stretch in the summer months.
 
+```{r}
 ww <- house_pwr_tidy %>%
-  #filter(year(DateTime)>2006) %>%
-  filter(week(DateTime) == c(22:25)) %>%
+  filter(week(DateTime) == c(18:25)) %>%
   filter(Meter == 'Sub-Meter-3') %>% 
   mutate(Day=lubridate::wday(DateTime, label=TRUE, abbr=TRUE)) %>%
   group_by(Day, Meter) %>%
   summarise(sum=sum(Watt_hr/1000))
+```
 
+Finally, we'll overlay the line plots of the data to highlight what appears to be conuterintuitive energy consumption on submeter 3.
+```{r}
 ggplot(w) +
   labs(x='Day of the Week', y='kWh') +
   ylim(0,65) +
@@ -309,52 +304,44 @@ ggplot(w) +
   theme(panel.border=element_rect(colour='black', fill=NA))
 
 ```
+The fact that there may be a reasonable explanation for this pattern of energy consumption shouldn't concern us.  The primary concern is to demonstrate to the client that potentially actionable insights *can* be uncovered in submetered energy data.
 
-
-##5. Subset Data Set by Time Periods of Interest {.tabset .tabset-pills}
+##**5. Subset Data Set by Time Periods of Interest** {.tabset .tabset-pills}
 Through exploratory data analysis, we were able to identify trends in energy consumption leading to insights that had the potential to save money for a homeowner through behavior modification or by flagging an inefficient appliance.  An additional opportunity to monitor the health of an appliance would be to compare actual energy consumption to projected consumption.  If actual consumption fell out of the projected range, the homeowner could be alerted that maintenance may be required and thereby avoiding a costly and disruptive failure of an appliance.
-To do this, we'll convert a subset of the data to a time series object and use the forecast() function to predict energy consumption.
-
-
+To do this, we'll convert a subset of the data to a time series object and then use the forecast() function to predict energy consumption.
 
 ###**5.1 Quarterly** 
-Subset data by quarterly time frame.
+We'll take advantage of the functions group_by() and summarise() from the dplyr package to make easy work of subsetting our time series data.  The lubridate package also makes it straightforward to parse dates in our group_by() function below.  The summarise() function then sums the values for the submeters after converting to kWh from Wh.  Finally, the head() function displays the first several rows of our data set to confirm everything worked as planned.
+
 ```{r}
 housePWR_qtr <- house_pwr %>%
-  #filter(year(DateTime) > 2006) %>%
-  #filter(year(DateTime)<2010) %>%
   group_by(year(DateTime), quarter(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
             Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
-            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000), 3),
-            first_DateTime = first(DateTime))
-
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000), 3))
+head(housePWR_qtr)
 ```
 ###**5.2 Monthly** 
-Subset data by monthly time frame.
+By simply changing how the date is parsed in the group_by() function of the quarterly time series, we can get our desired monthly time series.  Again, to convince ourselves that we subset the data as planned, we'll take a look at the first several rows of our resulting data set. 
 
 ```{r}
 housePWR_mnth <- house_pwr %>%
-  #filter(year(DateTime) > 2006) %>%
-  #filter(year(DateTime)<2011) %>%
   group_by(year(DateTime), month(DateTime)) %>%
   summarise(Sub_Meter_1=round(sum(`Sub-Meter-1`/1000), 3),
             Sub_Meter_2=round(sum(`Sub-Meter-2`/1000), 3),
-            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000), 3),
-            first_DateTime = first(DateTime))
+            Sub_Meter_3=round(sum(`Sub-Meter-3`/1000), 3))
+head(housePWR_mnth)
 ```
 
-##6. Convert to Time Series and Plot {.tabset .tabset-pills}
-To convert our data to a time series object, we'll use R's ts() function on our subset time series data.  It's important to set the frequency argument to the correct value.  For a quarterly time series the value is set to 4 and it is set to 12 for a monthly time series.
+##**6. Convert to Time Series and Plot** {.tabset .tabset-pills}
+To convert our data to a time series object, we'll use R's ts() function on our subset time series data.
 
 ###**6.1 Quarterly Time Series**
+It's important to set the frequency argument to the correct value.  For a quarterly time series the value is set to 4.
 
-```{r}
+```{r cacehd=TRUE}
 housePWR_qtrTS <- ts(housePWR_qtr[,3:5], frequency=4, start=c(2007,1), end=c(2010,3))
 plot(housePWR_qtrTS, plot.type='s',
-     #xaxt='n',
-     #xlim=c(2007, 2010.5),
-     #xaxp=c(2006, 2011, 5),
      col=c('red', 'green', 'blue'),
      main='Total Quarterly kWh Consumption',
      xlab='Year', ylab = 'kWh')
@@ -367,10 +354,9 @@ We can see that the mid-year trough of energy consumption observed in the quarte
 ###**6.2 Monthly Time Series**
 Now we'll convert our data subset by month into a time series object by setting the frequency to 12.
 
-```{r}
+```{r cached=TRUE}
 housePWR_mnthTS <- ts(housePWR_mnth[,3:5], frequency = 12, start=c(2007,1), end=c(2010,11))
 plot(housePWR_mnthTS, plot.type='s',#xaxt='n',
-     #xaxp = c(1,13,12),
      xlim=c(2007, 2011),
      col=c('red', 'green', 'blue'),
      main='Total Monthly kWh Consumption',
@@ -381,7 +367,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ```
 We can see a seasonal pattern over the years with trough of energy usage in the summer that is most-pronounced with submeter 3.
 
-##7. Fit Linear Regression Model to *Quarterly* Time Series {.tabset .tabset-pills}
+##**7. Fit Linear Regression Model to *Quarterly* Time Series** {.tabset .tabset-pills}
 For this section the focus will be on submeter 3 which accounts for a majority of the total submetered energy consumption.  We will first fit a linear model to our quarterly and monthly data.  Before using these models to forecast future energy usage, we'll investigate some of the assumptions of a linear regression model to determine if use of a linear model is appropriate for our subset time series data sets.
 
 ###**7.1 Fit Model**
@@ -393,14 +379,15 @@ We'll start by fitting a linear model to our quarterly times series including th
 fit1 <- tslm(housePWR_qtrTS[,3] ~ trend + season)
 summary(fit1)
 ```
-One of the first things to look at it is the p-value for the F-statistic.  A significant p-value for the F-statistic tells us that at least one of the predictors or the predictors jointly are statisctically significant.  The multiple r-squared tells how much of the variance is explained by the model which is ~84%.  
+One of the first things to look at it is the *p*-value for the F-statistic.  A significant *p*-value for the F-statistic tells us that at least one of the predictors or the predictors jointly are statisctically significant.  The multiple r^2^ tells how much of the variance is explained by the model which is ~84%.  
 
 ###**7.2 Assess Model Fit**{.tabset}
-There are several elements in the fit1 object that can help us evaluate how well our linear regression model fits the data.  For instance, we can plot the fitted values vs. the actual values to visualize the relationship. 
-
+There are several elements in the fit1 object that can help us evaluate how well our linear regression model fits the data.  
 
 ####**Fitted vs Actual**
-```{r}
+For instance, we can plot the fitted values vs. the actual values to visualize the relationship. 
+
+```{r cached=TRUE}
 ggplot(fit1, aes(x=fit1$fitted.values, y=housePWR_qtrTS[,3])) +
   geom_point(color='blue', size=4) +
   labs(x='Fitted Value', y='Actual') +
@@ -408,10 +395,12 @@ ggplot(fit1, aes(x=fit1$fitted.values, y=housePWR_qtrTS[,3])) +
   ggtitle('Fitted vs. Actual Values for Linear Model') +
   theme(panel.border=element_rect(colour='black', fill=NA))
 ```
-The dashed line represents a theoretical 1:1 realationship between fitted and actual values.  The closer a point is to the dashed line, the more accurately the model predicted the fitted value.  In this case, the fitted values appear to follow the line reasonably well.  The distance the fitted value is above or below the line is the error or residual.  One way to assess this is with a residual plot where the fitted vs. residuals are plotted.
+The dashed line represents a 1:1 realationship between fitted and actual values.  The closer a point is to the dashed line, the more accurately the model predicted the fitted value.  In this case, the fitted values appear to follow the line reasonably well.  The distance the fitted value is above or below the line is the error or residual.  One way to assess this is with a residual plot where the fitted vs. residuals are plotted.
 
 ####**Fitted vs Residuals**
-```{r, error=FALSE}
+We can also plot the fitted values vs. the residuals.
+
+```{r, error=FALSE, cached=TRUE}
 ggplot(fit1, aes(x=fit1$fitted.values, y=fit1$residuals)) +
   geom_point(color='blue', size=4) +
   labs(x='Fitted Values', y='Residuals') +
@@ -420,30 +409,34 @@ ggplot(fit1, aes(x=fit1$fitted.values, y=fit1$residuals)) +
   theme(panel.border=element_rect(colour='black', fill=NA))
 ```
 Any patterns in the residual plot would suggest a non-linear relationship.  However, the random scatterplot appearance of the residual plot suggests that the linear model fits our data well.
-Finally, we'll use the checkresiduals() function to check several of the assumptions that are made with a time series linear regression model.  Namely, the distribution of the residuals is normal and centered around zero, there is homoscedasticity or constant variance of error over time, and there is no correaltion between errors.
+
 
 ####**Checkresiduals()**
-```{r}
+Finally, we'll use the checkresiduals() function to check several of the assumptions that are made with a time series linear regression model.  Namely, the distribution of the residuals is normal and centered around zero, there is homoscedasticity or constant variance of error over time, and there is no correaltion between errors.
+```{r cached=TRUE}
 checkresiduals(fit1)
 
 ```
-The top chart from the output of the checkresiduals() function shows the residuals over time.  The line plot shows a pattern that is roughly constant over time which supports the assumption of homoscedasticity.  The distribution of residuals is shown in the bottom right with an overlayed normal distribution density in red.  The distribution doesn't stray too far from normal so no obvious problems there.  The chart on the bottom left is the result of the autocorrelation function which tests for correlation between errors at different time periods or lags.  The dashed blue lines represent the level for statistical significance and we can see that none of the lags reach that level.  Finally, the function also does a Breusch-Godfrey test which is a hypothesis test for the corrrelation of errors.  The null hypothesis is that the errors are not autocorrelated.  The p-value for the result of this test is 0.097 which is above the typical 0.05 threshold.  Thus, there is not enough evidence to reject the null hypothesis that states there is no autocorrelation in the errors.
+The top chart from the output of the checkresiduals() function shows the residuals over time.  The line plot shows a pattern that is roughly constant over time which supports the assumption of homoscedasticity.  The distribution of residuals is shown in the bottom right with an overlayed normal distribution density in red.  The distribution doesn't stray too far from normal so no obvious problems there.  The chart on the bottom left is the result of the autocorrelation function which tests for correlation between errors at different time periods or lags.  The dashed blue lines represent the level for statistical significance and we can see that none of the lags reach that level.  Finally, the function also does a Breusch-Godfrey test which is a hypothesis test for the corrrelation of errors.  The null hypothesis is that the errors are not autocorrelated.  The *p*-value for the result of this test is 0.097 which is above the typical 0.05 threshold.  Thus, there is not enough evidence to reject the null hypothesis that states there is no autocorrelation in the errors.
 
-##8. Fit Linear Regression Model to *Monthly* Time Series{.tabset .tabset-pills}
-As we did with the quarterly time series, we'll fit a linear model to the monthly time series and assess whether it is an appropriate model for our data prior to doing any forecasting.
+##**8. Fit Linear Regression Model to *Monthly* Time Series**{.tabset .tabset-pills}
+Again focusing on submeter 3, we'll fit a linear model to the monthly time series and then assess how well our model fits the data.
 
 ###**8.1 Fit Model** 
-```{r}
+As we did with the quarterly time series, we'll fit a linear regression model to the monthly time series that includes both trend and seasonal components.
+
+```{r cached=TRUE}
 fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
 summary(fit2)
 ```
-The p-value for the F-statistic is statistically significant which tells us that at least one of the predictors or the predictors jointly are statistically significant.
+The *p*-value for the F-statistic is statistically significant which tells us that at least one of the predictors or the predictors jointly are statistically significant.
 
 ###**8.2 Assess Model Fit** {.tabset}
-
+We'll use several elements in the fit2 model object to assess how well our linear regression model fits the monthly time series.
 
 ####**Fitted vs. Actual**
-```{r}
+We'll start by taking a look at a plot of the fitted vs. actual values.
+```{r cached=TRUE}
 ggplot(fit2, aes(x=fit2$fitted.values, y=housePWR_mnthTS[,3])) +
   geom_point(color='blue', size=4) +
   labs(x='Fitted Value', y='Actual') +
@@ -451,10 +444,11 @@ ggplot(fit2, aes(x=fit2$fitted.values, y=housePWR_mnthTS[,3])) +
   ggtitle('Fitted vs. Actual Values for Linear Model') +
   theme(panel.border=element_rect(colour='black', fill=NA))
 ```
-The fitted values appear to fit the regression line reasonably well.  Next we'll look for any patterns in the fitted vs. residuals plot that may cause concern.
+The dashed line represents a 1:1 realationship between fitted and actual values.  The closer a point is to the dashed line, the more accurately the model predicted the fitted value.  In this case, the fitted values appear to follow the line reasonably well.  The distance the fitted value is above or below the line is the error or residual.  
 
 ####**Fitted vs. Residuals**
-```{r}
+Next, we'll look for any patterns in the fitted vs. residuals plot that would be cause for concern.
+```{r cached=TRUE}
 ggplot(fit2, aes(x=fit2$fitted.values, y=fit2$residuals)) +
   geom_point(color='blue', size=4) +
   labs(x='Fitted Values', y='Residuals') +
@@ -462,20 +456,24 @@ ggplot(fit2, aes(x=fit2$fitted.values, y=fit2$residuals)) +
   ggtitle('Residual Plot of Linear Model') +
   theme(panel.border=element_rect(colour='black', fill=NA))
 ```
-There don't appear to be any patterns in tih
+There don't appear to be any patterns in the residual plot for the linear model fit to the monthly time series.
 
 ####**Checkresiduals()**
-```{r}
+As we did with the quarterly time series, we can investigate some of the assumptions of a linear regression model by using the checkresiduals() function.
+
+```{r cached=TRUE}
 checkresiduals(fit2)
 
 ```
-##9. Forecast of Energy Consumption {.tabset .tabset-pills}
-With the above analysis supporting the legitamacy of our linear model we can feel more confident using it to make predictions.  We'll do this with the forecast() function where we've supplied the model, the number of time periods to forecast (h=4), and the confidence levels of our prediction interval.
+We get a sense of the variance of the residuals over time in the top plot.  The variance appears constant for the most part although it does seem to be less from 2009-2010 relative to other time periods.  The distribution of the residuals is shown in the bottom right histogram.  This is a nice example of a normal distribution that's centered around zero which is what we would expect for a linear regression model that fits the data well.  The result of the autocorrelation function in the bottom left chart does show a siginificant correlation at lag 12. We can follow that up with the Breusch-Godfrey test which tests for autocorrelation.  The resulting *p*-value is above the 0.05 threshold so we can not reject the null hypothesis which states that there is no autocorrelation.
+
+##**9. Forecast of Energy Consumption** {.tabset .tabset-pills}
+With the above analysis supporting the legitamacy of our linear models, we can feel more confident using it to make predictions for quarterly and monthly energy consumption on submeter 3.  We can accomplish this the forecast() function.
 
 ###**9.1 Quarterly Forecast**{.tabset }
+To make a forecast with the quarterly linear model, we pass the model, the number of periods to forecast, and the confidence level for the prediction interval to the forecast function.
 
-
-```{r}
+```{r cached=TRUE}
 x <- forecast(fit1, h=4, level=c(80,95))
 plot(x, showgap=FALSE, include=3,
      shadecols=c('slategray3','slategray'),
@@ -484,20 +482,15 @@ plot(x, showgap=FALSE, include=3,
 minor.tick(nx=2)
 
 ```
-
-
-
-
 The plot of the resulting forecast shows a line plot of the predicted values with the 80 and 95% prediction intervals.  Using the summary() function on the forecast object provides information including the error measures and the point foreacasts.
-
-
 
 ```{r}
 summary(x)
 ```
 
 ###**9.2 Monthly Forecast**
-```{r}
+Passing the monthly linear model, the number of periods to forecast, and the confidence level of the prediction interval to the forecast() function provides an object that we can plot directly.
+```{r cached=TRUE}
 
 y <- forecast(fit2,h=6, level=c(80,95))
 plot(y, showgap=FALSE, include=4,
@@ -510,7 +503,7 @@ summary(y)
 ```
 
 
-##10. Summary
+##**10. Summary**
 
 In summary, this analysis was approached from the perspective of an analytics consultant working with a home-building client.  The business objective was to determine if submetered energy data could provide insights that would incentivize homeowners to install submeters.  We'll go over the results of the three objectives that were identified as having potential value to homeowners.
 
