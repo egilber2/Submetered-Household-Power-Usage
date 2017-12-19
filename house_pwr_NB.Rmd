@@ -3,7 +3,7 @@ title: "**Household Electric Power Consumption**"
 output: 
   html_notebook:
     highlight: pygments
-    theme: paper
+    theme: yeti
     toc: yes
     toc_float: yes
     toc_depth: 4
@@ -46,7 +46,7 @@ library(lubridate)  #For working with dates/times of a time series
 library(VIM)        #Visualizing and imputing missing values
 library(Hmisc)      #for descriptive statistics
 library(forecast)   #forcasting package
-
+library(kableExtra)
 ```
 We'll use the read_delim() function contained in the readr package to import the data set.  This results in the creation of a tibble which is a data frame that's designed to work with other tidyverse packages.  Here the col_types argument has been used to define column data types as floats or double by setting the column types to 'd'.  Missing values will be assigned to '?' for now as a place holder.
 
@@ -68,7 +68,9 @@ The table from the output of the head() function on the house_pwr tibble shows t
 
 ```{r echo=FALSE}
 def_table <- read.csv('Energy_submeter_defs.csv')
-knitr::kable(def_table, col.names=c('Feature', 'Definition', 'Sub-Meter-Coverage'), caption='Data Set Feature Definitions')
+knitr::kable(def_table, col.names=c('Feature', 'Definition', 'Sub-Meter-Coverage'), caption='Data Set Feature Definitions', 'html') %>% 
+  kable_styling(bootstrap_options = c('striped', 'hover', 'responsive', 'bordered'), full_width = F)
+
 ```  
 ##**3. Process the Data** {.tabset}
 In this section, we'll go over the data processing steps used to get the data ready for exploratory data analysis and modeling.
