@@ -1,16 +1,16 @@
 ---
 title: "**Analysis of Submetered Household Electric Power Consumption**"
 output: 
+  github_document:
+    toc: yes
+    toc_depth: 4
+  html_document:
+    keep_md: true  
   html_notebook:
     highlight: tango
     theme: cerulean
     toc: yes
     toc_float: yes
-    toc_depth: 4
-  html_document:
-    keep_md: true  
-  github_document:
-    toc: yes
     toc_depth: 4
 ---
 
@@ -82,12 +82,13 @@ summary(house_pwr)
 From the output of the summary function we can see that there are 2,075,259 observations.  We can also see from the summary statistics of the features that there are 25,979 missing values (NA's). 
 
 ```{r}
+
 #-Look at top several rows of data set
 head(house_pwr)
 ```
 The table from the output of the head() function on the house_pwr tibble shows the first several rows of the data set along with the data type.  The definitions of the features are provided below for reference.  The table also shows what appliances are on the electrical circuits that are monitored by each of the sub-meters.
 
-```{r echo=TRUE}
+```{r echo=TRUE, cache=TRUE}
 #-Read in CSV file of data feature definitions
 def_table <- read.csv('Energy_submeter_defs.csv')
   
@@ -100,7 +101,7 @@ kable(def_table,
                 font_size = 14)
 
 ```  
-
+  
 ##**3. Process the Data** {.tabset}
 In this section, we'll go over the data processing steps used to get the data ready for exploratory data analysis and modeling.
 
@@ -151,8 +152,9 @@ colnames(house_pwr)[8] <- 'Sub-Meter-3'
 We noticed in the summary of the data set that there were missing values.  To get a sense of how these missing values are distributed in the data, we'll use the aggr() function of the VIM package to generate a visualization.
 
 ```{r cache=TRUE}
+
 #-Visualize extent and pattern of missing data
-aggr_plot <- aggr(house_pwr, col=c('navyblue','red'),
+aggr(house_pwr, col=c('navyblue','red'),
                   numbers=TRUE, 
                   sortVars=TRUE, 
                   labels=names(house_pwr),
@@ -160,6 +162,7 @@ aggr_plot <- aggr(house_pwr, col=c('navyblue','red'),
                   gap=3, 
                   ylab=c("Histogram of missing data","Pattern"), 
                   digits=2)
+
 ```
 
 ```{r eval =FALSE, echo=FALSE}
@@ -187,7 +190,8 @@ house_pwr_tidy <- house_pwr %>%
 ```
 The Meter feature is converted to a factor and the data types are checked with the glimpse function to ensure everything is as it should be before moving on to exploratory data analysis.
 
-```{r}
+```{r cache=TRUE}
+
 #-Convert meter feature to categorical
 house_pwr_tidy$Meter <- factor(house_pwr_tidy$Meter)
   
@@ -202,7 +206,7 @@ Keeping the business objective in mind, the initial exploratory analysis will be
 ####**4.1.1 Yearly Time Period**
 We'll start by visualizing the least granular of time periods (yearly) and drill down from there. Since data from year 2010 stopped in November, a proportion plot will be used to allow for fairer comparisons between years.  Note the advantage of using the long form of the data set where the 'fill=Meter' argument in the ggplot() function makes easy work of coloring the stacked bar plot by submeter.
 
-```{r cache=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Year_Proportional Plot
 house_pwr_tidy %>%
@@ -222,7 +226,7 @@ Of note from the yearly proportion plot is that there is a clear trend of increa
 Looking at total energy consumption by quarter over the 2007-2009 timeframe shows a clear trend of decreasing energy usage with a trough in Q3 and rebounding in Q4. 
 
 
-```{r cached = TRUE}
+```{r cache = TRUE, cache.lazy=FALSE}
 
 #-Quarterly bar plot
 house_pwr_tidy %>%
@@ -242,7 +246,7 @@ house_pwr_tidy %>%
 The same trough of energy consumption observed in the quarterly data is observed with more granularity with aggregated monthly data.  
 
 
-```{r echo=TRUE, cached=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Monthly bar chart
 house_pwr_tidy %>%
@@ -261,7 +265,7 @@ house_pwr_tidy %>%
 ####**4.1.4 Week of the Year Time Period**
 Additional patterns of energy consumption become apparent when looking at energy usage by week of the year.  In addition to the trough in the summer months, a recurring pattern of noticeably lower energy consumption occurs roughly every 8 or 9 weeks starting with week 1.
 
-```{r cached=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Week of the year- bar plot
 house_pwr_tidy %>%
@@ -281,7 +285,7 @@ house_pwr_tidy %>%
 Finally, drilling down to the hour of the day shows clear trends in energy consumption.  The lowest energy usage is, not surprisingly, in the early morning hours where all sub-meters reach their minimum.  If it is determined that the local electricity provider offers off-peak rates, this chart would identify opportunities for the homeowner to shift energy consumption to off-peak hours.  For example, a timer on the washer machine and/or the dishwasher could be set to run after midnight.
 
 
-```{r cached=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Hour of day bar chart
 house_pwr_tidy %>%
@@ -295,11 +299,11 @@ house_pwr_tidy %>%
   theme(panel.border=element_rect(colour='black', fill=NA))
 ```
 
-###4.2 Compare High Energy Consumption for Day of Week (Summer & Winter) {.tabset}
+###**4.2 Compare High Energy Consumption for Day of Week (Summer & Winter)** {.tabset}
 Insights gleaned from energy consumption by day of the week could be of value to a homeowner as it can readily be related to homeowner energy consumption behaviors.  This in turn provides potential opportunities for behavior modification.  We'll compare 8-week periods of high energy consumption during the winter and summer seasons.
 
 #### **Winter**
-```{r cached=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Filter and plot data for weeks 1-8
 house_pwr_tidy %>%
@@ -318,7 +322,7 @@ house_pwr_tidy %>%
 There appears to be a trend of increasing energy usage on sub-meter 3 as the week progresses.  Peak kitchen usage seems to happen on the weekends (sub-meter 1) while peak laundry days appears to be on Saturday, Sunday and Wednesday (sub-meter 2).  Of note is that energy usage of submeter 3 is driven by the electric water heater and not the air conditioner as the data is from the winter months.  Let's see how this compares to consumption trends during peak consumption during warmer months.
 
 ####**Summer**
-```{r}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Filter and plot data for weeks 18-25
 house_pwr_tidy %>%
@@ -340,7 +344,7 @@ To highlight and more readily compare energy consumption on submeter 3 in summer
 
 For the winter time frame, we'll subset the data for the first 8 weeks of a year and only include data for submeter 3.
 
-```{r echo=TRUE}
+```{r}
 
 #-Subset data for weeks 1-8 and assign to variable w
 w <- house_pwr_tidy %>%
@@ -364,7 +368,8 @@ ww <- house_pwr_tidy %>%
 ```
 
 Finally, we'll overlay the line plots of the data to highlight what appears to be conuterintuitive energy consumption on submeter 3.
-```{r}
+
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Overlay line plots of the two 8-week time periods
 ggplot(w) +
@@ -422,7 +427,7 @@ To convert our data to a time series object, we'll use R's ts() function on our 
 ###**6.1 Quarterly Time Series**
 It's important to set the frequency argument to the correct value.  For a quarterly time series, the value is set to 4.
 
-```{r cacehd=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Create quarterly time series 
 housePWR_qtrTS <- ts(housePWR_qtr[,3:5],
@@ -447,7 +452,7 @@ We can see that the mid-year trough of energy consumption observed in the quarte
 ###**6.2 Monthly Time Series**
 Now we'll convert our data subset by month into a time series object by setting the frequency to 12.
 
-```{r cached=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Create monthly time series
 housePWR_mnthTS <- ts(housePWR_mnth[,3:5],
@@ -509,7 +514,7 @@ There are several elements in the fit1 object that can help us evaluate how well
 ####**Fitted vs Actual**
 For instance, we can plot the fitted values vs. the actual values to visualize the relationship. 
 
-```{r cached=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Plot fitted vs actual for quarterly linear model.
 ggplot(fit1, aes(x=fit1$fitted.values, y=housePWR_qtrTS[,3])) +
@@ -524,7 +529,7 @@ The dashed line represents a 1:1 relationship between fitted and actual values. 
 ####**Fitted vs Residuals**
 We can also plot the fitted values vs. the residuals.
 
-```{r, error=FALSE, cached=TRUE}
+```{r, error=FALSE, cache=TRUE, cache.lazy=FALSE}
 
 #-Plot fitted vs residuals for quarterly linear model.
 ggplot(fit1, aes(x=fit1$fitted.values, y=fit1$residuals)) +
@@ -540,7 +545,7 @@ Any patterns in the residual plot would suggest a non-linear relationship.  Howe
 ####**Checkresiduals()**
 Finally, we'll use the checkresiduals() function to check several of the assumptions that are made with a time series linear regression model.  Namely, the distribution of the residuals is normal and centered around zero, there is homoscedasticity or constant variance of error over time, and there is no correlation between errors.
 
-```{r cached=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Summary analysis of residuals for quarterly linear model
 checkresiduals(fit1)
@@ -554,7 +559,7 @@ Again, focusing on submeter 3, we'll fit a linear model to the monthly time seri
 ###**8.1 Fit Model** 
 As we did with the quarterly time series, we'll fit a linear regression model to the monthly time series that includes both trend and seasonal components.  Again, we'll use elements of the broom package to provide 
 
-```{r cached=TRUE}
+```{r cache=TRUE}
 
 #-Fit linear model to montly time series for submeter 3
 fit2 <- tslm(housePWR_mnthTS[,3] ~ trend + season)
@@ -570,7 +575,7 @@ We'll use several elements in the fit2 model object to assess how well our linea
 ####**Fitted vs. Actual**
 We'll start by looking at a plot of the fitted vs. actual values.
 
-```{r cached=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Plot fitted vs actual for monthly linear model
 
@@ -585,7 +590,7 @@ The dashed line represents a 1:1 relationship between fitted and actual values. 
 
 ####**Fitted vs. Residuals**
 Next, we'll look for any patterns in the fitted vs. residuals plot that would be cause for concern.
-```{r cached=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Plot fitted vs residuals for monthly linear model
 
@@ -601,7 +606,7 @@ There don't appear to be any patterns in the residual plot for the linear model 
 ####**Checkresiduals()**
 As we did with the quarterly time series, we can investigate some of the assumptions of a linear regression model by using the checkresiduals() function.
 
-```{r cached=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Summary analysis of residuals for monthly linear model
 
@@ -616,7 +621,7 @@ With the above analysis supporting the legitimacy of our linear models, we can f
 ###**9.1 Quarterly Forecast**{.tabset }
 To make a forecast with the quarterly linear model, we pass the model, the number of periods to forecast, and the confidence level for the prediction interval to the forecast function.
 
-```{r cached=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Forecast 4-quarters of energy usage 
 x <- forecast(fit1, h=4, level=c(80,95))
@@ -639,7 +644,7 @@ tidy(x)
 
 ###**9.2 Monthly Forecast**
 Passing the monthly linear model, the number of periods to forecast, and the confidence level of the prediction interval to the forecast() function provides an object that we can plot directly.
-```{r cached=TRUE}
+```{r cache=TRUE, cache.lazy=FALSE}
 
 #-Forecast 6-months of energy usage
 y <- forecast(fit2,h=6, level=c(80,95))
