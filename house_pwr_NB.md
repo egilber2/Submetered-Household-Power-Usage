@@ -16,7 +16,7 @@
         -   [**4.1.3 Monthly Time Period**](#monthly-time-period)
         -   [**4.1.4 Week of the Year Time Period**](#week-of-the-year-time-period)
         -   [**4.1.5 Hour of the Day Time Period**](#hour-of-the-day-time-period)
-    -   [4.2 Compare High Energy Consumption for Day of Week (Summer & Winter)](#compare-high-energy-consumption-for-day-of-week-summer-winter)
+    -   [**4.2 Compare High Energy Consumption for Day of Week (Summer & Winter)**](#compare-high-energy-consumption-for-day-of-week-summer-winter)
         -   [**Winter**](#winter)
         -   [**Summer**](#summer)
         -   [**Summary Plot**](#summary-plot)
@@ -328,7 +328,7 @@ We noticed in the summary of the data set that there were missing values. To get
 
 ``` r
 #-Visualize extent and pattern of missing data
-aggr_plot <- aggr(house_pwr, col = c("navyblue", "red"), numbers = TRUE, sortVars = TRUE, 
+aggr(house_pwr, col = c("navyblue", "red"), numbers = TRUE, sortVars = TRUE, 
     labels = names(house_pwr), cex.axis = 0.7, gap = 3, ylab = c("Histogram of missing data", 
         "Pattern"), digits = 2)
 ```
@@ -476,7 +476,7 @@ house_pwr_tidy %>% filter(month(DateTime) == c(1, 2, 11, 12)) %>% group_by(hour(
 
 ![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-19-1.png)
 
-### 4.2 Compare High Energy Consumption for Day of Week (Summer & Winter)
+### **4.2 Compare High Energy Consumption for Day of Week (Summer & Winter)**
 
 Insights gleaned from energy consumption by day of the week could be of value to a homeowner as it can readily be related to homeowner energy consumption behaviors. This in turn provides potential opportunities for behavior modification. We'll compare 8-week periods of high energy consumption during the winter and summer seasons.
 
