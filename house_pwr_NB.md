@@ -16,6 +16,7 @@
         -   [**4.1.3 Monthly Time Period**](#monthly-time-period)
         -   [**4.1.4 Week of the Year Time Period**](#week-of-the-year-time-period)
         -   [**4.1.5 Hour of the Day Time Period**](#hour-of-the-day-time-period)
+    -   [4.2 Compare High Energy Consumption for Day of Week (Summer & Winter)](#compare-high-energy-consumption-for-day-of-week-summer-winter)
         -   [**Winter**](#winter)
         -   [**Summer**](#summer)
         -   [**Summary Plot**](#summary-plot)
@@ -473,7 +474,11 @@ house_pwr_tidy %>% filter(month(DateTime) == c(1, 2, 11, 12)) %>% group_by(hour(
     fill = NA))
 ```
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-19-1.png) \#\#\#4.2 Compare High Energy Consumption for Day of Week (Summer & Winter) {.tabset} Insights gleaned from energy consumption by day of the week could be of value to a homeowner as it can readily be related to homeowner energy consumption behaviors. This in turn provides potential opportunities for behavior modification. We'll compare 8-week periods of high energy consumption during the winter and summer seasons.
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-19-1.png)
+
+### 4.2 Compare High Energy Consumption for Day of Week (Summer & Winter)
+
+Insights gleaned from energy consumption by day of the week could be of value to a homeowner as it can readily be related to homeowner energy consumption behaviors. This in turn provides potential opportunities for behavior modification. We'll compare 8-week periods of high energy consumption during the winter and summer seasons.
 
 #### **Winter**
 
