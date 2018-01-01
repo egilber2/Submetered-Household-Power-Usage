@@ -89,7 +89,7 @@ We'll use the read\_delim() function contained in the readr package to import th
 
 ``` r
 #-Load data set
-house_pwr <- read_delim("household_power_consumption.txt", col_names = TRUE, 
+house_pwrData <- read_delim("household_power_consumption.txt", col_names = TRUE, 
     col_types = cols(Global_active_power = "d", Global_reactive_power = "d", 
         Voltage = "d", Global_intensity = "d", Sub_metering_1 = "d", Sub_metering_2 = "d", 
         Sub_metering_3 = "d"), delim = ";", na = "?")
@@ -99,7 +99,7 @@ With the data loaded, we can now have a look at it with the summary() and head()
 
 ``` r
 #-Summary statistics for data features
-summary(house_pwr)
+summary(house_pwrData)
 ```
 
     ##      Date               Time          Global_active_power
@@ -131,7 +131,7 @@ From the output of the summary function we can see that there are 2,075,259 obse
 
 ``` r
 #-Look at top several rows of data set
-head(house_pwr)
+head(house_pwrData)
 ```
 
     ## # A tibble: 6 x 9
@@ -281,7 +281,7 @@ The next step is to address the data type of the new 'DateTime' feature. After u
 
 ``` r
 #-Create new DateTime feature by combining Date and Time 
-house_pwr <- unite(house_pwr, Date, Time, col = "DateTime", sep = " ")
+house_pwr <- unite(house_pwrData, Date, Time, col = "DateTime", sep = " ")
 
 #-Convert data type of new DateTime feature
 house_pwr$DateTime <- as.POSIXct(house_pwr$DateTime, format = "%d/%m/%Y %T", 
