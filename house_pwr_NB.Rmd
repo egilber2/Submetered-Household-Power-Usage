@@ -1,16 +1,16 @@
 ---
 title: "**Analysis of Submetered Household Electric Power Consumption**"
 output: 
-  github_document:
-    toc: yes
-    toc_depth: 4
-  html_document:
-    keep_md: true  
   html_notebook:
     highlight: tango
     theme: cerulean
     toc: yes
     toc_float: yes
+    toc_depth: 4
+  html_document:
+    keep_md: true  
+  github_document:
+    toc: yes
     toc_depth: 4
 ---
 
@@ -61,7 +61,7 @@ We'll use the read_delim() function contained in the readr package to import the
 
 ```{r message=FALSE, cache=TRUE, results='hide'}
 #-Load data set
-house_pwr <- read_delim('household_power_consumption.txt',
+house_pwrData <- read_delim('household_power_consumption.txt',
                         col_names = TRUE,
                         col_types = cols(Global_active_power='d',
                                          Global_reactive_power='d',
@@ -77,18 +77,19 @@ house_pwr <- read_delim('household_power_consumption.txt',
 With the data loaded, we can now have a look at it with the summary() and head() functions.
 ```{r}
 #-Summary statistics for data features
-summary(house_pwr)
+summary(house_pwrData)
 ```
 From the output of the summary function we can see that there are 2,075,259 observations.  We can also see from the summary statistics of the features that there are 25,979 missing values (NA's). 
 
 ```{r}
 
 #-Look at top several rows of data set
-head(house_pwr)
+head(house_pwrData)
 ```
 The table from the output of the head() function on the house_pwr tibble shows the first several rows of the data set along with the data type.  The definitions of the features are provided below for reference.  The table also shows what appliances are on the electrical circuits that are monitored by each of the sub-meters.
 
 ```{r echo=TRUE, cache=TRUE}
+
 #-Read in CSV file of data feature definitions
 def_table <- read.csv('Energy_submeter_defs.csv')
   
@@ -99,7 +100,6 @@ kable(def_table,
   kable_styling(bootstrap_options = c('striped', 'hover', 'responsive', 'bordered'), 
                 full_width = F,
                 font_size = 14)
-
 ```  
   
 ##**3. Process the Data** {.tabset}
@@ -112,7 +112,7 @@ The next step is to address the data type of the new 'DateTime' feature.  After 
 ```{r cache=FALSE}
 
 #-Create new DateTime feature by combining Date and Time 
-house_pwr <- unite(house_pwr, Date, Time, col='DateTime', sep=' ')
+house_pwr <- unite(house_pwrData, Date, Time, col='DateTime', sep=' ')
   
 #-Convert data type of new DateTime feature
 house_pwr$DateTime <- as.POSIXct(house_pwr$DateTime,
@@ -184,6 +184,7 @@ A quick check of our work by summing the NA count confirms that the missing valu
 In the data set's current form, each observation or row contains data for each of the sub-meters.  To aid the visualization of the submeter data on the same chart, the gather() function is used to create a new column 'Meter' which contains the names of the submeters.  The observed values for the submeters are placed in the newly-created 'Watt_hr' column.  
 
 ```{r}
+
 #-Create long form of data set
 house_pwr_tidy <- house_pwr %>%
   gather(Meter, Watt_hr, `Sub-Meter-1`, `Sub-Meter-2`, `Sub-Meter-3`)  
@@ -299,7 +300,7 @@ house_pwr_tidy %>%
   theme(panel.border=element_rect(colour='black', fill=NA))
 ```
 
-###**4.2 Compare High Energy Consumption for Day of Week (Summer & Winter)** {.tabset}
+###**4.2 Compare High Energy Consumption for Day of Week (Summer & Winter)**
 Insights gleaned from energy consumption by day of the week could be of value to a homeowner as it can readily be related to homeowner energy consumption behaviors.  This in turn provides potential opportunities for behavior modification.  We'll compare 8-week periods of high energy consumption during the winter and summer seasons.
 
 #### **Winter**
@@ -475,7 +476,7 @@ legend('topleft', b, col=c('red', 'green', 'blue'), lwd=2, bty='n')
 ```
 We can see a seasonal pattern over the years with trough of energy usage in the summer that is most-pronounced with submeter 3.
 
-##**7. Fit Linear Regression Model to *Quarterly* Time Series** {.tabset .tabset-pills}
+##**7. Fit Linear Regression Model to *Quarterly* Time Series** 
 For this section the focus will be on submeter 3 which accounts for a majority of the total submetered energy consumption.  We will first fit a linear model to our quarterly and monthly data.  Before using these models to forecast future energy usage, we'll investigate some of the assumptions of a linear regression model to determine if use of a linear model is appropriate for our subset time series data sets.
 
 ###**7.1 Fit Model**
@@ -508,7 +509,7 @@ tidy(fit1)
 The output from the tidy() function tabulates the coefficient estimates with the corresponding standard error, the t-value from the t-test (*statistic* in table), and the *p*-value of the t-value.  
   
 
-###**7.2 Assess Model Fit**{.tabset}
+###**7.2 Assess Model Fit**
 There are several elements in the fit1 object that can help us evaluate how well our linear regression model fits the data.  
 
 ####**Fitted vs Actual**
@@ -553,7 +554,7 @@ checkresiduals(fit1)
 ```
 The top chart from the output of the checkresiduals() function shows the residuals over time.  The line plot shows a pattern that is roughly constant over time which supports the assumption of homoscedasticity.  The distribution of residuals is shown in the bottom right with an overlaid normal distribution density in red.  The distribution doesn't stray too far from normal so no obvious problems there.  The chart on the bottom left is the result of the autocorrelation function which tests for correlation between errors at different time periods or lags.  The dashed blue lines represent the level for statistical significance and we can see that none of the lags reach that level.  Finally, the function also does a Breusch-Godfrey test which is a hypothesis test for the correlation of errors.  The null hypothesis is that the errors are not autocorrelated.  The *p*-value for the result of this test is 0.097 which is above the typical 0.05 threshold.  Thus, there is not enough evidence to reject the null hypothesis that states there is no autocorrelation in the errors.
 
-##**8. Fit Linear Regression Model to *Monthly* Time Series**{.tabset .tabset-pills}
+##**8. Fit Linear Regression Model to *Monthly* Time Series**
 Again, focusing on submeter 3, we'll fit a linear model to the monthly time series and then assess how well our model fits the data.
 
 ###**8.1 Fit Model** 
@@ -569,7 +570,7 @@ glance(fit2)
 ```
 The *p*-value for the F-statistic is statistically significant which tells us that at least one of the predictors or the predictors jointly are statistically significant.
 
-###**8.2 Assess Model Fit** {.tabset}
+###**8.2 Assess Model Fit** 
 We'll use several elements in the fit2 model object to assess how well our linear regression model fits the monthly time series.
 
 ####**Fitted vs. Actual**
@@ -615,10 +616,10 @@ checkresiduals(fit2)
 ```
 We get a sense of the variance of the residuals over time in the top plot.  The variance appears constant for the most part although it does seem to be less from 2009-2010 relative to other time periods.  The distribution of the residuals is shown in the bottom right histogram.  This is a nice example of a normal distribution that's centered around zero which is what we would expect for a linear regression model that fits the data well.  The result of the autocorrelation function in the bottom left chart does show a significant correlation at lag 12. We can follow that up with the Breusch-Godfrey test which tests for autocorrelation.  The resulting *p*-value is above the 0.05 threshold so we cannot reject the null hypothesis which states that there is no autocorrelation.
 
-##**9. Forecast of Energy Consumption** {.tabset }
+##**9. Forecast of Energy Consumption** 
 With the above analysis supporting the legitimacy of our linear models, we can feel more confident using it to make predictions for quarterly and monthly energy consumption on submeter 3.  We can accomplish this with the forecast() function.
 
-###**9.1 Quarterly Forecast**{.tabset }
+###**9.1 Quarterly Forecast**
 To make a forecast with the quarterly linear model, we pass the model, the number of periods to forecast, and the confidence level for the prediction interval to the forecast function.
 
 ```{r cache=TRUE, cache.lazy=FALSE}
