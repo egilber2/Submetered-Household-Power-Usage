@@ -12,12 +12,12 @@ output:
 
 
 
-##Abstract
+## Abstract
 
 This project is analyzed from the perspective of a data scientist working for an "Internet of Things" analytics consulting firm whose client is a home developer.  The client would like to know if insights can be found in the sub-metered energy consumption data set that could be used as an incentive to potential home buyers that may be interested in "smart home" technology.  
 
 
-##Methods
+## Methods
 The 'household_power_consumption' data set is available at the [UCI Machine Learning Repository](http://archive.ics.uci.edu/ml/datasets/Individual+household+electric+power+consumption).  It consists of time series data with 2,075,259 energy measurements and 9 variables.  The variable definitions are shown below.
 
 <table class="table table-striped table-hover table-responsive table-bordered" style="font-size: 14px; width: auto !important; margin-left: auto; margin-right: auto;">
