@@ -1,7 +1,5 @@
 Analysis of Submetered Household Electric Power Usage
 ================
-EJG
-January 2, 2018
 
 Abstract
 --------
@@ -19,7 +17,7 @@ Turning the business problem into a data science problem, the goal was to find e
 Methods
 -------
 
-The 'household\_power\_consumption' data set is available at the [UCI Machine Learning Repository](http://archive.ics.uci.edu/ml/datasets/Individual+household+electric+power+consumption). It consists of time series data with 2,075,259 energy measurements and 9 variables. The variable definitions are shown in tne table below.
+The 'household\_power\_consumption' data set is available at the [UCI Machine Learning Repository](http://archive.ics.uci.edu/ml/datasets/Individual+household+electric+power+consumption). It consists of time series data with 2,075,259 energy measurements and 9 variables. Measurements were recorded for the 3 submeters every minute for 47 months. The variable definitions are shown in tne table below.
 
 <table class="table table-striped table-hover table-responsive table-bordered" style="font-size: 14px; width: auto !important; margin-left: auto; margin-right: auto;">
 <caption style="font-size: initial !important;">
@@ -134,3 +132,14 @@ electric water heater and air conditioner
 </tr>
 </tbody>
 </table>
+Initial data processing included combining the date and time features into a single DateTime feature and then converting it into the proper class. Visualization of the extent and pattern of missing data showed that when data was missing, it was missing across all features (aside from DateTime). These instances were removed accounting for ~1.25% of the data. Finally a long form of the data set was created to aid visualizations in the exploratory data analysis effort.
+
+Linear regression models were built for the quarterly and monthly time series'. Model fit was assessed by residual analysis.
+
+Examples of visualizations that help support the deliverables described above are shown below.
+
+<img src="quarterBar.png" width="500px" style="display: block; margin: auto;" />
+
+<img src="peakUsage.png" width="500px" style="display: block; margin: auto;" />
+
+<img src="quartForcat.png" width="500px" style="display: block; margin: auto;" />
