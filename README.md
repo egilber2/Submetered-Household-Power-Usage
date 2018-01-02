@@ -14,7 +14,16 @@ output:
 
 ## Abstract
 
-This project is analyzed from the perspective of a data scientist working for an "Internet of Things" analytics consulting firm whose client is a home developer.  The client would like to know if insights can be found in the sub-metered energy consumption data set that could be used as an incentive to potential home buyers that may be interested in "smart home" technology.  
+This project is analyzed from the perspective of a data scientist working for an "Internet of Things" analytics consulting firm whose client is a home developer.  The client would like to know if insights can be found in the sub-metered energy consumption data set that could be used as an incentive to potential home buyers that may be interested in "smart home" technology.
+
+Turning the business problem into a data science problem, the goal was to find examples of the three deliverables below to support the business objective.
+
+
+I.  *Sub-metered energy consumption data that provides enough granularity to uncover trends in behavior or appliance performance.*  
+
+II. *Identification of peak energy usage can be identified allowing for the potential to modify behavior to take advantage of off-peak electricity rates.*
+
+III. *Longer-term patterns of energy usage that can be used to predict future usage with the potential to flag appliance degradation or unusual energy consumption.*
 
 
 ## Methods
