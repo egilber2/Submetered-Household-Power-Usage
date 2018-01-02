@@ -1,0 +1,50 @@
+---
+title: "Analysis of Submetered Household Electric Power Usage"
+author: "EJG"
+date: "January 2, 2018"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(caret)  
+library(tidyverse)  #Package for tidying data
+library(kableExtra) #fancy table generator
+library(knitr)      #report generation
+```
+
+
+## Abstract
+
+This project is analyzed from the perspective of a data scientist working for an "Internet of Things" analytics consulting firm whose client is a home developer.  The client would like to know if insights can be found in the sub-metered energy consumption data set that could be used as an incentive to potential home buyers that may be interested in "smart home" technology.
+
+Turning the business problem into a data science problem, the goal was to find examples of the three deliverables below to support the business objective.
+
+
+I.  *Sub-metered energy consumption data that provides enough granularity to uncover trends in behavior or appliance performance.*  
+
+II. *Identification of peak energy usage can be identified allowing for the potential to modify behavior to take advantage of off-peak electricity rates.*
+
+III. *Longer-term patterns of energy usage that can be used to predict future usage with the potential to flag appliance degradation or unusual energy consumption.*
+
+
+## Methods
+The 'household_power_consumption' data set is available at the [UCI Machine Learning Repository](http://archive.ics.uci.edu/ml/datasets/Individual+household+electric+power+consumption).  It consists of time series data with 2,075,259 energy measurements and 9 variables.  The variable definitions are shown below.
+
+```{r echo=FALSE, message=FALSE}
+#-Read in CSV file of data feature definitions
+def_table <- read.csv('Energy_submeter_defs.csv')
+  
+#-create table of feature definitions
+kable(def_table, 
+      col.names=c('Feature', 'Definition', 'Sub-Meter-Coverage'),       caption='Data Set Feature Definitions', 'html') %>% 
+  kable_styling(bootstrap_options = c('striped', 'hover', 'responsive', 'bordered'), 
+                full_width = F,
+                font_size = 14)
+```
+
