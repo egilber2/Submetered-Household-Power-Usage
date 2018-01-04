@@ -142,7 +142,9 @@ An example of an identifiable pattern of energy usage is shown with a plot of th
 
 <img src="quarterBar.png" width="500px" style="display: block; margin: auto;" />
 
-The ability to identify periods of peak usage allows the potential to modify behavior and shift energy consumption to off-peak hours which may. Below is the pattern of total energy usage by hour of the day. Clear peaks and troughs of engery consumption can be seen. <img src="peakUsage.png" width="500px" style="display: block; margin: auto;" />
+The ability to identify periods of peak usage allows the potential to modify behavior and shift energy consumption to off-peak hours which may. Below is the pattern of total energy usage by hour of the day. Clear peaks and troughs of engery consumption can be seen.
+
+<img src="peakUsage.png" width="500px" style="display: block; margin: auto;" />
 
 Energy usage oustide of a predicted range could be used to flag a possible appliance performance issue. Below is the forecasted quarterly energy consumption with 80% and 95% prediction intervals. <img src="quartForcat.png" width="500px" style="display: block; margin: auto;" />
 
