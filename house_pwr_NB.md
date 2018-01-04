@@ -148,16 +148,24 @@ The table from the output of the head() function on the house\_pwr tibble shows 
 
 ``` r
 #-Read in CSV file of data feature definitions
-def_table <- read.csv("Energy_submeter_defs.csv")
-
-#-create table of feature definitions
-kable(def_table, col.names = c("Feature", "Definition", "Sub-Meter-Coverage"), 
-    caption = "Data Set Feature Definitions") %>% kable_styling(bootstrap_options = c("striped", 
-    "hover", "responsive", "bordered"), full_width = F, font_size = 14)
+def_table <- read_csv("Energy_submeter_defs.csv")
 ```
 
-<table class="table table-striped table-hover table-responsive table-bordered" style="font-size: 14px; width: auto !important; margin-left: auto; margin-right: auto;">
-<caption style="font-size: initial !important;">
+    ## Parsed with column specification:
+    ## cols(
+    ##   Feature = col_character(),
+    ##   Definition = col_character(),
+    ##   `Sub Meter Coverage` = col_character()
+    ## )
+
+``` r
+#-create table of feature definitions
+kable(def_table, align = "l", col.names = c("Feature", "Definition", "Sub-Meter-Coverage"), 
+    caption = "Data Set Feature Definitions") %>% kable_styling("striped")
+```
+
+<table class="table table-striped" style="margin-left: auto; margin-right: auto;">
+<caption>
 Data Set Feature Definitions
 </caption>
 <thead>
@@ -182,6 +190,7 @@ date
 Date format dd/mm/yyyy
 </td>
 <td style="text-align:left;">
+NA
 </td>
 </tr>
 <tr>
@@ -192,6 +201,7 @@ time
 time format hh:mm:ss
 </td>
 <td style="text-align:left;">
+NA
 </td>
 </tr>
 <tr>
@@ -202,6 +212,7 @@ global\_active\_power
 household global minute-averaged active power (kilowatt)
 </td>
 <td style="text-align:left;">
+NA
 </td>
 </tr>
 <tr>
@@ -212,6 +223,7 @@ global\_reactive\_power
 household global minute-averaged reactive power (kilowatt)
 </td>
 <td style="text-align:left;">
+NA
 </td>
 </tr>
 <tr>
@@ -222,6 +234,7 @@ voltage
 minute-averaged voltage (volt)
 </td>
 <td style="text-align:left;">
+NA
 </td>
 </tr>
 <tr>
@@ -232,6 +245,7 @@ global\_intensity
 household global minute-averaged current intensity (ampere)
 </td>
 <td style="text-align:left;">
+NA
 </td>
 </tr>
 <tr>
@@ -406,9 +420,9 @@ We'll start by visualizing the least granular of time periods (yearly) and drill
 #-Year_Proportional Plot
 house_pwr_tidy %>% group_by(year(DateTime), Meter) %>% summarise(sum = sum(Watt_hr)) %>% 
     ggplot(aes(x = factor(`year(DateTime)`), sum, group = Meter, fill = Meter)) + 
-    labs(x = "Year", y = "Proportion of Energy Useage") + ggtitle("Proportion of Total Yearly Energy Consumption") + 
+    labs(x = "Year", y = "Proportion of Energy Usage") + ggtitle("Proportion of Total Yearly Energy Consumption") + 
     geom_bar(stat = "identity", position = "fill", color = "black") + theme(panel.border = element_rect(colour = "black", 
-    fill = NA))
+    fill = NA)) + theme(text = element_text(size = 14))
 ```
 
 ![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-15-1.png)
@@ -425,7 +439,7 @@ house_pwr_tidy %>% filter(year(DateTime) < 2010) %>% group_by(quarter(DateTime),
     Meter) %>% summarise(sum = round(sum(Watt_hr/1000), 3)) %>% ggplot(aes(x = factor(`quarter(DateTime)`), 
     y = sum)) + labs(x = "Quarter of the Year", y = "kWh") + ggtitle("Total Quarterly Energy Consumption") + 
     geom_bar(stat = "identity", aes(fill = Meter), color = "black") + theme(panel.border = element_rect(colour = "black", 
-    fill = NA))
+    fill = NA)) + theme(text = element_text(size = 14))
 ```
 
 ![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-16-1.png)
@@ -439,12 +453,12 @@ The same trough of energy consumption observed in the quarterly data is observed
 house_pwr_tidy %>% filter(year(DateTime) < 2010) %>% mutate(Month = lubridate::month(DateTime, 
     label = TRUE, abbr = TRUE)) %>% group_by(Month, Meter) %>% summarise(sum = round(sum(Watt_hr)/1000), 
     3) %>% ggplot(aes(x = factor(Month), y = sum)) + labs(x = "Month of the Year", 
-    y = "kWh") + ggtitle("Total Energy Useage by Month of the Year") + geom_bar(stat = "identity", 
+    y = "kWh") + ggtitle("Total Energy Usage by Month of the Year") + geom_bar(stat = "identity", 
     aes(fill = Meter), colour = "black") + theme(panel.border = element_rect(colour = "black", 
-    fill = NA))
+    fill = NA)) + theme(text = element_text(size = 14))
 ```
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-17-1.png)
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-18-1.png)
 
 #### **4.1.4 Week of the Year Time Period**
 
@@ -456,10 +470,10 @@ house_pwr_tidy %>% group_by(week(DateTime), Meter) %>% summarise(sum = sum(Watt_
     ggplot(aes(x = factor(`week(DateTime)`), y = sum)) + labs(x = "Week of the Year", 
     y = "kWh") + ggtitle("Total Energy Usage by Week of the Year") + theme(axis.text.x = element_text(angle = 90)) + 
     geom_bar(stat = "identity", aes(fill = Meter), colour = "black") + theme(panel.border = element_rect(colour = "black", 
-    fill = NA))
+    fill = NA)) + theme(text = element_text(size = 14))
 ```
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-18-1.png)
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-19-1.png)
 
 #### **4.1.5 Hour of the Day Time Period**
 
@@ -469,12 +483,12 @@ Finally, drilling down to the hour of the day shows clear trends in energy consu
 #-Hour of day bar chart
 house_pwr_tidy %>% filter(month(DateTime) == c(1, 2, 11, 12)) %>% group_by(hour(DateTime), 
     Meter) %>% summarise(sum = round(sum(Watt_hr)/1000), 3) %>% ggplot(aes(x = factor(`hour(DateTime)`), 
-    y = sum)) + labs(x = "Hour of the Day", y = "kWh") + ggtitle("Total Energy Useage by Hour of the Day") + 
+    y = sum)) + labs(x = "Hour of the Day", y = "kWh") + ggtitle("Total Energy Usage by Hour of the Day") + 
     geom_bar(stat = "identity", aes(fill = Meter), colour = "black") + theme(panel.border = element_rect(colour = "black", 
-    fill = NA))
+    fill = NA)) + theme(text = element_text(size = 14))
 ```
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-19-1.png)
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-20-1.png)
 
 ### **4.2 Compare High Energy Consumption for Day of Week (Summer & Winter)**
 
@@ -487,12 +501,12 @@ Insights gleaned from energy consumption by day of the week could be of value to
 house_pwr_tidy %>% filter(week(DateTime) == c(1:8)) %>% mutate(Day = lubridate::wday(DateTime, 
     label = TRUE, abbr = TRUE)) %>% group_by(Day, Meter) %>% summarise(sum = sum(Watt_hr/1000)) %>% 
     ggplot(aes(x = factor(Day), y = sum)) + labs(x = "Day of the Week", y = "kWh") + 
-    ylim(0, 85) + ggtitle("Total Energy Useage by Day for Weeks of High Consumption \n in Winter Months") + 
+    ylim(0, 85) + ggtitle("Total Energy Usage by Day for Weeks of High \nConsumption in Winter Months") + 
     geom_bar(stat = "identity", aes(fill = Meter), colour = "black") + theme(panel.border = element_rect(colour = "black", 
-    fill = NA))
+    fill = NA)) + theme(text = element_text(size = 14))
 ```
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-20-1.png) There appears to be a trend of increasing energy usage on sub-meter 3 as the week progresses. Peak kitchen usage seems to happen on the weekends (sub-meter 1) while peak laundry days appears to be on Saturday, Sunday and Wednesday (sub-meter 2). Of note is that energy usage of submeter 3 is driven by the electric water heater and not the air conditioner as the data is from the winter months. Let's see how this compares to consumption trends during peak consumption during warmer months.
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-22-1.png) There appears to be a trend of increasing energy usage on sub-meter 3 as the week progresses. Peak kitchen usage seems to happen on the weekends (sub-meter 1) while peak laundry days appears to be on Saturday, Sunday and Wednesday (sub-meter 2). Of note is that energy usage of submeter 3 is driven by the electric water heater and not the air conditioner as the data is from the winter months. Let's see how this compares to consumption trends during peak consumption during warmer months.
 
 #### **Summer**
 
@@ -501,12 +515,12 @@ house_pwr_tidy %>% filter(week(DateTime) == c(1:8)) %>% mutate(Day = lubridate::
 house_pwr_tidy %>% filter(week(DateTime) == c(18:25)) %>% mutate(Day = lubridate::wday(DateTime, 
     label = TRUE, abbr = TRUE)) %>% group_by(Day, Meter) %>% summarise(sum = sum(Watt_hr/1000)) %>% 
     ggplot(aes(x = factor(Day), y = sum)) + labs(x = "Day of the Week", y = "kWh") + 
-    ylim(0, 85) + ggtitle("Total Energy Useage by Day for Weeks of High Consumption\nin Summer Months") + 
+    ylim(0, 85) + ggtitle("Total Energy Usage by Day for Weeks of High Consumption\nin Summer Months") + 
     geom_bar(stat = "identity", aes(fill = Meter), colour = "black") + theme(panel.border = element_rect(colour = "black", 
-    fill = NA))
+    fill = NA)) + theme(text = element_text(size = 14))
 ```
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-21-1.png) Interestingly total consumption on submeter 3 is less in the summer months than in the winter months. As a reminder, the air conditioner and the electric water heater are on the circuit monitored by submeter 3. This suggests that the increase in consumption in the winter as measured by submeter 3 may be due to a poorly insulated water heater or a water heater in a poorly insulated space.
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-23-1.png) Interestingly total consumption on submeter 3 is less in the summer months than in the winter months. As a reminder, the air conditioner and the electric water heater are on the circuit monitored by submeter 3. This suggests that the increase in consumption in the winter as measured by submeter 3 may be due to a poorly insulated water heater or a water heater in a poorly insulated space.
 
 #### **Summary Plot**
 
@@ -534,14 +548,14 @@ Finally, we'll overlay the line plots of the data to highlight what appears to b
 
 ``` r
 #-Overlay line plots of the two 8-week time periods
-ggplot(w) + labs(x = "Day of the Week", y = "kWh") + ylim(0, 65) + ggtitle("Total Energy Useage on Submeter 3 for High\n Consumption Period in Winter and Summer Months") + 
+ggplot(w) + labs(x = "Day of the Week", y = "kWh") + ylim(0, 65) + ggtitle("Total Energy Usage on Submeter 3 for High\n Consumption Period in Winter and Summer Months") + 
     geom_line(aes(x = Day, y = sum, group = 1, colour = "winter")) + geom_line(data = ww, 
     aes(x = Day, y = sum, group = 1, color = "summer")) + scale_colour_manual(values = c(winter = "blue", 
     summer = "red")) + labs(colour = "Season") + guides(colour = guide_legend(reverse = TRUE)) + 
-    theme(panel.border = element_rect(colour = "black", fill = NA))
+    theme(panel.border = element_rect(colour = "black", fill = NA)) + theme(text = element_text(size = 14))
 ```
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-24-1.png) The fact that there may be a reasonable explanation for this pattern of energy consumption shouldn't concern us. The primary concern is to demonstrate to the client that potentially actionable insights *can* be uncovered in submetered energy data.
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-26-1.png) The fact that there may be a reasonable explanation for this pattern of energy consumption shouldn't concern us. The primary concern is to demonstrate to the client that potentially actionable insights *can* be uncovered in submetered energy data.
 
 **5. Subset Data Set by Time Periods of Interest**
 --------------------------------------------------
@@ -622,7 +636,7 @@ b <- c("Sub-meter-1", "Sub-meter-2", "Sub-meter-3")
 legend("topleft", b, col = c("red", "green", "blue"), lwd = 2, bty = "n")
 ```
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-27-1.png) We can see that the mid-year trough of energy consumption observed in the quarterly bar chart does indeed repeat over time.
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-29-1.png) We can see that the mid-year trough of energy consumption observed in the quarterly bar chart does indeed repeat over time.
 
 ### **6.2 Monthly Time Series**
 
@@ -644,7 +658,7 @@ b <- c("Sub-meter-1", "Sub-meter-2", "Sub-meter-3")
 legend("topleft", b, col = c("red", "green", "blue"), lwd = 2, bty = "n")
 ```
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-28-1.png) We can see a seasonal pattern over the years with trough of energy usage in the summer that is most-pronounced with submeter 3.
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-30-1.png) We can see a seasonal pattern over the years with trough of energy usage in the summer that is most-pronounced with submeter 3.
 
 **7. Fit Linear Regression Model to *Quarterly* Time Series**
 -------------------------------------------------------------
@@ -725,13 +739,13 @@ For instance, we can plot the fitted values vs. the actual values to visualize t
 ggplot(fit1, aes(x = fit1$fitted.values, y = housePWR_qtrTS[, 3])) + geom_point(color = "blue", 
     size = 4) + labs(x = "Fitted Value", y = "Actual") + geom_abline(intercept = 0, 
     slope = 1, linetype = "dashed") + ggtitle("Fitted vs. Actual Values for Quarterly Linear Model") + 
-    theme(panel.border = element_rect(colour = "black", fill = NA))
+    theme(panel.border = element_rect(colour = "black", fill = NA)) + theme(text = element_text(size = 14))
 ```
 
     ## Don't know how to automatically pick scale for object of type ts. Defaulting to continuous.
     ## Don't know how to automatically pick scale for object of type ts. Defaulting to continuous.
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-32-1.png) The dashed line represents a 1:1 relationship between fitted and actual values. The closer a point is to the dashed line, the more accurately the model predicted the fitted value. In this case, the fitted values appear to follow the line reasonably well. The distance the fitted value is above or below the line is the error or residual. One way to assess this is with a residual plot where the fitted vs. residuals are plotted.
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-34-1.png) The dashed line represents a 1:1 relationship between fitted and actual values. The closer a point is to the dashed line, the more accurately the model predicted the fitted value. In this case, the fitted values appear to follow the line reasonably well. The distance the fitted value is above or below the line is the error or residual. One way to assess this is with a residual plot where the fitted vs. residuals are plotted.
 
 #### **Fitted vs Residuals**
 
@@ -742,13 +756,13 @@ We can also plot the fitted values vs. the residuals.
 ggplot(fit1, aes(x = fit1$fitted.values, y = fit1$residuals)) + geom_point(color = "blue", 
     size = 4) + labs(x = "Fitted Values", y = "Residuals") + geom_hline(yintercept = 0, 
     linetype = "dashed") + ggtitle("Residuals Plot of Quarterly Linear Model") + 
-    theme(panel.border = element_rect(colour = "black", fill = NA))
+    theme(panel.border = element_rect(colour = "black", fill = NA)) + theme(text = element_text(size = 14))
 ```
 
     ## Don't know how to automatically pick scale for object of type ts. Defaulting to continuous.
     ## Don't know how to automatically pick scale for object of type ts. Defaulting to continuous.
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-33-1.png) Any patterns in the residual plot would suggest a non-linear relationship. However, the random scatterplot appearance of the residual plot suggests that the linear model fits our data well.
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-35-1.png) Any patterns in the residual plot would suggest a non-linear relationship. However, the random scatterplot appearance of the residual plot suggests that the linear model fits our data well.
 
 #### **Checkresiduals()**
 
@@ -759,7 +773,7 @@ Finally, we'll use the checkresiduals() function to check several of the assumpt
 checkresiduals(fit1)
 ```
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-34-1.png)
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-36-1.png)
 
     ## 
     ##  Breusch-Godfrey test for serial correlation of order up to 8
@@ -807,13 +821,13 @@ We'll start by looking at a plot of the fitted vs. actual values.
 ggplot(fit2, aes(x = fit2$fitted.values, y = housePWR_mnthTS[, 3])) + geom_point(color = "blue", 
     size = 4) + labs(x = "Fitted Value", y = "Actual") + geom_abline(intercept = 0, 
     slope = 1, linetype = "dashed") + ggtitle("Fitted vs. Actual Values for Monthly Linear Model") + 
-    theme(panel.border = element_rect(colour = "black", fill = NA))
+    theme(panel.border = element_rect(colour = "black", fill = NA)) + theme(text = element_text(size = 14))
 ```
 
     ## Don't know how to automatically pick scale for object of type ts. Defaulting to continuous.
     ## Don't know how to automatically pick scale for object of type ts. Defaulting to continuous.
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-36-1.png) The dashed line represents a 1:1 relationship between fitted and actual values. The closer a point is to the dashed line, the more accurately the model predicted the fitted value. In this case, the fitted values appear to follow the line reasonably well. The distance the fitted value is above or below the line is the error or residual.
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-38-1.png) The dashed line represents a 1:1 relationship between fitted and actual values. The closer a point is to the dashed line, the more accurately the model predicted the fitted value. In this case, the fitted values appear to follow the line reasonably well. The distance the fitted value is above or below the line is the error or residual.
 
 #### **Fitted vs. Residuals**
 
@@ -825,13 +839,13 @@ Next, we'll look for any patterns in the fitted vs. residuals plot that would be
 ggplot(fit2, aes(x = fit2$fitted.values, y = fit2$residuals)) + geom_point(color = "blue", 
     size = 4) + labs(x = "Fitted Values", y = "Residuals") + geom_hline(yintercept = 0, 
     linetype = "dashed") + ggtitle("Residual Plot of Monthly Linear Model") + 
-    theme(panel.border = element_rect(colour = "black", fill = NA))
+    theme(panel.border = element_rect(colour = "black", fill = NA)) + theme(text = element_text(size = 14))
 ```
 
     ## Don't know how to automatically pick scale for object of type ts. Defaulting to continuous.
     ## Don't know how to automatically pick scale for object of type ts. Defaulting to continuous.
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-37-1.png) There don't appear to be any patterns in the residual plot for the linear model fit to the monthly time series.
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-39-1.png) There don't appear to be any patterns in the residual plot for the linear model fit to the monthly time series.
 
 #### **Checkresiduals()**
 
@@ -843,7 +857,7 @@ As we did with the quarterly time series, we can investigate some of the assumpt
 checkresiduals(fit2)
 ```
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-38-1.png)
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-40-1.png)
 
     ## 
     ##  Breusch-Godfrey test for serial correlation of order up to 24
@@ -867,12 +881,13 @@ To make a forecast with the quarterly linear model, we pass the model, the numbe
 x <- forecast(fit1, h = 4, level = c(80, 95))
 
 #-Plot 4-quarter forecast of energy usage
+
 plot(x, showgap = FALSE, include = 3, shadecols = c("slategray3", "slategray"), 
-    xlab = "Year", ylab = "kWh", main = "4-Quarter Forecast of Quartlerly Energy Consumption for Submeter-3")
+    xlab = "Year", ylab = "kWh", main = "4-Quarter Forecast of Quartlerly Energy Consumption \nfor Submeter-3")
 minor.tick(nx = 2)
 ```
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-39-1.png) The plot of the resulting forecast shows a line plot of the predicted values with the 80 and 95% prediction intervals. The tidy() function provides a tabular summary of the point forecasts and the prediction intervals.
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-41-1.png) The plot of the resulting forecast shows a line plot of the predicted values with the 80 and 95% prediction intervals. The tidy() function provides a tabular summary of the point forecasts and the prediction intervals.
 
 ``` r
 #-Summary of 4-quarter forecast
@@ -899,7 +914,7 @@ plot(y, showgap = FALSE, include = 4, shadecols = c("slategray3", "slategray"),
 minor.tick(nx = 6)
 ```
 
-![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-41-1.png)
+![](house_pwr_NB_files/figure-markdown_github/unnamed-chunk-43-1.png)
 
 ``` r
 #-Summary of 6-month forecast
