@@ -138,8 +138,15 @@ Linear regression models were built for the quarterly and monthly time series'. 
 
 Examples of visualizations that help support the deliverables described above are shown below.
 
+An example of an identifiable pattern of energy usage is shown with a plot of the total quarterly energy consumption. A trough of energy consumption in Q3 is evident. A plot of the quarterly time series showed that this pattern was repeated over the time frame of the data set.
+
 <img src="quarterBar.png" width="500px" style="display: block; margin: auto;" />
 
-<img src="peakUsage.png" width="500px" style="display: block; margin: auto;" />
+The ability to identify periods of peak usage allows the potential to modify behavior and shift energy consumption to off-peak hours which may. Below is the pattern of total energy usage by hour of the day. Clear peaks and troughs of engery consumption can be seen. <img src="peakUsage.png" width="500px" style="display: block; margin: auto;" />
 
-<img src="quartForcat.png" width="500px" style="display: block; margin: auto;" />
+Energy usage oustide of a predicted range could be used to flag a possible appliance performance issue. Below is the forecasted quarterly energy consumption with 80% and 95% prediction intervals. <img src="quartForcat.png" width="500px" style="display: block; margin: auto;" />
+
+Requirements
+------------
+
+Package names and versions used for this analysis can be found in the requirements.txt file.
